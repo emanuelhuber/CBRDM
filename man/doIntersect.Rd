@@ -2,7 +2,11 @@
 % Please edit documentation in R/main.R
 \name{doIntersect}
 \alias{doIntersect}
+\title{doIntersect}
 \usage{
 doIntersect(x, y, ...)
+}
+\description{
+doIntersect
 }
 

@@ -2,7 +2,11 @@
 % Please edit documentation in R/main.R
 \name{bbox}
 \alias{bbox}
+\title{Bbox}
 \usage{
 bbox(x)
+}
+\description{
+Bbox
 }
 

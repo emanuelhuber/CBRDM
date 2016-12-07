@@ -755,21 +755,28 @@ setAs(from = "Rectangle", to = "matrix", def = function(from){
 ##------------------- METHODS ------------------##
 
 #------------------------------
+#' Bbox
+#'
 #' @name bbox
 #' @rdname bbox
 #' @export
 setGeneric("bbox", function(x) standardGeneric("bbox"))
-
+#' boundary
+#'
 #' @name boundary
 #' @rdname boundary
 #' @export
 setGeneric("boundary", function(x) standardGeneric("boundary"))
 
+#' section
+#'
 #' @name section
 #' @rdname section
 #' @export
 setGeneric("section", function(x, l, lim = NULL) standardGeneric("section"))
 
+#' plotSection
+#'
 #' @name plotSection
 #' @rdname plotSection
 #' @export
@@ -777,27 +784,37 @@ setGeneric("plotSection", function(x, add = FALSE, xlab = "x",
             ylab = "y", main = "", asp = NA, ...) 
             standardGeneric("plotSection"))
 
+#' plotObj
+#'
 #' @name plotObj
 #' @rdname plotObj
 #' @export
 setGeneric("plotObj", function(x, ...) standardGeneric("plotObj"))
 
+#' doIntersect
+#'
 #' @name doIntersect
 #' @rdname doIntersect
 #' @export
 setGeneric("doIntersect", function(x, y, ...) standardGeneric("doIntersect"))
 
+#' pixelise
+#'
 #' @name pixelise
 #' @rdname pixelise
 #' @export
 setGeneric("pixelise", function(x, grid) standardGeneric("pixelise"))
 
+#' crossBedding
+#'
 #' @name crossBedding
 #' @rdname crossBedding
 #' @export
 setGeneric("crossBedding", function(x, nF = 6, phi = 1.05, rpos = 1)     
             standardGeneric("crossBedding"))
 
+#' plotTopView
+#'
 #' @name plotTopView
 #' @rdname plotTopView
 #' @export

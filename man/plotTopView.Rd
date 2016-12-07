@@ -2,8 +2,12 @@
 % Please edit documentation in R/main.R
 \name{plotTopView}
 \alias{plotTopView}
+\title{plotTopView}
 \usage{
 plotTopView(x, add = FALSE, xlab = "x", ylab = "y", main = "",
   asp = NA, ...)
+}
+\description{
+plotTopView
 }
 

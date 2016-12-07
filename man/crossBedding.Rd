@@ -2,7 +2,11 @@
 % Please edit documentation in R/main.R
 \name{crossBedding}
 \alias{crossBedding}
+\title{crossBedding}
 \usage{
 crossBedding(x, nF = 6, phi = 1.05, rpos = 1)
+}
+\description{
+crossBedding
 }
 

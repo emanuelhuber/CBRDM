@@ -2,8 +2,12 @@
 % Please edit documentation in R/main.R
 \name{plotSection}
 \alias{plotSection}
+\title{plotSection}
 \usage{
 plotSection(x, add = FALSE, xlab = "x", ylab = "y", main = "",
   asp = NA, ...)
+}
+\description{
+plotSection
 }
 

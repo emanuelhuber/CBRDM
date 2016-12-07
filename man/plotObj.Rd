@@ -2,7 +2,11 @@
 % Please edit documentation in R/main.R
 \name{plotObj}
 \alias{plotObj}
+\title{plotObj}
 \usage{
 plotObj(x, ...)
+}
+\description{
+plotObj
 }
 

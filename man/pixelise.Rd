@@ -2,7 +2,11 @@
 % Please edit documentation in R/main.R
 \name{pixelise}
 \alias{pixelise}
+\title{pixelise}
 \usage{
 pixelise(x, grid)
+}
+\description{
+pixelise
 }
 

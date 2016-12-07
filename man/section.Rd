@@ -2,7 +2,11 @@
 % Please edit documentation in R/main.R
 \name{section}
 \alias{section}
+\title{section}
 \usage{
 section(x, l, lim = NULL)
+}
+\description{
+section
 }
 

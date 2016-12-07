@@ -2,7 +2,11 @@
 % Please edit documentation in R/main.R
 \name{boundary}
 \alias{boundary}
+\title{boundary}
 \usage{
 boundary(x)
+}
+\description{
+boundary
 }
 
