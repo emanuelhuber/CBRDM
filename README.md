@@ -5,6 +5,6 @@ Coarse Braided River Deposit Model
 
 ```r
 library(devtools)
-devtools::install_github("emanuelhuber/GauProMod")
-library(GauProMod)
+devtools::install_github("emanuelhuber/CBRDM")
+library(CBRDM)
 ```
