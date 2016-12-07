@@ -1,0 +1,1869 @@
+# Check p. 60-61
+
+
+## TODO
+# - section: Cuboid
+# - plotObj: Trough2D
+# - fill !!!!
+
+
+# position of a point on ellipse as function of its angle with
+# center ellipse for an ellipse centered in (0, 0) and axis-aligned
+# x1 <- obj@L * obj@W / sqrt(obj@W^2 + obj@L^2 * tan(obj@theta)^2)
+# y1 <- obj@W * sqrt( 1 - (x1 / obj@L)^2 )
+
+
+##------------------- CLASSES ------------------##
+
+#' An S4 class to represent trough structure.
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Trough",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = top of object
+    L = "numeric",
+    W = "numeric",
+    H = "numeric",
+    theta = "numeric",  # depth position
+    rH = "numeric",
+    fill = "list"
+  )
+)
+
+#' An S4 class to represent Deposits.
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Deposits",  
+  slots=c(
+    version = "character",   # version of the class
+    troughs = "Trough",
+    layers = "numeric",
+    bbox = "list"
+  )
+)
+
+#' An S4 class to represent Spoon
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Spoon",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = top of object
+    L = "numeric",
+    W = "numeric",
+    H = "numeric",
+    theta = "numeric",  # depth position
+    rH = "numeric",
+    rL = "numeric",
+    fill = "list"
+  )
+)
+
+#' An S4 class to represent TrEllipsoid
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="TrEllipsoid",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = middle of object
+    a = "numeric",
+    b = "numeric",
+    c = "numeric",
+    theta = "numeric",  # depth position
+    zmax = "numeric"
+  )
+)
+
+#' An S4 class to represent Ellipsoid
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Ellipsoid",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = middle of object
+    a = "numeric",
+    b = "numeric",
+    c = "numeric",
+    theta = "numeric"  # depth position
+  )
+)
+
+#' An S4 class to represent Sphere
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Sphere",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = middle of object
+    r = "numeric"
+  )
+)
+
+#' An S4 class to represent Cuboid
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Cuboid",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = midlle of object
+    L = "numeric",    # along x-axis?
+    W = "numeric",    # along y-axis?
+    H = "numeric",
+    theta = "numeric"
+  )
+)
+
+##--- object 2D: position on the plan and position in 3D
+#' An S4 class to represent Trough2D
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Trough2D",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = top of object
+    L = "numeric",
+    H = "numeric",
+    rH = "numeric",
+    fill = "list"      # header from *.dt1 file
+  )
+)
+
+#' An S4 class to represent Deposits2D
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Deposits2D",  
+  slots=c(
+    version = "character",   # version of the class
+    troughs = "Trough2D",
+    layers = "numeric",
+    bbox = "list"
+  )
+)
+
+#' An S4 class to represent TrEllipse
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="TrEllipse",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = middle of object
+    a = "numeric",
+    b = "numeric",
+    zmax = "numeric"
+  )
+)
+
+#' An S4 class to represent Ellipse
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Ellipse",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = middle of object
+    a = "numeric",
+    b = "numeric",
+    theta = "numeric"  # depth position
+  )
+)
+
+#' An S4 class to represent Rectangle
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Rectangle",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "numeric",
+    pos = "matrix",     # position, z = middle of object
+    L = "numeric",
+    H = "numeric",
+    theta = "numeric"  # depth position
+  )
+)
+
+##------------------- CONSTRUCTORS ------------------##
+#' constructeur
+#'
+#' @export
+trough <- function(id = NULL, pos, size, theta, rH, fill = list()){
+  if(is.null(dim(pos))){
+    dim(pos) <- c(1, length(pos))
+  }
+  unname(pos)
+  colnames(pos) <- c("x", "y", "z")
+  if(is.null(dim(size))){
+    dim(size) <- c(1, length(size))
+  }
+  if(is.null(id)){
+    id <- seq_along(pos[,1])
+  }
+  new("Trough",
+      version="0.1",
+      id = id,
+      pos = pos,     # position
+      L = size[,1],
+      W = size[,2],
+      H = size[,3],
+      theta = theta,  # depth position
+      rH = rH,
+      fill = fill
+  )
+}
+
+#' constructeur
+#'
+#' @export
+spoon <- function(id = NULL, pos, size, theta, rH, rL, fill = list()){
+  if(is.null(dim(pos))){
+    dim(pos) <- c(1, length(pos))
+  }
+  unname(pos)
+  colnames(pos) <- c("x", "y", "z")
+  if(is.null(dim(size))){
+    dim(size) <- c(1, length(size))
+  }
+  if(is.null(id)){
+    id <- seq_along(pos[,1])
+  }
+  new("Spoon",
+      version="0.1",
+      id = id,
+      pos = pos,     # position
+      L = size[,1],
+      W = size[,2],
+      H = size[,3],
+      theta = theta,  # depth position
+      rH = rH,
+      rL = rL,
+      fill = fill
+  )
+}
+
+##------------------- SUBSETTING -----------------##
+#' Subsetting
+#'
+#' @name [[
+#' @rdname subsetting
+#' @export
+setMethod(
+    f= "[[",
+    signature="Trough",
+    definition=function (x, i, j, ...){
+      if(missing(i)) i <- j
+      myFill <- x@fill
+      if(length(myFill) > 0){
+        myFill <- myFill[i]
+      }
+      new("Trough",
+          version="0.1",
+          id = x@id[i, drop = FALSE],
+          pos = x@pos[i, , drop = FALSE],     # position
+          L = x@L[i, drop = FALSE],
+          W = x@W[i, drop = FALSE],
+          H = x@H[i, drop = FALSE],
+          theta = x@theta[i, drop = FALSE],  # depth position
+          rH = x@rH[i, drop = FALSE],
+          fill = myFill
+      )
+    }
+)
+
+#' Subsetting
+#'
+#' @rdname subsetting
+#' @export
+setMethod(
+    f= "[[",
+    signature="Spoon",
+    definition=function (x, i, j, ...){
+      if(missing(i)) i <- j
+      myFill <- x@fill
+      if(length(myFill) > 0){
+        myFill <- myFill[i]
+      }
+      new("Spoon",
+          version="0.1",
+          id = x@id[i, drop = FALSE],
+          pos = x@pos[i, , drop = FALSE],     # position
+          L = x@L[i, drop = FALSE],
+          W = x@W[i, drop = FALSE],
+          H = x@H[i, drop = FALSE],
+          theta = x@theta[i, drop = FALSE],  # depth position
+          rH = x@rH[i, drop = FALSE],
+          rL = x@rL[i, drop = FALSE],
+          fill = myFill
+      )
+    }
+)
+
+#' Subsetting
+#'
+#' @rdname subsetting
+#' @export
+setMethod(
+    f= "[[",
+    signature="Trough2D",
+    definition=function (x, i, j, ...){
+      if(missing(i)) i <- j
+      myFill <- x@fill
+      if(length(myFill) > 0){
+        myFill <- myFill[i]
+      }
+      new("Trough2D",
+          version="0.1",
+          id = x@id[i, drop = FALSE],
+          pos = x@pos[i, , drop = FALSE],     # position
+          L = x@L[i, drop = FALSE],
+          H = x@H[i, drop = FALSE],
+          rH = x@rH[i, drop = FALSE],
+          fill = myFill
+      )
+    }
+)
+
+
+##------------------- CONVERTOR ------------------##
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "Ellipsoid", to = "TrEllipsoid", def = function(from){
+    new("TrEllipsoid",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = from@pos,     # position
+      a = from@a,
+      b = from@b,
+      c = from@c,
+      theta = from@theta,
+      zmax = from@pos[,3] + from@c
+    )
+  }
+)
+
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "TrEllipsoid", to = "Ellipsoid", def = function(from){
+    new("Ellipsoid",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = from@pos,     # position
+      a = from@a,
+      b = from@b,
+      c = from@c,
+      theta = from@theta
+    )
+  }
+)
+
+
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "Trough", to = "TrEllipsoid", def = function(from){
+    cstO2E <- from@rH/(2*sqrt(2*from@rH -1))
+    pos <- from@pos
+    pos[,3] <- from@pos[,3]  + from@H * (from@rH - 1)
+    new("TrEllipsoid",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = pos,     # position
+      a = from@L * cstO2E,
+      b = from@W * cstO2E,
+      c = from@H * from@rH,
+      theta = from@theta,  # depth position
+      zmax = from@pos[,3]
+    )
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "Trough", to = "Ellipsoid", def = function(from){
+    E <- as(from, "TrEllipsoid")
+    as(E, "Ellispoid")
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "TrEllipsoid", to = "Trough", def = function(from){
+    pos <- from@pos
+    pos[,3] <- from@zmax
+    H <- from@c - from@pos[,3] + from@zmax
+    rH <- from@c/H
+    cstO2E <- rH/(2*sqrt(2*rH -1))
+    new("Trough",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = pos,     # position
+      L = from@a / cstO2E,
+      W = from@b / cstO2E,
+      H = H,
+      theta = from@theta,  # depth position
+      rH = rH
+    )
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "Ellipsoid", to = "Sphere", def = function(from){
+    pa <- matrix(c(from@a, from@b, from@c), ncol = 3, nrow = length(from@a))
+    new("Sphere",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = from@pos,     # position
+      r = apply(pa, 1, max)/2
+    )
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "Trough", to = "Sphere", def = function(from){
+    pa <- matrix(c(from@L, from@W, from@H), ncol = 3, nrow = length(from@L))
+    new("Sphere",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = from@pos,     # position
+      r = apply(pa, 1, max)/2
+    )
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "TrEllipsoid", to = "Sphere", def = function(from){
+    O <- as(from, "Trough")
+    as(O, "Sphere")
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "Trough", to = "Cuboid", def = function(from){
+    pos <- from@pos
+    pos[,3] <- from@pos[,3] - from@H/2
+    new("Cuboid",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = pos,     # position
+      L = from@L,
+      W = from@W,
+      H = from@H,
+      theta = from@theta
+    )
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "TrEllipsoid", to = "Cuboid", def = function(from){
+    O <- as(from, "Trough")
+    as(O, "Cuboid")
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "Ellipsoid", to = "Cuboid", def = function(from){
+    new("Cuboid",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = from@pos,     # position
+      L = 2 * from@a,
+      W = 2 * from@b,
+      H = 2 * from@c,
+      theta = from@theta
+    )
+  }
+)
+
+
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "TrEllipse", to = "Trough2D", def = function(from){
+    pos <- from@pos
+    pos[,2] <- from@zmax
+    H <- from@b - from@pos[,2] + from@zmax
+    rH <- from@b/H
+    new("Trough2D",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = pos,     # position
+      L = from@a * 2* sqrt(1 - (from@zmax - from@pos[,2])^2/from@b^2),
+      H = from@b - from@pos[,2] + from@zmax,
+      rH = rH
+    )
+  }
+)
+#' Converstion
+#'
+#' @name as
+#' @rdname as
+#' @export
+setAs(from = "Trough2D", to = "TrEllipse", def = function(from){
+    bbb <- from@rH * from@H
+    pos <- from@pos
+    pos[,2] <- from@pos[,2] - from@H + bbb
+    new("TrEllipse",
+      version = "0.1",   # version of the class
+      id = from@id,
+      pos = pos,     # position
+      a = from@L / (2* sqrt(1 - (from@pos[,2] - pos[,2])^2/bbb^2)),
+      b = bbb,
+      zmax = from@pos[,2]
+    )
+  }
+)
+
+
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Trough"),function(x){ as(x, "matrix") })
+setAs(from = "Trough", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@L), ncol = 9)
+    M[, 1]   <- from@id
+    M[, 2:4] <- from@pos
+    M[, 5]   <- from@L
+    M[, 6]   <- from@W
+    M[, 7]   <- from@H
+    M[, 8]   <- from@theta
+    M[, 9]   <- from@rH
+    colnames(M) <- c("id", "x", "y", "z", "L", "W", "H", "theta", "rH")
+    return(M)
+  }
+)
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Ellipsoid"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "Ellipsoid", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@a), ncol = 8)
+    M[, 1]   <- from@id
+    M[, 2:4] <- from@pos
+    M[, 5]   <- from@a
+    M[, 6]   <- from@b
+    M[, 7]   <- from@c
+    M[, 8]   <- from@theta
+    colnames(M) <- c("id", "x", "y", "z", "a", "b", "c", "theta")
+    return(M)
+  }
+)
+
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "TrEllipsoid"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "TrEllipsoid", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@a), ncol = 9)
+    M[, 1]   <- from@id
+    M[, 2:4] <- from@pos
+    M[, 5]   <- from@a
+    M[, 6]   <- from@b
+    M[, 7]   <- from@c
+    M[, 8]   <- from@theta
+    M[, 9]   <- from@zmax
+    colnames(M) <- c("id", "x", "y", "z", "a", "b", "c", "theta", "zmax")
+    return(M)
+  }
+)
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Sphere"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "Sphere", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@r), ncol = 5)
+    M[, 1]   <- from@id
+    M[, 2:4] <- from@pos
+    M[, 5]   <- from@r
+    colnames(M) <- c("id", "x", "y", "z", "r")
+    return(M)
+  }
+)
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Cuboid"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "Cuboid", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@L), ncol = 8)
+    M[, 1]   <- from@id
+    M[, 2:4] <- from@pos
+    M[, 5]   <- from@L
+    M[, 6]   <- from@W
+    M[, 7]   <- from@H
+    M[, 8]   <- from@theta
+    colnames(M) <- c("id", "x", "y", "z", "L", "W", "H", "theta")
+    return(M)
+  }
+)
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Ellipse"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "Ellipse", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@a), ncol = 6)
+    M[, 1]   <- from@id
+    M[, 2:3] <- from@pos
+    M[, 4]   <- from@a
+    M[, 5]   <- from@b
+    M[, 6]   <- from@theta
+    colnames(M) <- c("id", "x", "y", "a", "b", "theta")
+    return(M)
+  }
+)
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Ellipse"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "Ellipse", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@a), ncol = 6)
+    M[, 1]   <- from@id
+    M[, 2:3] <- from@pos
+    M[, 4]   <- from@a
+    M[, 5]   <- from@b
+    M[, 6]   <- from@theta
+    colnames(M) <- c("id", "x", "y", "a", "b", "theta")
+    return(M)
+  }
+)
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "TrEllipse"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "TrEllipse", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@a), ncol = 6)
+    M[, 1]   <- from@id
+    M[, 2:3] <- from@pos
+    M[, 4]   <- from@a
+    M[, 5]   <- from@b
+    M[, 6]   <- from@zmax
+    colnames(M) <- c("id", "x", "y", "a", "b", "zmax")
+    return(M)
+  }
+)
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Trough2D"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "Trough2D", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@L), ncol = 6)
+    M[, 1]   <- from@id
+    M[, 2:3] <- from@pos
+    M[, 4]   <- from@L
+    M[, 5]   <- from@H
+    M[, 6]   <- from@rH
+    colnames(M) <- c("id", "x", "y", "L", "H", "rH")
+    return(M)
+  }
+)
+
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Rectangle"), 
+          function(x){ as(x, "matrix") })
+setAs(from = "Rectangle", to = "matrix", def = function(from){
+    M <- matrix(nrow = length(from@L), ncol = 6)
+    M[, 1]   <- from@id
+    M[, 2:3] <- from@pos
+    M[, 4]   <- from@L
+    M[, 5]   <- from@H
+    M[, 6]   <- from@theta
+    colnames(M) <- c("id", "x", "y", "L", "H", "theta")
+    return(M)
+  }
+)
+
+##------------------- METHODS ------------------##
+
+#------------------------------
+#' @name bbox
+#' @rdname bbox
+#' @export
+setGeneric("bbox", function(x) standardGeneric("bbox"))
+
+#' @name boundary
+#' @rdname boundary
+#' @export
+setGeneric("boundary", function(x) standardGeneric("boundary"))
+
+#' @name section
+#' @rdname section
+#' @export
+setGeneric("section", function(x, l, lim = NULL) standardGeneric("section"))
+
+#' @name plotSection
+#' @rdname plotSection
+#' @export
+setGeneric("plotSection", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, ...) 
+            standardGeneric("plotSection"))
+
+#' @name plotObj
+#' @rdname plotObj
+#' @export
+setGeneric("plotObj", function(x, ...) standardGeneric("plotObj"))
+
+#' @name doIntersect
+#' @rdname doIntersect
+#' @export
+setGeneric("doIntersect", function(x, y, ...) standardGeneric("doIntersect"))
+
+#' @name pixelise
+#' @rdname pixelise
+#' @export
+setGeneric("pixelise", function(x, grid) standardGeneric("pixelise"))
+
+#' @name crossBedding
+#' @rdname crossBedding
+#' @export
+setGeneric("crossBedding", function(x, nF = 6, phi = 1.05, rpos = 1)     
+            standardGeneric("crossBedding"))
+
+#' @name plotTopView
+#' @rdname plotTopView
+#' @export
+setGeneric("plotTopView", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, ...) 
+            standardGeneric("plotTopView"))
+
+##--------------------------- BBOX ----------------------##
+# bounding box of top view object
+# source: http://stackoverflow.com/questions/87734/how-do-you-calculate-the-
+# axis-aligned-bounding-box-of-an-ellipse
+# see also 
+# http://www.iquilezles.org/www/articles/ellipses/ellipses.htm
+setMethod("bbox", "Trough", function(x){
+    pos <- x@pos
+    pos[,3] <- x@pos[,3] - x@H/2
+    ux <- x@L / 2 * cos(x@theta)
+    uy <- x@L / 2 * sin(x@theta)
+    vx <- x@W / 2 * cos(x@theta + pi/2)
+    vy <- x@W / 2 * sin(x@theta + pi/2)
+    L <- sqrt(ux^2 + vx^2)
+    W <- sqrt(uy^2 + vy^2)
+    new("Cuboid",
+      version = "0.1",   # version of the class
+      id = x@id,
+      pos = pos,     # position
+      L = 2 * L,
+      W = 2 * W,
+      H = x@H,
+      theta = rep(0, length(L))
+    )
+  }
+)
+
+spoon2trough <- function(from){
+  xl <- new("Trough",
+          version = "0.1",   # version of the class
+          id = from@id,
+          pos = from@pos,     # position
+          L = 2*from@L * (1 - from@rL),
+          W = from@W,
+          H = from@H,
+          theta = from@theta,  # depth position
+          rH = from@rH
+        )
+  xs <- new("Trough",
+          version = "0.1",   # version of the class
+          id = from@id,
+          pos = from@pos,     # position
+          L = 2*from@L * from@rL,
+          W = from@W,
+          H = from@H,
+          theta = from@theta,  # depth position
+          rH = from@rH
+        )
+  return(list(xl, xs))
+}
+
+setMethod("bbox", "Spoon", function(x){
+    xT <- spoon2trough(x)
+    bbox1 <- bbox(xT[[1]])
+    bbox2 <- bbox(xT[[2]])
+    pos <- x@pos
+    pos[,3] <- x@pos[,3] - x@H/2
+    L1 <- x@L * (1 - x@rL)
+    L2 <- x@L * x@rL
+    l <- L1 - x@L/2
+    pos[,1:2] <- l*c(cos(x@theta), sin(x@theta)) + x@pos[,1:2]
+    new("Cuboid",
+      version = "0.1",   # version of the class
+      id = x@id,
+      pos = pos,     # position
+      L = bbox1@L/2 +  bbox2@L/2,
+      W = bbox1@W/2 +  bbox2@W/2,
+      H = x@H,
+      theta = rep(0, length(x@L))
+    )
+  }
+)
+
+setMethod("bbox", "TrEllipsoid", function(x){
+    O <- as(x, "Trough")
+    bbox(O)
+    # pos <- x@pos
+    # H <- x@zmax - x@pos[,3] + x@c
+    # # z_cuboid = z - c + H/2
+    # pos[,3] <- x@pos[,3] - x@c + H/2
+    # rH <- x@c/H
+    # cstO2E <- rH/(2*sqrt(2*rH - 1))
+    # L0 <- x@a/cstO2E
+    # W0 <- x@b/cstO2E
+    # ux <- L0 / 2 * cos(x@theta)
+    # uy <- L0 / 2 * sin(x@theta)
+    # vx <- W0 / 2 * cos(x@theta + pi/2)
+    # vy <- W0 / 2 * sin(x@theta + pi/2)
+    # L <- sqrt(ux^2 + vx^2)
+    # W <- sqrt(uy^2 + vy^2)
+    # new("Cuboid",
+    #   version = "0.1",   # version of the class
+    #   id = x@id,
+    #   pos = pos,     # position
+    #   L = 2 * L,
+    #   W = 2 * W,
+    #   H = H,
+    #   theta = rep(0, length(L))
+    # )
+  }
+)
+
+setMethod("bbox", "Ellipsoid", function(x){
+    ux <- x@a * cos(x@theta)
+    uy <- x@a * sin(x@theta)
+    vx <- x@b * cos(x@theta + pi/2)
+    vy <- x@b * sin(x@theta + pi/2)
+    L <- sqrt(ux^2 + vx^2)
+    W <- sqrt(uy^2 + vy^2)
+    new("Cuboid",
+      version = "0.1",   # version of the class
+      id = x@id,
+      pos = x@pos,     # position
+      L = 2 * L,
+      W = 2 * W,
+      H = 2* x@c,
+      theta = rep(0, length(L))
+    )
+  }
+)
+
+setMethod("bbox", "Sphere", function(x){
+    new("Cuboid",
+      version = "0.1",   # version of the class
+      id = x@id,
+      pos = x@pos,     # position
+      L = 2 * x@r,
+      W = 2 * x@r,
+      H = 2 * x@r,
+      theta = rep(0, length(x@r))
+    )
+  }
+)
+
+setMethod("bbox", "Cuboid", function(x){
+    costheta <- abs(cos(x@theta))
+    sintheta <- abs(sin(x@theta))
+    L <- x@L * costheta + x@W * sintheta
+    W <- x@L * sintheta + x@W * costheta
+    new("Cuboid",
+      version = "0.1",   # version of the class
+      id = x@id,
+      pos = x@pos,     # position
+      L = L,
+      W = W,
+      H = x@H,
+      theta = rep(0, length(L))
+    )
+  }
+)
+
+
+setMethod("bbox", "Trough2D", function(x){
+    pos <- x@pos
+    pos[,2] <- x@pos[,2] - x@H/2
+    new("Rectangle",
+      version = "0.1",   # version of the class
+      id = x@id,
+      pos = pos,     # position
+      L = x@L,
+      H = x@H,
+      theta = rep(0, length(x@L))
+    )
+  }
+)
+
+setMethod("bbox", "TrEllipse", function(x){
+    E <- as(x, "Trough2D")
+    bbox(E)
+    # pos <- x@pos
+    # H <- x@zmax - x@pos[,2] + x@b
+    # # z_cuboid = z - c + H/2
+    # pos[,2] <- x@pos[,2] - x@b + H/2
+    # rH <- x@b/H
+    # cstO2E <- rH/(2*sqrt(2*rH - 1))
+    # L0 <- x@a/cstO2E
+    # W0 <- x@b/cstO2E
+    # ux <- L0 / 2 * cos(x@theta)
+    # uy <- L0 / 2 * sin(x@theta)
+    # vx <- W0 / 2 * cos(x@theta + pi/2)
+    # vy <- W0 / 2 * sin(x@theta + pi/2)
+    # L <- sqrt(ux^2 + vx^2)
+    # W <- sqrt(uy^2 + vy^2)
+    # new("Rectangle",
+    #   version = "0.1",   # version of the class
+    #   id = x@id,
+    #   pos = pos,     # position
+    #   L = 2 * L,
+    #   H = H,
+    #   theta = rep(0, length(L))
+    # )
+  }
+)
+setMethod("bbox", "Ellipse", function(x){
+    ux <- x@a / 2 * cos(x@theta)
+    uy <- x@a / 2 * sin(x@theta)
+    vx <- x@b / 2 * cos(x@theta + pi/2)
+    vy <- x@b / 2 * sin(x@theta + pi/2)
+    L <- sqrt(ux^2 + vx^2)
+    W <- sqrt(uy^2 + vy^2)
+    new("Rectangle",
+      version = "0.1",   # version of the class
+      id = x@id,
+      pos = x@pos,     # position
+      L = 2 * L,
+      H = 2 * W,
+      theta = rep(0, length(L))
+    )
+  }
+)
+
+setMethod("bbox", "Rectangle", function(x){
+    costheta <- abs(cos(x@theta))
+    sintheta <- abs(sin(x@theta))
+    L <- x@L * costheta + x@H * sintheta
+    H <- x@L * sintheta + x@H * costheta
+    new("Rectangle",
+      version = "0.1",   # version of the class
+      id = x@id,
+      pos = x@pos,     # position
+      L = L,
+      H = H,
+      theta = rep(0, length(L))
+    )
+  }
+)
+
+
+##--------------------------- BOUNDARY ----------------------##
+.boundary3D <- function(x){
+  B <- bbox(x)
+  xmin <- B@pos[, 1] - B@L/2 
+  xmax <- B@pos[, 1] + B@L/2 
+  ymin <- B@pos[, 2] - B@W/2 
+  ymax <- B@pos[, 2] + B@W/2 
+  zmin <- B@pos[, 3] - B@H/2 
+  zmax <- B@pos[, 3] + B@H/2
+  b <- c(xmin = min(xmin),
+          xmax = max(xmax),
+          ymin = min(ymin),
+          ymax = max(ymax),
+          zmin = min(zmin),
+          zmax = max(zmax))
+  return(b)
+}
+
+setMethod("boundary", "Trough", function(x){
+    .boundary3D(x)
+  }
+)
+setMethod("boundary", "TrEllipsoid", function(x){
+    x <- as(x, "Trough")
+    .boundary3D(x)
+  }
+)
+setMethod("boundary", "Ellipsoid", function(x){
+    .boundary3D(x)
+  }
+)
+setMethod("boundary", "Sphere", function(x){
+    .boundary3D(x)
+  }
+)
+setMethod("boundary", "Cuboid", function(x){
+    .boundary3D(x)
+  }
+)
+
+.boundary2D <- function(x){
+  B <- bbox(x)
+  xmin <- B@pos[, 1] - B@L/2 
+  xmax <- B@pos[, 1] + B@L/2 
+  ymin <- B@pos[, 2] - B@H/2 
+  ymax <- B@pos[, 2] + B@H/2
+  b <- c(xmin = min(xmin),
+          xmax = max(xmax),
+          ymin = min(ymin),
+          ymax = max(ymax))
+  return(b)
+}
+
+setMethod("boundary", "Ellipse", function(x){
+    .boundary2D(x)
+  }
+)
+setMethod("boundary", "TrEllipse", function(x){
+    .boundary2D(x)
+  }
+)
+setMethod("boundary", "Trough2D", function(x){
+    .boundary2D(x)
+  }
+)
+setMethod("boundary", "Rectangle", function(x){
+    .boundary2D(x)
+  }
+)
+
+
+##----------------------- plot -------------------------##
+setMethod("plotObj", "Rectangle", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+    if(add == FALSE){
+      b <- boundary(x)
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
+            asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+    E <- as.matrix(x)
+    if(length(E) > 0 ){
+      invisible(apply(E, 1, .plotRectangle, ...) )
+    }else{
+      cat("no objects to plot!\n")
+    }
+  }
+)
+
+
+setMethod("plotObj", "Ellipse", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+    if(add == FALSE){
+      b <- boundary(x)
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
+            asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+    E <- as.matrix(x)
+    if(length(E) > 0 ){
+      invisible(apply(E, 1, .plotEllipse, ...) )
+    }else{
+      cat("no objects to plot!\n")
+    }
+  }
+)
+
+setMethod("plotObj", "TrEllipse", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+    if(add == FALSE){
+      b <- boundary(x)
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
+            asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+    E <- as.matrix(x)
+    if(length(E) > 0 ){
+      invisible(apply(E, 1, .plotTrEllipse, ...) )
+    }else{
+      cat("no objects to plot!\n")
+    }
+  }
+)
+
+setMethod("plotObj", "Trough2D", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+    xE <- as(x, "TrEllipse")
+    dots <- list()
+    if(add == FALSE){
+      b <- boundary(xE)
+      dots <- list(...)
+      if(!is.null(dots$xlim)){
+        xlim <- dots$xlim
+        dots$xlim <- NULL
+      }else{
+        xlim <- b[c("xmin", "xmax")]
+      }
+      if(!is.null(dots$ylim)){
+        ylim <- dots$ylim
+        dots$ylim <- NULL
+      }else{
+        ylim <- b[c("ymin", "ymax")]
+      }
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = xlim, ylim = ylim, asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+    E <- as.matrix(xE)
+    n <- nrow(E)
+    if(length(E) > 0 ){
+      for(i in seq_len(n)){
+        .plotTrEllipse(E[i,], ...)
+        if(length(x@fill) != 0){
+          if(!is.null(x@fill[[i]])){
+            plotObj(as(x@fill[[i]], "TrEllipse"), add = TRUE, ...)
+          }
+        }
+      }
+#       invisible(apply(E, 1, .plotTrEllipse) )
+    }else{
+      cat("no objects to plot!\n")
+    }
+  }
+)
+
+.plotRectangle <- function(ob, ...){
+  XY <- .rect(xy = ob[c("x", "y")], L = ob["L"], H = ob["H"],
+              theta = ob["theta"])
+  polygon(x = XY[,1], y = XY[,2], ...)
+}
+
+# return the corner coordinates
+.rect <- function(xy, L, H, theta = 0){
+  X <- matrix(c(-L/2, -L/2, L/2,  L/2,
+                -H/2,  H/2, H/2, -H/2),
+              ncol = 2, nrow = 4)
+  if(theta  != 0){
+    rot <- matrix(c(cos(theta),  -sin(theta),
+                    sin(theta),   cos(theta)), nrow = 2, ncol = 2)
+    X <- X %*% rot
+  }
+  return(X + matrix(xy, ncol = 2, nrow = 4, byrow = TRUE))
+}
+
+.plotEllipse <- function(e, ...){
+  polygon(RConics::ellipse(saxes = e[c("a", "b")], 
+                           loc = e[c("x", "y")], 
+                           theta = e[c("theta")]),...)
+}
+
+.plotTrEllipse <- function(e, ...){
+  polygon(.trEllipse(saxes = e[c("a", "b")], 
+                     loc   = e[c("x", "y")],
+                     theta = 0,
+                     zmax  = e["zmax"],
+                     alpha = c(0.5, 1)), ...)
+}
+
+
+.trEllipse <- function(saxes=c(2,1), loc = c(0,0), theta = 0, alpha = c(0,1),
+                       n = 201, zmax = NULL, xmax = NULL, side = 1){
+  phi <- 2*pi*seq(alpha[1], alpha[2], len = n)
+  P <- matrix(nrow=n,ncol=2)
+  P[,1] <- saxes[1] * cos(phi)
+  P[,2] <- saxes[2] * sin(phi)
+  if(theta != 0){
+    P <- P %*% matrix(c( cos(theta), sin(theta), -sin(theta), cos(theta)),
+                      byrow = TRUE, nrow = 2,ncol = 2)
+  }
+  P <- P + matrix(loc[1:2],nrow=nrow(P),ncol=2,byrow=TRUE)
+  if(!is.null(zmax)){
+    halfLength <- saxes[1] *sqrt(1 - (zmax - loc[2])^2/saxes[2] ^2)
+    xtop1 <- loc[1] - halfLength
+    xtop2 <- loc[1] + halfLength
+    P <- rbind( c(xtop1, zmax)  , P[ P[,2] < zmax, ] , c(xtop2, zmax))
+  }
+  if(!is.null(xmax)){
+    ytop1 <- loc[2] - saxes[2] *sqrt(1 - (xmax - loc[1])^2/saxes[1] ^2)
+    if(side==2){
+      P <- rbind( c(xmax, ytop1), P[ P[,1] > xmax, ] )
+    }else{
+      P <- rbind( P[ P[,1] < xmax, ] , c(xmax, ytop1))
+    }
+  }
+  return(P)
+}
+
+##--------------------------- TOPVIEW ----------------------##
+# for 3D object
+# ... arguments to be passed to "base::polygon" function
+setMethod("plotTopView", "Deposits", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, ...){
+    dots <- list(...)
+    if(!is.null(dots$xlim)){
+      xlim <- dots$xlim
+    }else{
+      xlim <- x@bbox$x
+    }
+    if(!is.null(dots$ylim)){
+      ylim <- dots$ylim
+    }else{
+      ylim <- x@bbox$y
+    }
+    plotTopView(x@troughs, add = add, xlab = xlab, ylab = ylab, main = main, 
+                asp = asp, xlim = xlim, ylim = ylim, ...)
+  }
+)
+
+# for 3D object
+# ... arguments to be passed to "base::polygon" function
+setMethod("plotTopView", "Trough", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+    if(add==FALSE){
+      b <- boundary(x)
+      dots <- list(...)
+      if(!is.null(dots$xlim)){
+        xlim <- dots$xlim
+      }else{
+        xlim <- b[c("xmin", "xmax")]
+      }
+      if(!is.null(dots$ylim)){
+        ylim <- dots$ylim
+      }else{
+        ylim <- b[c("ymin", "ymax")]
+      }
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = xlim, ylim = ylim,
+            asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+    E <- as.matrix(x)
+    n <- nrow(E)
+    if(length(E) > 0 ){
+      for(i in seq_len(n)){
+        .plotTroughTop(E[i,], ...)
+        if(length(x@fill) != 0){
+          if(!is.null(x@fill[[i]])){
+            plotTopView(x@fill[[i]], add = TRUE, ...)
+          }
+        }
+      }
+#       invisible(apply(E, 1, .plotTrEllipse) )
+    }else{
+      cat("no objects to plot!\n")
+    }
+#     
+#     
+#     if(length(E) > 0 ){
+#       invisible(apply(E, 1, .plotTroughTop, ...) )
+#       if(length(x@fill) > 0){
+#         invisible(lapply(x@fill, plotTopView, add = TRUE, asp = NA, ...))
+#       }
+#     }else{
+#       cat("no objects to plot!\n")
+#     }
+  }
+)
+
+setMethod("plotTopView", "Spoon", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+    if(add==FALSE){
+      b <- boundary(x)
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
+            asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+    E <- as.matrix(x)
+    if(length(E) > 0 ){
+      invisible(apply(E, 1, .plotTroughTop, ...) )
+      if(length(x@fill) > 0){
+        invisible(lapply(x@fill, plotTopView, add = TRUE, asp = NA, ...))
+      }
+    }else{
+      cat("no objects to plot!\n")
+    }
+  }
+)
+
+
+# ... arguments to be passed to "base::polygon" function
+setMethod("plotTopView", "TrEllipsoid", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, ...){
+    plotTopView(as(x, "Trough"), add = add, xlab = xlab,
+                ylab = ylab, main = main, asp = asp, ...)
+  }
+)
+
+# ... arguments to be passed to "base::polygon" function
+setMethod("plotTopView", "Sphere", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+    if(add==FALSE){
+      b <- boundary(x)
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
+            asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+    E <- matrix(0, nrow = length(x@r), ncol = 7)
+    colnames(E) <- c("id", "x", "y", "z", "a", "b", "theta")
+    E[,1:5] <- as.matrix(x)
+    E[,"a"] <- E[,"a"]
+    E[,"b"] <- E[,"a"]
+    if(length(E) > 0 ){
+      invisible(apply(E, 1, .plotEllipse, ...) )
+    }else{
+      cat("no objects to plot!\n")
+    }
+  }
+)
+
+# ... arguments to be passed to "base::polygon" function
+setMethod("plotTopView", "Cuboid", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+    if(add==FALSE){
+      b <- boundary(x)
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
+            asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+    # first corner
+    E <- as.matrix(x)
+    if(length(E) > 0 ){
+      invisible(apply(E, 1, .plotCuboidTop, ...) )
+    }else{
+      cat("no objects to plot!\n")
+    }
+  }
+)
+
+
+.plotTroughTop <- function(e, ...){
+  polygon(RConics::ellipse(saxes = e[c("L", "W")]/2, 
+                           loc = e[c("x", "y")], 
+                           theta = e[c("theta")]),...)
+}
+
+.plotCuboidTop <- function(ob, ...){
+  XY <- .rect(xy = ob[c("x", "y")], L = ob["L"], H = ob["W"],
+              theta = ob["theta"])
+  polygon(x = XY[,1], y = XY[,2], ...)
+}
+
+##----------------------- pixelise -------------------------##
+# grid <- list(x = c(xmin, xmax),
+#             ...
+#             dx = 1,
+#             ...)
+setMethod("pixelise", "Trough", function(x, grid){
+    E <- as.matrix(x)
+    cstO2E <- x@rH/(2*sqrt(2*x@rH -1))
+    nx <- (grid$x[2] - grid$x[1])/grid$dx
+    ny <- (grid$y[2] - grid$y[1])/grid$dy
+    nz <- (grid$z[2] - grid$z[1])/grid$dz
+    XYZ <- array( 0, dim=c(nx, ny,nz))
+    nEllipsoid <- nrow(E)
+    vol <- numeric(nEllipsoid)
+    b <- bbox(x)
+    for(i in 1:nEllipsoid){
+      e <- E[i, ]  # ellispoid e
+      # limit x, y, z de l'ellispoid
+      xrange0 <- ( floor((e["x"] - b@L[i]/2)/grid$dx):
+                ceiling((e["x"] + b@L[i]/2)/grid$dx))*grid$dx
+      xrange <- xrange0[ (xrange0 - grid$x[1]) >= grid$dx & 
+                          xrange0 <= grid$x[2] ]
+      yrange0 <- ( floor ((e["y"] - b@W[i]/2)/grid$dy):
+                ceiling ((e["y"] + b@W[i]/2)/grid$dy))*grid$dy
+      yrange <- yrange0[yrange0 - grid$y[1] >= grid$dy & 
+                        yrange0 <= grid$y[2] ]
+      zrange0 <- (floor ((e["z"] -e["H"])/grid$dz):
+                ceiling (e["z"]/grid$dz))*grid$dz
+      zrange <- zrange0[ zrange0 >= grid$z[1] & zrange0 <= grid$z[2] ]
+      if( length(xrange)!=0 && length(yrange)!=0 && length(zrange) != 0 ){
+        xnew <- rep(xrange - e["x"], length(yrange))
+        ynew <- rep(yrange - e["y"], each = length(xrange))
+        xComponent <- (( xnew * cos(e["theta"]) + ynew *sin(e["theta"])) / 
+                        (e["L"] * cstO2E[i]))^2
+        yComponent <- (( -xnew*sin(e["theta"]) + ynew*cos(e["theta"])) / 
+                        (e["W"] * cstO2E[i]))^2
+        xyComponent <- xComponent + yComponent
+        id_i <- round((xrange-grid$x[1])/grid$dx)
+        id_j <- round((yrange-grid$y[1])/grid$dy)
+        z <- e["z"]  + e["H"] * (e["rH"] - 1)
+        zComponent <- (( zrange - z) / (e["H"] * e["rH"]) )^2
+        id_k <- round((zrange-grid$z[1])/grid$dz)
+        for(k in seq_along(zrange)){
+          condition <- (xyComponent + zComponent[k]) <= 1
+          vol[i] <- vol[i] + sum(condition)
+          XYZ[id_i, id_j, id_k[k]][condition] <- i
+        }
+      }
+    }
+    vx <- seq(grid$x[1], to = grid$x[2], length.out = nx)
+    vy <- seq(grid$y[1], to = grid$y[2], length.out = ny)
+    vz <- seq(grid$z[1], to = grid$z[2], length.out = nz)
+    return(list("XYZ" = XYZ, x = vx, y = vy, z = vz, "vol" = vol))
+  }
+)
+
+
+
+##--------------------------- INTERSECT ----------------------##
+setMethod("doIntersect", "Trough", function(x, y, ...){
+    test <- apply(as.matrix(x), 1, .intersectTrough, l = y)
+    return(test)
+  }
+)
+         
+setMethod("doIntersect", "Sphere", function(x, y, ...){
+    l <- y
+    # orthogonal projection matrix
+    OPmat <- .matOP(l)
+    # point (x,y) on the line l
+    pl <- c(-l[3]/l[1],0)
+    test <- apply(as.matrix(x), 1, .intersectSphere, OPmat = OPmat, pl = pl)
+    return(test)
+  }
+)
+
+.intersectTrough <- function(ob, l){
+  RC <- RConics::ellipseToConicMatrix(saxes = c(ob["L"], ob["W"])/2,
+                                      loc = ob[c("x","y")], 
+                                      theta = ob["theta"])
+  p0 <- RConics::intersectConicLine(RC , l) 
+  test <- ifelse(length(p0) >0, TRUE, FALSE)
+  return(test)
+}
+
+.intersectSphere <- function(ob, OPmat, pl, p1 = NULL, p2 = NULL){
+  p_proj <- as.vector(OPmat %*% (ob[c("x","y")] - pl) + pl)
+  test <- sqrt(sum((p_proj - ob[c("x","y")])^2)) <= ob["r"]
+  if(test && !is.null(p1) && !is.null(p2)){
+    test <- p_proj[1] > p1[1] & p_proj[1] < p2[1] &
+            p_proj[2] > p1[2] & p_proj[2] < p2[2] 
+      test <- ifelse(test == FALSE, min(sqrt(sum((p_proj - p1)^2)), 
+                      sqrt(sum((p_proj - p2)^2))) <  ob["r"],test)
+    return(test)
+  }
+  return(test)
+}
+
+
+##--------------------------- SECTION ----------------------##
+setMethod("section", "TrEllipsoid", function(x, l, lim = NULL){
+    E <- as.matrix(x)
+    E <- apply(E,1,.sectionEllipsoid, l=l)
+    if(length(E) > 0) {
+      if(is.matrix(E)){
+        E <-t(E)
+      }else{
+        E <- do.call(rbind, .compactList(E))
+      }
+      new("TrEllipse",
+        version = "0.1",   # version of the class
+        id = E[,"id"],
+        pos = E[,c("xap", "z"), drop = FALSE],     # position, z = top of object
+        a = E[,"aap"],
+        b = E[,"bap"],
+        zmax = E[, "zmax"]      # header from *.dt1 file
+      )
+      #  return(E)
+    }
+  }
+)
+
+setMethod("section", "Trough", function(x, l, lim = NULL){
+    # E0 <- as(x, "TrEllipsoid")
+    El <- section(as(x, "TrEllipsoid"), l, lim = lim)
+    if(!is.null(El)){
+      xsec <- as(El, "Trough2D")
+      if(length(x@fill) > 0){
+        xsec@fill <- lapply(x@fill[El@id], section, l = l, lim = lim)
+      }
+      return(xsec)
+    }else{
+      return(NULL)
+    }
+  }
+)
+
+setMethod("section", "Deposits", function(x, l, lim = NULL){
+    xsec <- section(x@troughs, l, lim = lim)
+    if(!is.null(xsec)){
+      new("Deposits2D",
+          version = "0.1",
+          troughs = xsec,
+          layers = x@layers
+          )
+    }else{
+      return(NULL)
+    }
+  }
+)
+
+# remove NULL from a list!!
+.compactList <- function(x) Filter(Negate(is.null), x) 
+
+.sectionEllipsoid <- function(x, l){
+  ob <- x
+  RC <- RConics::ellipseToConicMatrix(saxes = c(ob["a"], ob["b"]),
+                                      loc = ob[c("x","y")], 
+                                      theta = ob["theta"])
+  p0 <- RConics::intersectConicLine(RC , l) 
+  if(length(p0) >0){
+    pp <- t(p0)
+    # line direction z
+    newLoc = as.vector(diff((pp))/2 + pp[1,])
+    # points(t(newLoc))
+    x0y0 <- ob[c("x","y")]
+    if( all(abs(newLoc - c(x0y0,1)) < .Machine$double.eps^0.5)){
+      # if the section pass trough the ellipsoid center
+      b_new <- as.numeric(ob["c"])
+    }else{
+      RC <- RConics::ellipseToConicMatrix( saxes = ob[c("a","b")], 
+                                          loc = x0y0,
+                                          theta = ob["theta"])
+      # conicPlot(RC,asp=1,ylim=c(-30,30), xlim=c(-30,30))
+      l_a_z <-RConics::join(newLoc, c(x0y0,1))
+      # addLine(l_a_z,col="red")
+      p_a_z <- RConics::intersectConicLine(RC , l_a_z) 
+      # points(t(p_a_z),pch=20,col="blue")
+      a_z <- sqrt(sum((p_a_z[1:2,1] - x0y0)^2))
+      # distance O-newLoc 
+      xy = sqrt(sum((newLoc[1:2] -  x0y0)^2))
+      # definition of a new ellipse in the plan O - newLoc oriented toward z
+      C2 = matrix(c(1/a_z^2, 0 ,0, 0, 1/ob["c"]^2, 0, 0,0,-1),
+                  nrow = 3, byrow = TRUE)
+      # conicPlot(C2,asp=1,ylim=c(-30,30), xlim=c(-30,30))
+      l2 = c(1,   0, -xy) # Line going through newLoc with z-direction
+      # addLine(l2,col="red")
+      pp2 <- RConics::intersectConicLine(C2 , l2) 
+      # points(t(pp2[1:2,]),pch=20,col="green")
+      # ellipse parameters corresponding to the intersection between the
+      # ellipsoïd and the plan define by the the line l and the z-direction
+      b_new = as.numeric(abs(pp2[2,1]))
+    }
+    if((ob["z"] - b_new) >= ob["zmax"]){
+      return(NULL)
+    }else{
+      a_new = sqrt(sum(( diff(pp))^2))/2   # apparent length of the object
+      # center_xsection = null point on the cross-section = 
+      # intersection cross-section with x=0
+      # center_xsection <- c(0,-l[3]/l[2])
+      # Projection des points sur la ligne
+      myloc <- ifelse(l[1] != 0 && l[2] != 0, 
+                      -sign(l[1])*sign(l[2]) *
+                      sqrt(sum((newLoc[1:2] - c(-l[3]/l[1],0))^2)),
+                      newLoc[l == 0][1])
+      return(c(ob, "xap" = myloc,     "aap" = a_new, "bap" = b_new, 
+                  "x0"  = newLoc[1], "y0"  = newLoc[2]))
+    }
+  }else{
+    return(NULL)
+  }
+}
+
+##--------------------------- PLOT SECTION ----------------------##
+setMethod("plotSection", "NULL", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, ...){
+    warnings("NULL")
+  }
+)
+
+setMethod("plotSection", "TrEllipse", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, ...){
+      plotObj(x, add = add, xlab = xlab,
+                ylab = ylab, main = main, asp = asp, ...)
+  }
+)
+
+setMethod("plotSection", "Trough2D", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, ...){
+      plotObj(x, add = add, xlab = xlab,
+                ylab = ylab, main = main, asp = asp, ...)
+  }
+)
+
+setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, lay = NULL, xaxs = "i", 
+            yaxs = "i", ...){
+    if(add == FALSE){
+      b <- boundary(x@troughs)
+      dots <- list(...)
+      if(!is.null(dots$xlim)){
+        xlim <- dots$xlim
+      }else{
+        xlim <- b[c("xmin", "xmax")]
+      }
+      if(!is.null(dots$ylim)){
+        ylim <- dots$ylim
+      }else{
+        ylim <- b[c("ymin", "ymax")]
+      }
+      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+            xlim = xlim, ylim = ylim,
+            asp = asp, xaxs = xaxs, yaxs = yaxs)
+    }
+#         plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+#               xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
+#               asp = asp, xaxs = xaxs, yaxs = yaxs)
+#       }
+      # plot layers
+    if(!is.null(lay)){
+      lay$h <- x@layers
+      do.call(abline, lay)
+    }else{
+      abline(h = x@layers )
+    }
+    # plot troughs
+    plotSection(x@troughs, add = TRUE, ...)
+  }
+)
+
+.plotSectionTrough2D <- function(){
+  
+}
+
+##-------------------------------- FILLING --------------------------##
+setMethod("crossBedding", "Deposits", function(x, nF = 6, phi = 1.05, rpos = 1){
+    n <- length(x@troughs@id)
+    xbed <- list()
+    for( i in seq_len(n)){
+      xbed[[x@troughs@id[i]]] <- .regCrossBedding(x@troughs[[i]], nF = 6,
+                                                  rpos = 0.75, phi = 2.2)
+    }
+    x@troughs@fill <- xbed
+    return(x)
+  }
+)
+
+setMethod("crossBedding", "Trough", function(x, nF = 6, phi = 1.05, rpos = 1){
+    n <- length(x@id)
+    xbed <- list()
+    for( i in seq_len(n)){
+      xbed[[x@id[i]]] <- .regCrossBedding(x[[i]], nF = 6, rpos = 0.75, 
+                                          phi = 2.2)
+    }
+    x@fill <- xbed
+    return(x)
+  }
+)
+
+
+# nF number of foresets
+# rpos = position relative from the ellipse center
+# phi = angle to the ellispe length axis
+.regCrossBedding <- function(x, nF = 6, rpos = 0.75, phi = 2.2){
+  phi <- x@theta + phi  
+  # compute Dr = radius smallest fill
+  Dr <- x@L/2/(nF + 1)
+  DH <- x@H/(nF + 1)
+  # fillings length
+  rF <- rev(cumsum(rep(2 * Dr, nF))/2)
+  # available length
+  oL2 <- (x@L/2 - tail(rF, 1))
+  # fillings positions
+  xy0 <- oL2 * rpos * c(cos(phi), sin(phi))
+  xF <- seq(0, xy0[1], length = nF + 1)[-1]
+  yF <- seq(0, xy0[2], length = nF + 1)[-1]
+  xyF <- cbind(xF, yF)
+  rot <- matrix(c( cos(x@theta), sin(x@theta), 
+                  -sin(x@theta), cos(x@theta)),
+                   byrow = TRUE, nrow = 2,ncol = 2)
+  scl <- x@W / x@L
+  xyFRot <- xyF[,1:2, drop = FALSE] %*% t(rot)
+  xyFScl <- xyFRot
+  xyFScl[,2] <- xyFScl[,2] * scl
+  xyFSclRot <- xyFScl %*% (rot)
+  oF <- new("Trough",
+            version="0.1",
+            id = seq_along(rF),
+            pos = cbind(xyFSclRot, 0) + 
+                  matrix(x@pos, nrow=nF, ncol = 3, byrow = TRUE),
+            L = rF * 2,
+            W = rF * 2 * x@W / x@L,
+            H = rev(cumsum(rep(DH, nF))),
+            theta = rep(x@theta, nF),  # depth position
+            rH = rep(x@rH, nF)
+           )
+  return(oF)
+}
+
+
+
+##----------------------------- SIMULATION --------------------------##
+simulate <- function(modbox, model = c("poisson", "straus"), prior){
+  # number of levels is Poisson distributed
+  dz <- diff(modbox$z)
+  lambdaz <- dz/prior$ag
+  nZ <- rpois(1, lambdaz)
+  zLevel <- sort(modbox$z[1] + dz*runif(nZ))
+  # number of objects is Poisson distributed
+  meanNObjects <- prior$lambda * diff(modbox$x) * diff(modbox$y)
+  nPois <- rpois(nZ, meanNObjects)
+  # total number of object
+  n <-  sum(nPois)
+  # length
+  L <- .rsim(prior$L, n)
+  rLW <- .rsim(prior$rLW, n)
+  rLH <- .rsim(prior$rLH, n)
+  W <- L/rLW
+  # position
+  maxL <- max(L, W)
+  modbox2 <- c("xmin" = modbox$x[1] - maxL,
+               "xmax" = modbox$x[2] + maxL,
+               "ymin" = modbox$y[1] - maxL,
+               "ymax" = modbox$y[2] + maxL)
+  xyz <- matrix(c(runif(n, min = modbox2[1], max = modbox2[2]),
+                  runif(n, min = modbox2[3], max = modbox2[4]),
+                  rep(zLevel, nPois )), byrow = FALSE,
+                  ncol = 3)
+  trgh <- new("Trough",
+            version="0.1",
+            id = seq_len(n),
+            pos = xyz,
+            L = L,
+            W = W,
+            H = L/rLH,
+            theta = .rsim(prior$theta, n),  # depth position
+            rH = rep(prior$rH, n)
+          )
+  nF <- round(W / .rsim(prior$nF, n)) +1
+  rpos <- .rsim(prior$rpos, n)
+  phi <- .rsim(prior$phi, n)
+  xbed <- list()
+  for( i in seq_len(n)){
+    xbed[[trgh@id[i]]] <- .regCrossBedding(trgh[[i]], nF = nF[i],
+                                                  rpos = rpos[i], phi = phi[i])
+  }
+  trgh@fill <- xbed
+  new("Deposits",
+      version = "0.1",
+      troughs = trgh,
+      layers  = zLevel,
+      bbox = modbox
+     )
+}
+
+
+.rsim <- function(x, n=1){
+  arg <- x[-1]
+  arg[["n"]] <- n
+  do.call(x$type, arg)
+}
+
+
+
+
+
+##--------------------------- HELPER FUNCTIONS ----------------------##
+# example:
+# pts <- locator(type="p",n=2)
+# l_pts <- joinLine(pts)  # line joining the two points
+# RConics::addLine(l_pts, col="red")
+joinLine <- function(pts){
+  return(join(c(pts$x[1], pts$y[1] , 1),c(pts$x[2], pts$y[2] , 1)))
+}
+
+#----------- PROJECTION MATRIX -----------#
+# Orthogonal Projection matrix on a Line
+.matOP <- function(l){
+  v <- c(1, -l[1]/l[2])
+  return(matrix(c(v[1]^2, v[1]*v[2], v[1]*v[2], v[2]^2),
+          nrow=2,ncol=2)/(v[1]^2+v[2]^2))
+}
+
+measureDistance <- function(last=TRUE){
+  A <-locator()
+  loc <- cbind(A$x,A$y)
+  return(myDist(loc,last=last))
+}
+
+myDist <-function(loc,last=FALSE){
+  loc <- as.matrix(loc)
+  all_dist <- cumsum(c(0,sqrt(rowSums(diff(loc)^2))))
+  if(last){
+  return(all_dist[length(all_dist)])
+  }else{
+  return(as.numeric(all_dist))
+  
+  }
+}
+
+
+

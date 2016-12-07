@@ -1,0 +1,13 @@
+Package: CBRDM
+Type: Package
+Title: Coarse, Braided River Deposit Model
+Version: 0.1
+Date: 2016-12-07
+Authors@R: person("Emanuel", "Huber", email = "emanuel.huber@stanford.edu", role = c("aut", "cre"))
+Description: Package to simulate the deposits of coarse, braided rivers
+License: MIT
+LazyData: TRUE
+BugReports: https://github.com/emanuelhuber/CBRDM/issues
+Imports:
+    RConics
+RoxygenNote: 5.0.1
