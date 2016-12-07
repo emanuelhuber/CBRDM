@@ -2,17 +2,9 @@
 
 rm(list=ls(all=TRUE))
 
-ROOT   <- "/home/huber/WORK/UNIBAS/"
-ROOT   <- "/home/huber/WORK/UNIBAS/"
-DIR0   <- "RESEARCH/coarse_braided_deposits/Auswertung/OBJECT_BASED/"
-DIR1   <- "09_package/CBRDM/"
-DIR   <- file.path(ROOT,DIR0, DIR1)
-DIR   <- file.path("/media/data/huber/Documents/WORK_NEWNEW/CBRDM")
-# DIR   <- file.path("/home/huber/GWMODR", sep="")
-setwd(DIR)
-getwd()
-
-source("main.R")
+library(devtools)
+devtools::install_github("emanuelhuber/CBRDM")
+library(CBRDM)
 
 
 
