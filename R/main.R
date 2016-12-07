@@ -226,6 +226,22 @@ setClass(
   )
 )
 
+#' An S4 class to represent Line
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Line",
+  slots=c(
+    version = "character",
+    id = "numeric",
+    a = "matrix",
+    b = "numeric",
+    c = "numeric"
+  )
+)
+
 ##------------------- CONSTRUCTORS ------------------##
 #' constructeur
 #'
@@ -849,6 +865,21 @@ setMethod("bbox", "Trough", function(x){
   }
 )
 
+setMethod("bbox", "Deposits", function(x){
+    LWH <- sapply(x@bbox, function(x) diff(x))
+    pos <- sapply(x@bbox, function(x) diff(x)/2 + x[1])
+    new("Cuboid",
+      version = "0.1",   # version of the class
+      id = 1,
+      pos = matrix(pos, nrow = 1),     # position
+      L = LWH[1],
+      W = LWH[2],
+      H = LWH[3],
+      theta = 0
+    )
+  }
+)
+
 spoon2trough <- function(from){
   xl <- new("Trough",
           version = "0.1",   # version of the class
@@ -1435,57 +1466,201 @@ setMethod("plotTopView", "Cuboid", function(x, add = FALSE, xlab = "x",
 #             dx = 1,
 #             ...)
 setMethod("pixelise", "Trough", function(x, grid){
-    E <- as.matrix(x)
-    cstO2E <- x@rH/(2*sqrt(2*x@rH -1))
     nx <- (grid$x[2] - grid$x[1])/grid$dx
     ny <- (grid$y[2] - grid$y[1])/grid$dy
     nz <- (grid$z[2] - grid$z[1])/grid$dz
-    XYZ <- array( 0, dim=c(nx, ny,nz))
-    nEllipsoid <- nrow(E)
-    vol <- numeric(nEllipsoid)
-    b <- bbox(x)
-    for(i in 1:nEllipsoid){
-      e <- E[i, ]  # ellispoid e
-      # limit x, y, z de l'ellispoid
-      xrange0 <- ( floor((e["x"] - b@L[i]/2)/grid$dx):
-                ceiling((e["x"] + b@L[i]/2)/grid$dx))*grid$dx
-      xrange <- xrange0[ (xrange0 - grid$x[1]) >= grid$dx & 
-                          xrange0 <= grid$x[2] ]
-      yrange0 <- ( floor ((e["y"] - b@W[i]/2)/grid$dy):
-                ceiling ((e["y"] + b@W[i]/2)/grid$dy))*grid$dy
-      yrange <- yrange0[yrange0 - grid$y[1] >= grid$dy & 
-                        yrange0 <= grid$y[2] ]
-      zrange0 <- (floor ((e["z"] -e["H"])/grid$dz):
-                ceiling (e["z"]/grid$dz))*grid$dz
-      zrange <- zrange0[ zrange0 >= grid$z[1] & zrange0 <= grid$z[2] ]
-      if( length(xrange)!=0 && length(yrange)!=0 && length(zrange) != 0 ){
-        xnew <- rep(xrange - e["x"], length(yrange))
-        ynew <- rep(yrange - e["y"], each = length(xrange))
-        xComponent <- (( xnew * cos(e["theta"]) + ynew *sin(e["theta"])) / 
-                        (e["L"] * cstO2E[i]))^2
-        yComponent <- (( -xnew*sin(e["theta"]) + ynew*cos(e["theta"])) / 
-                        (e["W"] * cstO2E[i]))^2
-        xyComponent <- xComponent + yComponent
-        id_i <- round((xrange-grid$x[1])/grid$dx)
-        id_j <- round((yrange-grid$y[1])/grid$dy)
-        z <- e["z"]  + e["H"] * (e["rH"] - 1)
-        zComponent <- (( zrange - z) / (e["H"] * e["rH"]) )^2
-        id_k <- round((zrange-grid$z[1])/grid$dz)
-        for(k in seq_along(zrange)){
-          condition <- (xyComponent + zComponent[k]) <= 1
-          vol[i] <- vol[i] + sum(condition)
-          XYZ[id_i, id_j, id_k[k]][condition] <- i
-        }
-      }
-    }
     vx <- seq(grid$x[1], to = grid$x[2], length.out = nx)
     vy <- seq(grid$y[1], to = grid$y[2], length.out = ny)
     vz <- seq(grid$z[1], to = grid$z[2], length.out = nz)
+    XYZ <- array( 0, dim=c(nx, ny,nz))
+    E <- as.matrix(x)
+    cstO2E <- x@rH/(2*sqrt(2*x@rH -1))
+    n <- nrow(E)
+    vol <- numeric(n)
+    b <- bbox(x)
+    for(i in 1:n){
+#       e <- E[i, ]  # ellispoid e
+#       # limit x, y, z de l'ellispoid
+#       xrange0 <- ( floor((e["x"] - b@L[i]/2)/grid$dx):
+#                 ceiling((e["x"] + b@L[i]/2)/grid$dx))*grid$dx
+#       xrange <- xrange0[ (xrange0 - grid$x[1]) >= grid$dx & 
+#                           xrange0 <= grid$x[2] ]
+#       yrange0 <- ( floor ((e["y"] - b@W[i]/2)/grid$dy):
+#                 ceiling ((e["y"] + b@W[i]/2)/grid$dy))*grid$dy
+#       yrange <- yrange0[yrange0 - grid$y[1] >= grid$dy & 
+#                         yrange0 <= grid$y[2] ]
+#       zrange0 <- (floor ((e["z"] -e["H"])/grid$dz):
+#                 ceiling (e["z"]/grid$dz))*grid$dz
+#       zrange <- zrange0[ zrange0 >= grid$z[1] & zrange0 <= grid$z[2] ]
+#       if( length(xrange)!=0 && length(yrange)!=0 && length(zrange) != 0 ){
+#         xnew <- rep(xrange - e["x"], length(yrange))
+#         ynew <- rep(yrange - e["y"], each = length(xrange))
+#         xComponent <- (( xnew * cos(e["theta"]) + ynew *sin(e["theta"])) / 
+#                         (e["L"] * cstO2E[i]))^2
+#         yComponent <- (( -xnew*sin(e["theta"]) + ynew*cos(e["theta"])) / 
+#                         (e["W"] * cstO2E[i]))^2
+#         xyComponent <- xComponent + yComponent
+#         id_i <- round((xrange-grid$x[1])/grid$dx)
+#         id_j <- round((yrange-grid$y[1])/grid$dy)
+#         z <- e["z"]  + e["H"] * (e["rH"] - 1)
+#         zComponent <- (( zrange - z) / (e["H"] * e["rH"]) )^2
+#         id_k <- round((zrange-grid$z[1])/grid$dz)
+#         for(k in seq_along(zrange)){
+#           condition <- (xyComponent + zComponent[k]) <= 1
+#           vol[i] <- vol[i] + sum(condition)
+#           XYZ[id_i, id_j, id_k[k]][condition] <- i
+#         }
+#       }
+      A <- .pixeliseTrEllispoid(e = E[i, ], i, L = b@L[i], W = b@W[i],
+                                vx = vx, vy = vy, vz = vz, 
+                                grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
+      vol[i] <- A$vol
+      XYZ <- A$XYZ
+    }
     return(list("XYZ" = XYZ, x = vx, y = vy, z = vz, "vol" = vol))
   }
 )
 
 
+
+setMethod("pixelise", "Deposits", function(x, grid){
+    # 0. grid
+    nx <- (grid$x[2] - grid$x[1])/grid$dx
+    ny <- (grid$y[2] - grid$y[1])/grid$dy
+    nz <- (grid$z[2] - grid$z[1])/grid$dz
+    vx <- seq(grid$x[1] + grid$dx/2, to = grid$x[2] - grid$dx/2, 
+              length.out = nx)
+    vy <- seq(grid$y[1] + grid$dy/2, to = grid$y[2] - grid$dy/2, 
+              length.out = ny)
+    vz <- seq(grid$z[1] + grid$dz/2, to = grid$z[2] - grid$dz/2, 
+              length.out = nz)
+    XYZ <- array( 0, dim=c(nx, ny,nz))
+    # 1. discretise layers
+    #    -> negative id
+    lay <- x@layers
+    for(i in seq_along(lay)){
+      XYZ[, , lay[i] <= vz] <- -i
+    }
+    # Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz)
+    # 2. discretise trough
+    #    -> postive id -> odd  = bimodal
+    #                  -> even = open-framework
+    E <- as.matrix(x@troughs)
+    cstO2E <- x@troughs@rH/(2*sqrt(2*x@troughs@rH -1))
+    n <- nrow(E)
+    vol <- numeric(n)
+    b <- bbox(x@troughs)
+    it <- 0
+    for(i in 1:n){
+      it <- it + 1
+      if((it %% 2) == 0) it <- it + 1
+      A <- .pixeliseTrEllispoid(e = E[i, ], it, L = b@L[i], W = b@W[i],
+                                vx = vx, vy = vy, vz = vz,  
+                                grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
+      vol[i] <- A$vol
+      XYZ <- A$XYZ
+      if(!is.null(x@troughs@fill[[i]]) && length(x@troughs@fill[[i]]) > 0){
+        Ei <- as.matrix(x@troughs@fill[[i]])
+        for(k in 1:nrow(Ei)){
+          it <- it + 1
+          A <- .pixeliseTrEllispoid(e = Ei[k, ], it, L = b@L[i], W = b@W[i],
+                                vx = vx, vy = vy, vz = vz, 
+                                grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
+          vol[i] <- A$vol
+          XYZ <- A$XYZ
+        }
+      }
+    }
+    Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz, "vol" = vol)
+    return(list("XYZ" = XYZ, x = vx, y = vy, z = vz, "vol" = vol))
+  }
+)
+
+setMethod("pixelise", "Deposits2D", function(x, grid){
+    nx <- (grid$x[2] - grid$x[1])/grid$dx
+    nz <- (grid$z[2] - grid$z[1])/grid$dz
+    vx <- seq(grid$x[1] + grid$dx/2, to = grid$x[2] - grid$dx/2, 
+              length.out = nx)
+    vz <- seq(grid$z[1] + grid$dz/2, to = grid$z[2] - grid$dz/2, 
+              length.out = nz)
+    XZ <- matrix(0, nrow = nx, ncol = nz)
+    # 1. discretise layers
+    #    -> negative id
+    lay <- x@layers
+    for(i in seq_along(lay)){
+      XZ[, lay[i] <= vz] <- -i
+    }
+    # Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz)
+    # 2. discretise trough
+    #    -> postive id -> odd  = bimodal
+    #                  -> even = open-framework
+    E <- as.matrix(x@troughs)
+    E <- as.matrix(as(x@troughs, "TrEllipse"))
+    b <- bbox(x@troughs)
+    for(i in 1:nrow(E)){
+      e <- E[i,]  # ellispoid e
+      L <- b@L[i]
+      H <- b@H[i]
+      
+      xr <- vx[ vx >= (e["x"] - L/2)    & vx <= (e["x"] + L/2)]
+      zr <- vz[ vz >= (e["zmax"] - H) & vz <= (e["y"])]
+      if( length(xr)!=0 && length(zr) != 0 ){
+      
+      
+      }
+    }
+    # dx <- grid$dx/2
+    xr <- seq(grid$x[1], to = grid$x[2], by = grid$dx)
+    # dz <- grid$dz/2
+    zr <- seq(grid$z[1], to = grid$z[2], by = grid$dz)
+    XZ <- matrix( 0, nrow=length(xr), ncol=length(zr))
+    E <- as.matrix(x@troughs)
+    for(i in 1:nrow(E)){
+      e <- (E[i,])  # ellispoid e
+      testx <- xr >= (e["xap"] -e["aap"]) & xr <= (e["xap"] + e["aap"])
+      testz <- zr >= (e["z"] -e["bap"]) & zr <= e["zmax"]
+      if( sum(testx) > 0  && sum(testz) > 0){
+        xComponent = ( (xr[testx] - e["xap"]) / e["aap"] )^2
+        zComponent = ( (zr[testz] -   e["z"]) / e["bap"] )^2
+        xyComponent <- outer(xComponent,zComponent,'+')
+        XZ[testx, testz][xyComponent <=1 ] <- i
+      }    
+    }
+    return(list(z=XZ,x=xr,y=zr))
+  }
+)
+
+
+# L <- b@L[i]
+# W <- b@W[i]
+# cstO2Ei <- cstO2E[i]
+# voli <- vol[i]
+.pixeliseTrEllispoid <- function(e, i, L, W, vx, vy, vz, grid, XYZ, cstO2Ei){
+  vol <- 0
+  xr <- vx[ vx >= (e["x"] - L/2)    & vx <= (e["x"] + L/2)]
+  yr <- vy[ vy >= (e["y"] - W/2)    & vy <= (e["y"] + W/2)]
+  zr <- vz[ vz >= (e["z"] - e["H"]) & vz <= (e["z"])]
+  if( length(xr)!=0 && length(yr)!=0 && length(zr) != 0 ){
+    xnew <- rep(xr - e["x"], length(yr))
+    ynew <- rep(yr - e["y"], each = length(xr))
+    xComponent <- (( xnew * cos(e["theta"]) + ynew *sin(e["theta"])) / 
+                    (e["L"] * cstO2Ei))^2
+    yComponent <- ((-xnew*sin(e["theta"]) + ynew*cos(e["theta"])) / 
+                    (e["W"] * cstO2Ei))^2
+    xyComponent <- xComponent + yComponent
+    id_i <- round((xr - grid$x[1] + grid$dx/2) / grid$dx)
+    id_j <- round((yr - grid$y[1] + grid$dy/2) / grid$dy)
+    z <- e["z"]  + e["H"] * (e["rH"] - 1)
+    zComponent <- (( zr - z) / (e["H"] * e["rH"]) )^2
+    id_k <- round((zr - grid$z[1] + grid$dz/2) / grid$dz)
+    for(k in seq_along(zr)){
+      condition <- (xyComponent + zComponent[k]) <= 1
+      vol <- vol + sum(condition)
+      XYZ[id_i, id_j, id_k[k]][condition] <- i
+    }
+  }
+  return(list("XYZ" = XYZ, "vol" = vol))
+}
 
 ##--------------------------- INTERSECT ----------------------##
 setMethod("doIntersect", "Trough", function(x, y, ...){
@@ -1580,6 +1755,28 @@ setMethod("section", "Deposits", function(x, l, lim = NULL){
   }
 )
 
+
+setMethod("section", "Cuboids", function(x, l, lim = NULL){
+    crns <- .rect(x@pos[1:2], x@L, x@W, x@theta)
+    ls <- list()
+    ls$bot <- RConics::join(c(crns[4, ], 1), c(crns[1, ], 1))
+    ls$lef <- RConics::join(c(crns[1, ], 1), c(crns[2, ], 1))
+    ls$top <- RConics::join(c(crns[2, ], 1), c(crns[3, ], 1))
+    ls$rig <- RConics::join(c(crns[3, ], 1), c(crns[4, ], 1))
+    # plot(0, type = "n", ylim = c(-50, 250), xlim = c(-50, 250))
+    # invisible(sapply(ls, RConics::addLine))
+    # RConics::addLine(l, col = "red")
+    pts <- lapply(ls, RConics::join,  l)
+    # invisible(sapply(pts, function(x, ...) points(t(x), ...)))
+    fSel <- function(p, xmin, xmax, ymin, ymax){
+        (p[1] >= xmin & p[1] <= xmax) & (p[2] >= ymin & p[2] <= ymax)
+    }
+    test <- sapply(pts, fSel, xmin = mod@bbox$x[1], xmax = mod@bbox$x[2],
+                              ymin = mod@bbox$y[1], ymax = mod@bbox$y[2])
+    return( unname(pts[test]))
+  }
+)
+
 # remove NULL from a list!!
 .compactList <- function(x) Filter(Negate(is.null), x) 
 
@@ -1635,7 +1832,7 @@ setMethod("section", "Deposits", function(x, l, lim = NULL){
                       sqrt(sum((newLoc[1:2] - c(-l[3]/l[1],0))^2)),
                       newLoc[l == 0][1])
       return(c(ob, "xap" = myloc,     "aap" = a_new, "bap" = b_new, 
-                  "x0"  = newLoc[1], "y0"  = newLoc[2]))
+                   "x0"  = newLoc[1], "y0"  = newLoc[2]))
     }
   }else{
     return(NULL)
@@ -1847,7 +2044,7 @@ sim <- function(modbox, model = c("poisson", "straus"), prior){
 # RConics::addLine(l_pts, col="red")
 #' @export
 joinLine <- function(pts){
-  return(join(c(pts$x[1], pts$y[1] , 1),c(pts$x[2], pts$y[2] , 1)))
+  return(RConics::join(c(pts$x[1], pts$y[1] , 1),c(pts$x[2], pts$y[2] , 1)))
 }
 
 #----------- PROJECTION MATRIX -----------#
