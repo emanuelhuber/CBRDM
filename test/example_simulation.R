@@ -34,7 +34,7 @@ prior <- list("L"   = list(type = "runif", min = 20, max = 50),
               "phi" = list(type = "runif", min = -1.0, max = 1.0)
               )
 
-mod <- simulate(modbox, "poisson", prior)
+mod <- sim(modbox, "poisson", prior)
 
 plotTopView(mod, border = "red", col = "grey", asp = 1)
 

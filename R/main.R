@@ -1776,7 +1776,7 @@ setMethod("crossBedding", "Trough", function(x, nF = 6, phi = 1.05, rpos = 1){
 #'
 #' Simulate coarse, braided river deposits
 #' @export
-simulate <- function(modbox, model = c("poisson", "straus"), prior){
+sim <- function(modbox, model = c("poisson", "straus"), prior){
   # number of levels is Poisson distributed
   dz <- diff(modbox$z)
   lambdaz <- dz/prior$ag
