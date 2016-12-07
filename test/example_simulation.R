@@ -79,6 +79,9 @@ test <- function(x, a = 1, ...){
 }
 test(1, 2,3)
 
+## cuboid - line intersection
+  section(bbox(mod), l_pts)
+
 ## pixel section
 x <- smod
 grid <- c(mod@bbox, list(dx = 5, dy = 5, dz = 0.1))

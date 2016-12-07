@@ -1756,7 +1756,7 @@ setMethod("section", "Deposits", function(x, l, lim = NULL){
 )
 
 
-setMethod("section", "Cuboids", function(x, l, lim = NULL){
+setMethod("section", "Cuboid", function(x, l, lim = NULL){
     crns <- .rect(x@pos[1:2], x@L, x@W, x@theta)
     ls <- list()
     ls$bot <- RConics::join(c(crns[4, ], 1), c(crns[1, ], 1))
