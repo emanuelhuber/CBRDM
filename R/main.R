@@ -368,11 +368,10 @@ setMethod(
 
 
 ##------------------- CONVERTOR ------------------##
-#' Converstion
+#' As("Ellipsoid", "TrEllipsoid")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family Ellipsoid
 setAs(from = "Ellipsoid", to = "TrEllipsoid", def = function(from){
     new("TrEllipsoid",
       version = "0.1",   # version of the class
@@ -387,11 +386,10 @@ setAs(from = "Ellipsoid", to = "TrEllipsoid", def = function(from){
   }
 )
 
-#' Converstion
+#' As("TrEllipsoid", "Ellipsoid")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family TrEllipsoid
 setAs(from = "TrEllipsoid", to = "Ellipsoid", def = function(from){
     new("Ellipsoid",
       version = "0.1",   # version of the class
@@ -406,11 +404,10 @@ setAs(from = "TrEllipsoid", to = "Ellipsoid", def = function(from){
 )
 
 
-#' Converstion
+#' As("Trough", "TrEllipsoid")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family Trough
 setAs(from = "Trough", to = "TrEllipsoid", def = function(from){
     cstO2E <- from@rH/(2*sqrt(2*from@rH -1))
     pos <- from@pos
@@ -427,21 +424,19 @@ setAs(from = "Trough", to = "TrEllipsoid", def = function(from){
     )
   }
 )
-#' Converstion
+#' As("Trough", "Ellipsoid")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family Trough
 setAs(from = "Trough", to = "Ellipsoid", def = function(from){
     E <- as(from, "TrEllipsoid")
     as(E, "Ellispoid")
   }
 )
-#' Converstion
+#' As("TrEllipsoid", "Trough")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family TrEllipsoid
 setAs(from = "TrEllipsoid", to = "Trough", def = function(from){
     pos <- from@pos
     pos[,3] <- from@zmax
@@ -460,11 +455,10 @@ setAs(from = "TrEllipsoid", to = "Trough", def = function(from){
     )
   }
 )
-#' Converstion
+#' As("Ellipsoid", "Sphere")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family Ellipsoid
 setAs(from = "Ellipsoid", to = "Sphere", def = function(from){
     pa <- matrix(c(from@a, from@b, from@c), ncol = 3, nrow = length(from@a))
     new("Sphere",
@@ -475,11 +469,10 @@ setAs(from = "Ellipsoid", to = "Sphere", def = function(from){
     )
   }
 )
-#' Converstion
+#' As("Trough", "Sphere")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family Trough
 setAs(from = "Trough", to = "Sphere", def = function(from){
     pa <- matrix(c(from@L, from@W, from@H), ncol = 3, nrow = length(from@L))
     new("Sphere",
@@ -490,21 +483,19 @@ setAs(from = "Trough", to = "Sphere", def = function(from){
     )
   }
 )
-#' Converstion
+#' As("TrEllipsoid", "Sphere")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family TrEllipsoid
 setAs(from = "TrEllipsoid", to = "Sphere", def = function(from){
     O <- as(from, "Trough")
     as(O, "Sphere")
   }
 )
-#' Converstion
+#' As("Trough", "Cuboid")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family Trough
 setAs(from = "Trough", to = "Cuboid", def = function(from){
     pos <- from@pos
     pos[,3] <- from@pos[,3] - from@H/2
@@ -519,21 +510,19 @@ setAs(from = "Trough", to = "Cuboid", def = function(from){
     )
   }
 )
-#' Converstion
+#' As("TrEllipsoid", "Cuboid")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family TrEllipsoid
 setAs(from = "TrEllipsoid", to = "Cuboid", def = function(from){
     O <- as(from, "Trough")
     as(O, "Cuboid")
   }
 )
-#' Converstion
+#' As("Ellipsoid", "Cuboid")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family Ellipsoid
 setAs(from = "Ellipsoid", to = "Cuboid", def = function(from){
     new("Cuboid",
       version = "0.1",   # version of the class
@@ -548,11 +537,10 @@ setAs(from = "Ellipsoid", to = "Cuboid", def = function(from){
 )
 
 
-#' Converstion
+#' As("TrEllipse", "Trough2D")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family TrEllipse
 setAs(from = "TrEllipse", to = "Trough2D", def = function(from){
     pos <- from@pos
     pos[,2] <- from@zmax
@@ -568,11 +556,10 @@ setAs(from = "TrEllipse", to = "Trough2D", def = function(from){
     )
   }
 )
-#' Converstion
+#' As("Trough2D", "TrEllipse")
 #'
 #' @name as
-#' @rdname as
-#' @export
+#' @family Trough2D
 setAs(from = "Trough2D", to = "TrEllipse", def = function(from){
     bbb <- from@rH * from@H
     pos <- from@pos
@@ -1767,6 +1754,11 @@ setMethod("crossBedding", "Trough", function(x, nF = 6, phi = 1.05, rpos = 1){
 
 
 ##----------------------------- SIMULATION --------------------------##
+
+#' Simulate
+#'
+#' Simulate coarse, braided river deposits
+#' @export
 simulate <- function(modbox, model = c("poisson", "straus"), prior){
   # number of levels is Poisson distributed
   dz <- diff(modbox$z)
@@ -1836,6 +1828,7 @@ simulate <- function(modbox, model = c("poisson", "straus"), prior){
 # pts <- locator(type="p",n=2)
 # l_pts <- joinLine(pts)  # line joining the two points
 # RConics::addLine(l_pts, col="red")
+#' @export
 joinLine <- function(pts){
   return(join(c(pts$x[1], pts$y[1] , 1),c(pts$x[2], pts$y[2] , 1)))
 }
@@ -1847,14 +1840,14 @@ joinLine <- function(pts){
   return(matrix(c(v[1]^2, v[1]*v[2], v[1]*v[2], v[2]^2),
           nrow=2,ncol=2)/(v[1]^2+v[2]^2))
 }
-
+#' @export
 measureDistance <- function(last=TRUE){
   A <-locator()
   loc <- cbind(A$x,A$y)
-  return(myDist(loc,last=last))
+  return(.myDist(loc,last=last))
 }
 
-myDist <-function(loc,last=FALSE){
+.myDist <-function(loc,last=FALSE){
   loc <- as.matrix(loc)
   all_dist <- cumsum(c(0,sqrt(rowSums(diff(loc)^2))))
   if(last){

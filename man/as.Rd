@@ -2,32 +2,32 @@
 % Please edit documentation in R/main.R
 \name{as}
 \alias{as}
-\title{Converstion}
+\title{As("Ellipsoid", "TrEllipsoid")}
 \description{
-Converstion
+As("Ellipsoid", "TrEllipsoid")
 
-Converstion
+As("TrEllipsoid", "Ellipsoid")
 
-Converstion
+As("Trough", "TrEllipsoid")
 
-Converstion
+As("Trough", "Ellipsoid")
 
-Converstion
+As("TrEllipsoid", "Trough")
 
-Converstion
+As("Ellipsoid", "Sphere")
 
-Converstion
+As("Trough", "Sphere")
 
-Converstion
+As("TrEllipsoid", "Sphere")
 
-Converstion
+As("Trough", "Cuboid")
 
-Converstion
+As("TrEllipsoid", "Cuboid")
 
-Converstion
+As("Ellipsoid", "Cuboid")
 
-Converstion
+As("TrEllipse", "Trough2D")
 
-Converstion
+As("Trough2D", "TrEllipse")
 }
 
