@@ -4,7 +4,7 @@
 \alias{section}
 \title{section}
 \usage{
-section(x, l, lim = NULL)
+section(x, l, pref = NULL, lim = NULL)
 }
 \description{
 section

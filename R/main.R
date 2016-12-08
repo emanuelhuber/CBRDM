@@ -13,6 +13,38 @@
 # y1 <- obj@W * sqrt( 1 - (x1 / obj@L)^2 )
 
 
+#--- physical properties facies
+# Huggenberger (1993)
+# Jussel et al (1994)
+# Huber and Huggenberger (2016) doi:10.5194/hess-20-2035-2016
+# p = porosity
+# de = dielectric number saturated zone
+#
+depprop <- list(gp = c(p  = 0.201,
+                       K = 1.5e-3,
+                       sdlogK = 0.5,
+                       vaniK = 6,
+                       de = 12.1),
+                bm = c(p  = 0.25,
+                       K = 1.5e-3,
+                       sdlogK = 0.1,
+                       vaniK = 1,
+                       de = 9.2),
+                ow = c(p  = 0.35,
+                       K = 1e-1,
+                       sdlogK = 0.1,
+                       vaniK = 1,
+                       de = 26.9))
+                       
+meanlog <- function(xmean, xsdlog){
+  return( log(xmean) - 0.5*xsdlog^2 )
+}
+rlognorm <- function(n, mean, sdlog){
+  rlnorm(n, meanlog = meanlog(mean, sdlog), sdlog = sdlog)
+}
+# rlnorm(n, meanlog = meanlog_tf, sdlog = sdlog_tf)
+                       
+                       
 ##------------------- CLASSES ------------------##
 
 #' An S4 class to represent trough structure.
@@ -1555,7 +1587,7 @@ setMethod("pixelise", "Deposits", function(x, grid){
     for(i in 1:n){
       it <- it + 1
       if((it %% 2) == 0) it <- it + 1
-      A <- .pixeliseTrEllispoid(e = E[i, ], it, L = b@L[i], W = b@W[i],
+      A <- .pixeliseTrough(e = E[i, ], it, L = b@L[i], W = b@W[i],
                                 vx = vx, vy = vy, vz = vz,  
                                 grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
       vol[i] <- A$vol
@@ -1595,48 +1627,56 @@ setMethod("pixelise", "Deposits2D", function(x, grid){
     # 2. discretise trough
     #    -> postive id -> odd  = bimodal
     #                  -> even = open-framework
-    E <- as.matrix(x@troughs)
-    E <- as.matrix(as(x@troughs, "TrEllipse"))
     b <- bbox(x@troughs)
+    E <- as.matrix(as(x@troughs, "TrEllipse"))
+    it <- 0
     for(i in 1:nrow(E)){
+      it <- it + 1
+      if((it %% 2) == 0) it <- it + 1
       e <- E[i,]  # ellispoid e
       L <- b@L[i]
       H <- b@H[i]
-      
-      xr <- vx[ vx >= (e["x"] - L/2)    & vx <= (e["x"] + L/2)]
-      zr <- vz[ vz >= (e["zmax"] - H) & vz <= (e["y"])]
-      if( length(xr)!=0 && length(zr) != 0 ){
-      
-      
+      XZ <- .pixeliseTrEllipse(e = E[i,], i = it, L = b@L[i], H = b@H[i], 
+                         vx, vz, XZ)
+      if(!is.null(x@troughs@fill[[i]]) && length(x@troughs@fill[[i]]) > 0){
+        Ei <- as.matrix(as(x@troughs@fill[[i]], "TrEllipse"))
+        for(k in 1:nrow(Ei)){
+          it <- it + 1
+          XZ <- .pixeliseTrEllipse(e = Ei[k, ], i = it, L = b@L[i], H = b@H[i],
+                                vx = vx, vz = vz, XZ)
+        }
       }
+#       testx <- vx >= (e["x"] - L/2)    & vx <= (e["x"] + L/2)
+#       testz <- vz >= (e["zmax"] - H) & vz <= (e["y"])
+#       if( any(testx) && any(testz) ){
+#         xComponent <- ( (vx[testx] - e["x"]) / e["a"] )^2
+#         zComponent <- ( (vz[testz] - e["y"]) / e["b"] )^2
+#         xyComponent <- outer(xComponent,zComponent,'+')
+#         XZ[testx, testz][xyComponent <=1 ] <- i
+#       }    
     }
-    # dx <- grid$dx/2
-    xr <- seq(grid$x[1], to = grid$x[2], by = grid$dx)
-    # dz <- grid$dz/2
-    zr <- seq(grid$z[1], to = grid$z[2], by = grid$dz)
-    XZ <- matrix( 0, nrow=length(xr), ncol=length(zr))
-    E <- as.matrix(x@troughs)
-    for(i in 1:nrow(E)){
-      e <- (E[i,])  # ellispoid e
-      testx <- xr >= (e["xap"] -e["aap"]) & xr <= (e["xap"] + e["aap"])
-      testz <- zr >= (e["z"] -e["bap"]) & zr <= e["zmax"]
-      if( sum(testx) > 0  && sum(testz) > 0){
-        xComponent = ( (xr[testx] - e["xap"]) / e["aap"] )^2
-        zComponent = ( (zr[testz] -   e["z"]) / e["bap"] )^2
-        xyComponent <- outer(xComponent,zComponent,'+')
-        XZ[testx, testz][xyComponent <=1 ] <- i
-      }    
-    }
-    return(list(z=XZ,x=xr,y=zr))
+    return(list(z = XZ, x = vx, y = vz))
   }
 )
 
+
+.pixeliseTrEllipse <- function(e, i, L, H, vx, vz, XZ){
+  testx <- vx >= (e["x"] - L/2)  & vx <= (e["x"] + L/2)
+  testz <- vz >= (e["zmax"] - H) & vz <= (e["zmax"])
+  if( any(testx) && any(testz) ){
+    xComponent <- ( (vx[testx] - e["x"]) / e["a"] )^2
+    zComponent <- ( (vz[testz] - e["y"]) / e["b"] )^2
+    xyComponent <- outer(xComponent,zComponent,'+')
+    XZ[testx, testz][xyComponent <=1 ] <- i
+  }
+  return(XZ)
+}
 
 # L <- b@L[i]
 # W <- b@W[i]
 # cstO2Ei <- cstO2E[i]
 # voli <- vol[i]
-.pixeliseTrEllispoid <- function(e, i, L, W, vx, vy, vz, grid, XYZ, cstO2Ei){
+.pixeliseTrough <- function(e, i, L, W, vx, vy, vz, grid, XYZ, cstO2Ei){
   vol <- 0
   xr <- vx[ vx >= (e["x"] - L/2)    & vx <= (e["x"] + L/2)]
   yr <- vy[ vy >= (e["y"] - W/2)    & vy <= (e["y"] + W/2)]
@@ -1661,6 +1701,57 @@ setMethod("pixelise", "Deposits2D", function(x, grid){
     }
   }
   return(list("XYZ" = XYZ, "vol" = vol))
+}
+
+#---------------------- set properties to pixels
+
+#' Set properties
+#'
+#' @export
+setProp <- function(A, type = c("facies", "K"), FUN, ...){
+  fac <- list()
+  fac$gp <- A < 0                # poorly sorted gravel (GP)
+  fac$bm <- (A %% 2) == 0 & !fac$gp   # bimodal gravel (BM)
+  fac$ow <- (A %% 2) != 0 & !fac$gp   # open-framework gravel (OW)
+  if(!is.null(type)){
+    type <- match.arg(type, c("facies", "K"))
+    if(type == "K"){
+      TT <- lapply(names(fac), .setProp, A, fac, .funK, depprop)
+    }else if( type == "facies"){
+      TT <- lapply(names(fac), .setProp, A, fac, .funn)
+    }
+  }else{
+    TT <- lapply(names(fac), .setProp, A, fac, FUN, ...)
+  }
+  A[] <- NA
+  A[fac$gp] <- TT[[1]][fac$gp]
+  A[fac$bm] <- TT[[2]][fac$bm]
+  A[fac$ow] <- TT[[3]][fac$ow]
+  return(A)
+}
+
+.setProp <- function(facies = "gp", A, fac, FUN, ...){
+  A0 <- A
+  A0[] <- NA
+  ufac <- unique(A[fac[[facies]]])
+  n <- length(ufac)
+  prop <- FUN(n, facies, ...)
+  for(k in seq_len(n)){
+    A0[A == ufac[k]] <- prop[k] 
+  }
+  return(A0)
+}
+
+.funK <- function(n, facies, depprop){
+  rlognorm(n, mean = depprop[[facies]]["K"], 
+              sdlog = depprop[[facies]]["sdlogK"])
+}
+
+.funn <- function(n, facies){
+  if(facies == "gp") x <- 0L
+  if(facies == "bm") x <- 1L
+  if(facies == "ow") x <- 2L
+  rep(x, n)
 }
 
 ##--------------------------- INTERSECT ----------------------##
@@ -1707,7 +1798,7 @@ setMethod("doIntersect", "Sphere", function(x, y, ...){
 ##--------------------------- SECTION ----------------------##
 setMethod("section", "TrEllipsoid", function(x, l, pref = NULL, lim = NULL){
     E <- as.matrix(x)
-    E <- apply(E, 1, .sectionEllipsoid, l = l, pref = NULL)
+    E <- apply(E, 1, .sectionEllipsoid, l = l, pref = pref)
     if(length(E) > 0) {
       if(is.matrix(E)){
         E <-t(E)
@@ -1734,7 +1825,7 @@ setMethod("section", "Trough", function(x, l, pref = NULL, lim = NULL){
       xsec <- as(El, "Trough2D")
       if(length(x@fill) > 0){
         xsec@fill <- lapply(x@fill[El@id], section, l = l, 
-                            pref = NULL, lim = lim)
+                            pref = pref, lim = lim)
       }
       return(xsec)
     }else{
@@ -1836,6 +1927,7 @@ setMethod("section", "Cuboid", function(x, l, pref = NULL, lim = NULL){
                         sqrt(sum((newLoc[1:2] - c(-l[3]/l[1],0))^2)),
                         newLoc[l == 0][1])
       }else{
+        cat("*")
         myloc <- ifelse(l[1] != 0 && l[2] != 0, 
                         -sign(l[1])*sign(l[2]) *
                         sqrt(sum((newLoc[1:2] - pref[1:2])^2)),

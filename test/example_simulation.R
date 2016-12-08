@@ -56,12 +56,8 @@ plotSection(smod2, border = "red", col = "grey", asp = 5,
             ylim = c(5,15), lwd = 0.5, lay = list(lw = 0.1))
 
             
-# pixeling
+## pixelise model
 grid <- c(mod@bbox, list(dx = 5, dy = 5, dz = 0.1))
-
-x <- mod
-
-
 Pix <- pixelise(mod, grid)
 # horizontal xy
 plot3D::image2D(z = Pix$XYZ[,,5], x = Pix$x, y = Pix$y)
@@ -72,6 +68,69 @@ plot3D::image2D(z = Pix$XYZ[5,,], x = Pix$y, y = Pix$z)
 # volume
 Pix$vol
 
+## pixelise section
+x <- smod
+grid <- c(mod@bbox, list(dx = 1, dy = 1, dz = 0.01))
+plot3D::image2D(z = XZ, x = vx, y = vz)
+
+
+FAC <- pixelise(smod, grid)
+plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
+
+B <- setProp(FAC$z, type = c("K"), depprop)
+B2 <- setProp(FAC$z, type = c("facies"))
+
+plot3D::image2D(z = B, x = F$x, y = F$y, asp = 5)
+plot3D::image2D(z = B2, x = F$x, y = F$y, asp = 5)
+
+F <- FAC
+F$z[] <- NA
+F$z[gp] <- 0
+F$z[bm] <- 1
+F$z[ow] <- 2
+plot3D::image2D(gp)
+plot3D::image2D(bm)
+plot3D::image2D(ow)
+
+F <- FAC
+F$z[] <- NA
+ugp <- unique(FAC$z[gp])
+ngp <- length(ugp)
+gpK <- runif(ngp, 0, 1)
+gpK <- rlognorm(ngp, mean = depprop$gp["K"], sdlog = depprop$gp["K"])
+for(k in seq_len(ngp)){
+  F$z[FAC$z == ugp[k]] <- gpK[k] 
+  sum(FAC$z == ugp[k])
+}
+
+F <- FAC
+F$z[] <- NA
+ugp <- unique(FAC$z[bm])
+ngp <- length(ugp)
+gpK <- runif(ngp, 0, 1)
+gpK <- rlognorm(ngp, mean = depprop$bm["K"], sdlog = depprop$bm["K"])
+for(k in seq_len(ngp)){
+  F$z[FAC$z == ugp[k]] <- gpK[k] 
+  sum(FAC$z == ugp[k])
+}
+
+
+GP <- FAC$z
+GP[] <- NA
+GP[gp]
+plot3D::image2D(z = F$z, x = F$x, y = F$y)
+
+plotSection(smod, border = "red", col = "grey", asp = NA, ylim = c(0, 10),
+            ylim = c(0, 250))
+
+
+vl <- "gp"            
+ugp <- unique(FAC$z[bm])
+ngp <- length(ugp)
+gpK <- runif(ngp, 0, 1)
+gpK <- rlognorm(ngp, mean = depprop[[vl]]["K"], sdlog = depprop[[vl]]["K"])     
+       
+            
 range(as.vector(Pix$XYZ))
 
 test <- function(x, a = 1, ...){
@@ -90,6 +149,8 @@ pp <- section(bbox(mod), l)
 smod <- section(mod, l)
 xy <- smod@troughs@pos
 range(xy[,1])
+
+plotSection(smod)
 
 -sign(l[1])*sign(l[2]) * sqrt(sum((xy[1,] - pp[[1]][1:2] )^2))
 ref <- -sign(l[1])*sign(l[2]) * sqrt(sum((pp[[1]][1:2] - c(-l[3]/l[1],0) )^2))
