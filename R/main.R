@@ -789,7 +789,8 @@ setGeneric("boundary", function(x) standardGeneric("boundary"))
 #' @name section
 #' @rdname section
 #' @export
-setGeneric("section", function(x, l, lim = NULL) standardGeneric("section"))
+setGeneric("section", function(x, l, pref = NULL, lim = NULL) 
+            standardGeneric("section"))
 
 #' plotSection
 #'
@@ -1704,9 +1705,9 @@ setMethod("doIntersect", "Sphere", function(x, y, ...){
 
 
 ##--------------------------- SECTION ----------------------##
-setMethod("section", "TrEllipsoid", function(x, l, lim = NULL){
+setMethod("section", "TrEllipsoid", function(x, l, pref = NULL, lim = NULL){
     E <- as.matrix(x)
-    E <- apply(E,1,.sectionEllipsoid, l=l)
+    E <- apply(E, 1, .sectionEllipsoid, l = l, pref = NULL)
     if(length(E) > 0) {
       if(is.matrix(E)){
         E <-t(E)
@@ -1726,13 +1727,14 @@ setMethod("section", "TrEllipsoid", function(x, l, lim = NULL){
   }
 )
 
-setMethod("section", "Trough", function(x, l, lim = NULL){
+setMethod("section", "Trough", function(x, l, pref = NULL, lim = NULL){
     # E0 <- as(x, "TrEllipsoid")
-    El <- section(as(x, "TrEllipsoid"), l, lim = lim)
+    El <- section(as(x, "TrEllipsoid"), l, pref = NULL, lim = lim)
     if(!is.null(El)){
       xsec <- as(El, "Trough2D")
       if(length(x@fill) > 0){
-        xsec@fill <- lapply(x@fill[El@id], section, l = l, lim = lim)
+        xsec@fill <- lapply(x@fill[El@id], section, l = l, 
+                            pref = NULL, lim = lim)
       }
       return(xsec)
     }else{
@@ -1741,8 +1743,9 @@ setMethod("section", "Trough", function(x, l, lim = NULL){
   }
 )
 
-setMethod("section", "Deposits", function(x, l, lim = NULL){
-    xsec <- section(x@troughs, l, lim = lim)
+setMethod("section", "Deposits", function(x, l, pref = NULL, lim = NULL){
+    pp <- section(bbox(x), l)
+    xsec <- section(x@troughs, l, pref = pp[[1]], lim = lim)
     if(!is.null(xsec)){
       new("Deposits2D",
           version = "0.1",
@@ -1756,7 +1759,7 @@ setMethod("section", "Deposits", function(x, l, lim = NULL){
 )
 
 
-setMethod("section", "Cuboid", function(x, l, lim = NULL){
+setMethod("section", "Cuboid", function(x, l, pref = NULL, lim = NULL){
     crns <- .rect(x@pos[1:2], x@L, x@W, x@theta)
     ls <- list()
     ls$bot <- RConics::join(c(crns[4, ], 1), c(crns[1, ], 1))
@@ -1780,7 +1783,7 @@ setMethod("section", "Cuboid", function(x, l, lim = NULL){
 # remove NULL from a list!!
 .compactList <- function(x) Filter(Negate(is.null), x) 
 
-.sectionEllipsoid <- function(x, l){
+.sectionEllipsoid <- function(x, l, pref = NULL){
   ob <- x
   RC <- RConics::ellipseToConicMatrix(saxes = c(ob["a"], ob["b"]),
                                       loc = ob[c("x","y")], 
@@ -1823,14 +1826,21 @@ setMethod("section", "Cuboid", function(x, l, lim = NULL){
       return(NULL)
     }else{
       a_new = sqrt(sum(( diff(pp))^2))/2   # apparent length of the object
-      # center_xsection = null point on the cross-section = 
-      # intersection cross-section with x=0
-      # center_xsection <- c(0,-l[3]/l[2])
-      # Projection des points sur la ligne
-      myloc <- ifelse(l[1] != 0 && l[2] != 0, 
-                      -sign(l[1])*sign(l[2]) *
-                      sqrt(sum((newLoc[1:2] - c(-l[3]/l[1],0))^2)),
-                      newLoc[l == 0][1])
+      if(is.null(pref)){
+        # center_xsection = null point on the cross-section = 
+        # intersection cross-section with x=0
+        # center_xsection <- c(0,-l[3]/l[2])
+        # Projection des points sur la ligne
+        myloc <- ifelse(l[1] != 0 && l[2] != 0, 
+                        -sign(l[1])*sign(l[2]) *
+                        sqrt(sum((newLoc[1:2] - c(-l[3]/l[1],0))^2)),
+                        newLoc[l == 0][1])
+      }else{
+        myloc <- ifelse(l[1] != 0 && l[2] != 0, 
+                        -sign(l[1])*sign(l[2]) *
+                        sqrt(sum((newLoc[1:2] - pref[1:2])^2)),
+                        newLoc[l == 0][1])
+      }
       return(c(ob, "xap" = myloc,     "aap" = a_new, "bap" = b_new, 
                    "x0"  = newLoc[1], "y0"  = newLoc[2]))
     }

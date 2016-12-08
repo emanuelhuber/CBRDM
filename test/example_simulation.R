@@ -80,7 +80,25 @@ test <- function(x, a = 1, ...){
 test(1, 2,3)
 
 ## cuboid - line intersection
-  section(bbox(mod), l_pts)
+plot(0, type = "n", ylim = c(-50, 250), xlim = c(-50, 250))                  
+pts <- locator(type="p",n=2)
+l <- joinLine(pts)  # line joining the two points
+RConics::addLine(l, col="blue")
+pp <- section(bbox(mod), l)
+smod <- section(mod, l)
+xy <- smod@troughs@pos
+range(xy[,1])
+
+-sign(l[1])*sign(l[2]) * sqrt(sum((xy[1,] - pp[[1]][1:2] )^2))
+ref <- -sign(l[1])*sign(l[2]) * sqrt(sum((pp[[1]][1:2] - c(-l[3]/l[1],0) )^2))
+
+xy0 <- xy[,1] - ref
+range(xy0)
+
+ myloc <- ifelse(l[1] != 0 && l[2] != 0, 
+                      -sign(l[1])*sign(l[2]) *
+                      sqrt(sum((xy[1,] - pp[[1]][1:2] )^2)),
+                      newLoc[l == 0][1])
 
 ## pixel section
 x <- smod
