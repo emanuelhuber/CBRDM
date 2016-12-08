@@ -1596,7 +1596,7 @@ setMethod("pixelise", "Deposits", function(x, grid){
         Ei <- as.matrix(x@troughs@fill[[i]])
         for(k in 1:nrow(Ei)){
           it <- it + 1
-          A <- .pixeliseTrEllispoid(e = Ei[k, ], it, L = b@L[i], W = b@W[i],
+          A <- .pixeliseTrough(e = Ei[k, ], it, L = b@L[i], W = b@W[i],
                                 vx = vx, vy = vy, vz = vz, 
                                 grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
           vol[i] <- A$vol
