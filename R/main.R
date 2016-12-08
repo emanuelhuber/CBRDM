@@ -1923,11 +1923,10 @@ setMethod("section", "Cuboid", function(x, l, pref = NULL, lim = NULL){
         # center_xsection <- c(0,-l[3]/l[2])
         # Projection des points sur la ligne
         myloc <- ifelse(l[1] != 0 && l[2] != 0, 
-                        -sign(l[1])*sign(l[2]) *
+                        #-sign(l[1])*sign(l[2]) *
                         sqrt(sum((newLoc[1:2] - c(-l[3]/l[1],0))^2)),
                         newLoc[l == 0][1])
       }else{
-        cat("*")
         myloc <- ifelse(l[1] != 0 && l[2] != 0, 
                         -sign(l[1])*sign(l[2]) *
                         sqrt(sum((newLoc[1:2] - pref[1:2])^2)),
