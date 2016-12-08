@@ -55,7 +55,8 @@ smod2 <- section(mod2, l_pts)
 plotSection(smod2, border = "red", col = "grey", asp = 5, 
             ylim = c(5,15), lwd = 0.5, lay = list(lw = 0.1))
 
-            
+          
+          
 ## pixelise model
 grid <- c(mod@bbox, list(dx = 5, dy = 5, dz = 0.1))
 Pix <- pixelise(mod, grid)
@@ -76,8 +77,8 @@ plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
 B <- setProp(FAC$z, type = c("K"), depprop)
 B2 <- setProp(FAC$z, type = c("facies"))
 
-plot3D::image2D(z = B, x = F$x, y = F$y, asp = 5)
-plot3D::image2D(z = B2, x = F$x, y = F$y, asp = 5)
+plot3D::image2D(z = B,  x = FAC$x, y = FAC$y, asp = 5)
+plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 5)
 
 F <- FAC
 F$z[] <- NA
