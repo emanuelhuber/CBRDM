@@ -69,11 +69,7 @@ plot3D::image2D(z = Pix$XYZ[5,,], x = Pix$y, y = Pix$z)
 Pix$vol
 
 ## pixelise section
-x <- smod
 grid <- c(mod@bbox, list(dx = 1, dy = 1, dz = 0.01))
-plot3D::image2D(z = XZ, x = vx, y = vz)
-
-
 FAC <- pixelise(smod, grid)
 plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
 
