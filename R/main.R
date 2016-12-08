@@ -1729,7 +1729,7 @@ setMethod("section", "TrEllipsoid", function(x, l, pref = NULL, lim = NULL){
 
 setMethod("section", "Trough", function(x, l, pref = NULL, lim = NULL){
     # E0 <- as(x, "TrEllipsoid")
-    El <- section(as(x, "TrEllipsoid"), l, pref = NULL, lim = lim)
+    El <- section(as(x, "TrEllipsoid"), l, pref = pref, lim = lim)
     if(!is.null(El)){
       xsec <- as(El, "Trough2D")
       if(length(x@fill) > 0){

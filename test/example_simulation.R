@@ -79,6 +79,8 @@ test <- function(x, a = 1, ...){
 }
 test(1, 2,3)
 
+smod <- section(mod, l)
+
 ## cuboid - line intersection
 plot(0, type = "n", ylim = c(-50, 250), xlim = c(-50, 250))                  
 pts <- locator(type="p",n=2)
