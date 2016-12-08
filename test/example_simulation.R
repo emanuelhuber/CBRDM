@@ -55,10 +55,9 @@ smod2 <- section(mod2, l_pts)
 plotSection(smod2, border = "red", col = "grey", asp = 5, 
             ylim = c(5,15), lwd = 0.5, lay = list(lw = 0.1))
 
-          
-          
+
 ## pixelise model
-grid <- c(mod@bbox, list(dx = 5, dy = 5, dz = 0.1))
+grid <- c(mod@bbox, list(dx = 1, dy = 1, dz = 0.05))
 Pix <- pixelise(mod, grid)
 # horizontal xy
 plot3D::image2D(z = Pix$XYZ[,,5], x = Pix$x, y = Pix$y)
@@ -67,7 +66,13 @@ plot3D::image2D(z = Pix$XYZ[,5,], x = Pix$x, y = Pix$z)
 # vertical yz
 plot3D::image2D(z = Pix$XYZ[5,,], x = Pix$y, y = Pix$z)
 # volume
-Pix$vol
+# Pix$vol
+
+
+A <- setProp(Pix$XYZ, type = c("facies"))
+# vertical yz
+plot3D::image2D(z = A[5,,], x = Pix$y, y = Pix$z)
+
 
 ## pixelise section
 grid <- c(mod@bbox, list(dx = 1, dy = 1, dz = 0.01))
@@ -80,161 +85,183 @@ B2 <- setProp(FAC$z, type = c("facies"))
 plot3D::image2D(z = B,  x = FAC$x, y = FAC$y, asp = 5)
 plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 5)
 
-F <- FAC
-F$z[] <- NA
-F$z[gp] <- 0
-F$z[bm] <- 1
-F$z[ow] <- 2
-plot3D::image2D(gp)
-plot3D::image2D(bm)
-plot3D::image2D(ow)
-
-F <- FAC
-F$z[] <- NA
-ugp <- unique(FAC$z[gp])
-ngp <- length(ugp)
-gpK <- runif(ngp, 0, 1)
-gpK <- rlognorm(ngp, mean = depprop$gp["K"], sdlog = depprop$gp["K"])
-for(k in seq_len(ngp)){
-  F$z[FAC$z == ugp[k]] <- gpK[k] 
-  sum(FAC$z == ugp[k])
-}
-
-F <- FAC
-F$z[] <- NA
-ugp <- unique(FAC$z[bm])
-ngp <- length(ugp)
-gpK <- runif(ngp, 0, 1)
-gpK <- rlognorm(ngp, mean = depprop$bm["K"], sdlog = depprop$bm["K"])
-for(k in seq_len(ngp)){
-  F$z[FAC$z == ugp[k]] <- gpK[k] 
-  sum(FAC$z == ugp[k])
-}
-
-
-GP <- FAC$z
-GP[] <- NA
-GP[gp]
-plot3D::image2D(z = F$z, x = F$x, y = F$y)
-
-plotSection(smod, border = "red", col = "grey", asp = NA, ylim = c(0, 10),
-            ylim = c(0, 250))
-
-
-vl <- "gp"            
-ugp <- unique(FAC$z[bm])
-ngp <- length(ugp)
-gpK <- runif(ngp, 0, 1)
-gpK <- rlognorm(ngp, mean = depprop[[vl]]["K"], sdlog = depprop[[vl]]["K"])     
-       
-            
-range(as.vector(Pix$XYZ))
-
-test <- function(x, a = 1, ...){
-  list(...)
-}
-test(1, 2,3)
-
-smod <- section(mod, l)
-
-## cuboid - line intersection
-plot(0, type = "n", ylim = c(-50, 250), xlim = c(-50, 250))                  
-pts <- locator(type="p",n=2)
-l <- joinLine(pts)  # line joining the two points
-RConics::addLine(l, col="blue")
-pp <- section(bbox(mod), l)
-smod <- section(mod, l)
-xy <- smod@troughs@pos
-range(xy[,1])
-
-plotSection(smod)
-
--sign(l[1])*sign(l[2]) * sqrt(sum((xy[1,] - pp[[1]][1:2] )^2))
-ref <- -sign(l[1])*sign(l[2]) * sqrt(sum((pp[[1]][1:2] - c(-l[3]/l[1],0) )^2))
-
-xy0 <- xy[,1] - ref
-range(xy0)
-
- myloc <- ifelse(l[1] != 0 && l[2] != 0, 
-                      -sign(l[1])*sign(l[2]) *
-                      sqrt(sum((xy[1,] - pp[[1]][1:2] )^2)),
-                      newLoc[l == 0][1])
-
-## pixel section
-x <- smod
-grid <- c(mod@bbox, list(dx = 5, dy = 5, dz = 0.1))
-            
-x <- smod2@troughs
-y <- mod2@troughs
-
-i <- 0
-
-i<- i + 1
-par(mfrow = c(2,1))
-plotSection(x[[i]],border = "red", col = "grey", asp = 5, 
-            ylim = c(5,15), lwd = 0.5, main = x[[i]]@id)
-plotTopView(y[[x[[i]]@id]],border = "red", col = "grey", asp = 5, 
-            ylim = c(5,15), lwd = 0.5, main = x[[i]]@id)
-RConics::addLine(l_pts, col="blue")
-            
-
-i <- 0
-
-i<- i + 1
-i<- 302
-
-plotTopView(y[[i]],border = "red", col = "grey", asp = 5, 
-            ylim = c(5,15), lwd = 0.5, main = y[[i]]@id)
-RConics::addLine(l_pts, col="blue")
-
-do.call(prior$L$type, list(10, prior$L$min, prior$L$max))
 
 
 
-# ax + by + c
-l_pts
-
-l <- l_pts
-
-b <- bbox(mod)
-
-# corners
-crns <- .rect(b@pos[1:2], b@L, b@W, b@theta)
-
-ls <- list()
-ls$bot <- RConics::join(c(crns[4, ], 1), c(crns[1, ], 1))
-ls$lef <- RConics::join(c(crns[1, ], 1), c(crns[2, ], 1))
-ls$top <- RConics::join(c(crns[2, ], 1), c(crns[3, ], 1))
-ls$rig <- RConics::join(c(crns[3, ], 1), c(crns[4, ], 1))
-
-ls$top <- RConics::join(c(mod@bbox$x[1], mod@bbox$y[2], 1),
-                      c(mod@bbox$x[2], mod@bbox$y[2], 1))
-ls$bot <- RConics::join(c(mod@bbox$x[1], mod@bbox$y[1], 1),
-                      c(mod@bbox$x[2], mod@bbox$y[1], 1))
-ls$lef <- RConics::join(c(mod@bbox$x[1], mod@bbox$y[1], 1),
-                      c(mod@bbox$x[1], mod@bbox$y[2], 1))
-ls$rig <- RConics::join(c(mod@bbox$x[2], mod@bbox$y[1], 1),
-                      c(mod@bbox$x[2], mod@bbox$y[2], 1))
-
-plot(0, type = "n", ylim = c(-50, 250), xlim = c(-50, 250))                  
-invisible(sapply(ls, RConics::addLine))
-RConics::addLine(l, col = "red")
-
-fJoin <- function(x, l){
-  RConics::join(x, l)
-}
-pts <- lapply(ls, RConics::join,  l)
-invisible(sapply(pts, function(x, ...) points(t(x), ...)))
-
-fSel <- function(p, xmin, xmax, ymin, ymax){
-    (p[1] >= xmin & p[1] <= xmax) & (p[2] >= ymin & p[2] <= ymax)
-}
-
-test <- sapply(pts, fSel, xmin = mod@bbox$x[1], xmax = mod@bbox$x[2],
-                  ymin = mod@bbox$y[1], ymax = mod@bbox$y[2])
 
 
-                  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 
+# F <- FAC
+# F$z[] <- NA
+# F$z[gp] <- 0
+# F$z[bm] <- 1
+# F$z[ow] <- 2
+# plot3D::image2D(gp)
+# plot3D::image2D(bm)
+# plot3D::image2D(ow)
+# 
+# F <- FAC
+# F$z[] <- NA
+# ugp <- unique(FAC$z[gp])
+# ngp <- length(ugp)
+# gpK <- runif(ngp, 0, 1)
+# gpK <- rlognorm(ngp, mean = depprop$gp["K"], sdlog = depprop$gp["K"])
+# for(k in seq_len(ngp)){
+#   F$z[FAC$z == ugp[k]] <- gpK[k] 
+#   sum(FAC$z == ugp[k])
+# }
+# 
+# F <- FAC
+# F$z[] <- NA
+# ugp <- unique(FAC$z[bm])
+# ngp <- length(ugp)
+# gpK <- runif(ngp, 0, 1)
+# gpK <- rlognorm(ngp, mean = depprop$bm["K"], sdlog = depprop$bm["K"])
+# for(k in seq_len(ngp)){
+#   F$z[FAC$z == ugp[k]] <- gpK[k] 
+#   sum(FAC$z == ugp[k])
+# }
+# 
+# 
+# GP <- FAC$z
+# GP[] <- NA
+# GP[gp]
+# plot3D::image2D(z = F$z, x = F$x, y = F$y)
+# 
+# plotSection(smod, border = "red", col = "grey", asp = NA, ylim = c(0, 10),
+#             ylim = c(0, 250))
+# 
+# 
+# vl <- "gp"            
+# ugp <- unique(FAC$z[bm])
+# ngp <- length(ugp)
+# gpK <- runif(ngp, 0, 1)
+# gpK <- rlognorm(ngp, mean = depprop[[vl]]["K"], sdlog = depprop[[vl]]["K"])     
+#        
+#             
+# range(as.vector(Pix$XYZ))
+# 
+# test <- function(x, a = 1, ...){
+#   list(...)
+# }
+# test(1, 2,3)
+# 
+# smod <- section(mod, l)
+# 
+# ## cuboid - line intersection
+# plot(0, type = "n", ylim = c(-50, 250), xlim = c(-50, 250))                  
+# pts <- locator(type="p",n=2)
+# l <- joinLine(pts)  # line joining the two points
+# RConics::addLine(l, col="blue")
+# pp <- section(bbox(mod), l)
+# smod <- section(mod, l)
+# xy <- smod@troughs@pos
+# range(xy[,1])
+# 
+# plotSection(smod)
+# 
+# -sign(l[1])*sign(l[2]) * sqrt(sum((xy[1,] - pp[[1]][1:2] )^2))
+# ref <- -sign(l[1])*sign(l[2]) * sqrt(sum((pp[[1]][1:2] - c(-l[3]/l[1],0) )^2))
+# 
+# xy0 <- xy[,1] - ref
+# range(xy0)
+# 
+#  myloc <- ifelse(l[1] != 0 && l[2] != 0, 
+#                       -sign(l[1])*sign(l[2]) *
+#                       sqrt(sum((xy[1,] - pp[[1]][1:2] )^2)),
+#                       newLoc[l == 0][1])
+# 
+# ## pixel section
+# x <- smod
+# grid <- c(mod@bbox, list(dx = 5, dy = 5, dz = 0.1))
+#             
+# x <- smod2@troughs
+# y <- mod2@troughs
+# 
+# i <- 0
+# 
+# i<- i + 1
+# par(mfrow = c(2,1))
+# plotSection(x[[i]],border = "red", col = "grey", asp = 5, 
+#             ylim = c(5,15), lwd = 0.5, main = x[[i]]@id)
+# plotTopView(y[[x[[i]]@id]],border = "red", col = "grey", asp = 5, 
+#             ylim = c(5,15), lwd = 0.5, main = x[[i]]@id)
+# RConics::addLine(l_pts, col="blue")
+#             
+# 
+# i <- 0
+# 
+# i<- i + 1
+# i<- 302
+# 
+# plotTopView(y[[i]],border = "red", col = "grey", asp = 5, 
+#             ylim = c(5,15), lwd = 0.5, main = y[[i]]@id)
+# RConics::addLine(l_pts, col="blue")
+# 
+# do.call(prior$L$type, list(10, prior$L$min, prior$L$max))
+# 
+# 
+# 
+# # ax + by + c
+# l_pts
+# 
+# l <- l_pts
+# 
+# b <- bbox(mod)
+# 
+# # corners
+# crns <- .rect(b@pos[1:2], b@L, b@W, b@theta)
+# 
+# ls <- list()
+# ls$bot <- RConics::join(c(crns[4, ], 1), c(crns[1, ], 1))
+# ls$lef <- RConics::join(c(crns[1, ], 1), c(crns[2, ], 1))
+# ls$top <- RConics::join(c(crns[2, ], 1), c(crns[3, ], 1))
+# ls$rig <- RConics::join(c(crns[3, ], 1), c(crns[4, ], 1))
+# 
+# ls$top <- RConics::join(c(mod@bbox$x[1], mod@bbox$y[2], 1),
+#                       c(mod@bbox$x[2], mod@bbox$y[2], 1))
+# ls$bot <- RConics::join(c(mod@bbox$x[1], mod@bbox$y[1], 1),
+#                       c(mod@bbox$x[2], mod@bbox$y[1], 1))
+# ls$lef <- RConics::join(c(mod@bbox$x[1], mod@bbox$y[1], 1),
+#                       c(mod@bbox$x[1], mod@bbox$y[2], 1))
+# ls$rig <- RConics::join(c(mod@bbox$x[2], mod@bbox$y[1], 1),
+#                       c(mod@bbox$x[2], mod@bbox$y[2], 1))
+# 
+# plot(0, type = "n", ylim = c(-50, 250), xlim = c(-50, 250))                  
+# invisible(sapply(ls, RConics::addLine))
+# RConics::addLine(l, col = "red")
+# 
+# fJoin <- function(x, l){
+#   RConics::join(x, l)
+# }
+# pts <- lapply(ls, RConics::join,  l)
+# invisible(sapply(pts, function(x, ...) points(t(x), ...)))
+# 
+# fSel <- function(p, xmin, xmax, ymin, ymax){
+#     (p[1] >= xmin & p[1] <= xmax) & (p[2] >= ymin & p[2] <= ymax)
+# }
+# 
+# test <- sapply(pts, fSel, xmin = mod@bbox$x[1], xmax = mod@bbox$x[2],
+#                   ymin = mod@bbox$y[1], ymax = mod@bbox$y[2])
+# 
+# 
+#                   
 
 
 

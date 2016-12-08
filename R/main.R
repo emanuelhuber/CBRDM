@@ -1705,8 +1705,10 @@ setMethod("pixelise", "Deposits2D", function(x, grid){
 
 #---------------------- set properties to pixels
 
+
 #' Set properties
 #'
+#' 
 #' @export
 setProp <- function(A, type = c("facies", "K"), FUN, ...){
   fac <- list()
