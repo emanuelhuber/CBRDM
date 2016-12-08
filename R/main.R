@@ -1544,7 +1544,7 @@ setMethod("pixelise", "Trough", function(x, grid){
 #           XYZ[id_i, id_j, id_k[k]][condition] <- i
 #         }
 #       }
-      A <- .pixeliseTrEllispoid(e = E[i, ], i, L = b@L[i], W = b@W[i],
+      A <- .pixeliseTrough(e = E[i, ], i, L = b@L[i], W = b@W[i],
                                 vx = vx, vy = vy, vz = vz, 
                                 grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
       vol[i] <- A$vol
