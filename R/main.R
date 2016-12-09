@@ -5,6 +5,8 @@
 # - section: Cuboid
 # - plotObj: Trough2D
 # - fill !!!!
+# to do: if model size too small for strauss, increase it enough and
+# then use the extract function
 
 # don't return NULL but empty object (length 0)
 

@@ -186,9 +186,9 @@ plotTopView(mod2, border = "red", col = "grey", asp = 1)
 
 mod3 <- extract(mod, modbox = list(x = c(50, 400), 
                                    y = c(100, 500), 
-                                   z = c(0.2,     4)))
+                                   z = c(-1,     6)))
 
-plotTopView(mod3, border = "red", col = "grey", asp = 1)
+plotTopView(mod3, border = "black", col = "green", asp = 1, add = TRUE)
 
 plotTopView(x, border = "red", col = "grey", asp = 1)
 plotTopView(bb, border = "blue", add = TRUE)
