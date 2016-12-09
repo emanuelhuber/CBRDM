@@ -6,6 +6,8 @@
 # - plotObj: Trough2D
 # - fill !!!!
 
+# don't return NULL but empty object (length 0)
+
 
 # position of a point on ellipse as function of its angle with
 # center ellipse for an ellipse centered in (0, 0) and axis-aligned
@@ -816,6 +818,13 @@ setGeneric("bbox", function(x) standardGeneric("bbox"))
 #' @export
 setGeneric("boundary", function(x) standardGeneric("boundary"))
 
+#' extract
+#'
+#' @name extract
+#' @rdname extract
+#' @export
+setGeneric("extract", function(x, modbox) standardGeneric("extract"))
+
 #' section
 #'
 #' @name section
@@ -1110,6 +1119,26 @@ setMethod("bbox", "Rectangle", function(x){
       H = H,
       theta = rep(0, length(L))
     )
+  }
+)
+
+
+##---------------------------- EXTRACT ----------------------##
+setMethod("extract", "Deposits", function(x, modbox){
+    x@troughs <- extract(x@troughs, modbox)
+    return(x)
+  }
+)
+setMethod("extract", "Trough", function(x, modbox){
+    bb <- bbox(x)
+    bbmin <- bb@pos - c(bb@L, bb@W, bb@H)/2
+    bbmax <- bb@pos + c(bb@L, bb@W, bb@H)/2
+    mbmin <- matrix(c(modbox$x[1], modbox$y[1], modbox$z[1]),
+                    nrow = nrow(bbmin), ncol = 3, byrow = TRUE)
+    mbmax <-  matrix(c(modbox$x[2], modbox$y[2], modbox$z[2]),
+                    nrow = nrow(bbmax), ncol = 3, byrow = TRUE)
+    sel <- apply( bbmin >= mbmin & bbmax <= mbmax , 1, all)
+    return(x[[sel]])
   }
 )
 
@@ -1980,7 +2009,7 @@ setMethod("crossBedding", "Deposits", function(x, prior = NULL){
 #       xbed[[x@troughs@id[i]]] <- .regCrossBedding(x@troughs[[i]], nF = nF[i],
 #                                              rpos = rpos[i], phi = phi[i])
 #     }
-    x@troughs@fill <- crossBedding(x@troughs, prior)
+    x@troughs <- crossBedding(x@troughs, prior)
     return(x)
   }
 )
@@ -2098,7 +2127,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior,
                  "ymax" = modbox$y[2] + 2 * prior$d + maxL)
     XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
                                   d   = prior$d,   nit = prior$nit, 
-                                  n0  = prior$n0,  W = modbox, fd = prior$fd) )
+                                  n0  = prior$n0,  W = modbox2, fd = prior$fd) )
     Xmat <- do.call(rbind, XL)
     nStrauss <- sapply(XL, nrow)
     n <- nrow(Xmat)

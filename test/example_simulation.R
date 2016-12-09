@@ -141,34 +141,58 @@ plot(X2$X)
 plot(X2$n, type = "l")
 hist(X2$n)
 
-modbox <- list("x" = c(0, 1000),    # 0, 700    # before: 0, 500
-               "y" = c(0, 1000),    # 0, 500    # before: 100, 400
+modbox <- list("x" = c(0, 500),    # 0, 700    # before: 0, 500
+               "y" = c(0, 500),    # 0, 500    # before: 100, 400
                "z" = c(0, 5)      # for computation range
              )
 
-prior <- list("L"     = list(type = "runif", min = 40, max = 70),
-              "rLW"   = list(type = "runif", min = 3, max = 4),
-              "rLH"   = list(type = "runif", min = 45, max = 66),
-              "theta" = list(type = "runif", min = -20 * pi / 180, 
+prior <- list("L"      = list(type = "runif", min = 40, max = 70),
+              "rLW"    = list(type = "runif", min = 3, max = 4),
+              "rLH"    = list(type = "runif", min = 45, max = 66),
+              "theta"  = list(type = "runif", min = -20 * pi / 180, 
                                              max = 20 * pi / 180),
-              "rH"    = 2,
-              "ag"    = 0.05,
+              "rH"     = 2,
+              "ag"     = 0.05,
               "lambda" = 0.001,
-              "bet"   = 10,
-              "gam"   = 0.1,
-              "d"     = 250,
-              "nit"   = 10000,
-              "n0"    = 1,
-              "fd"    = c(2,1),
-              "nF"    = list(type = "runif", min = 2, max = 5),
-              "rpos"  = list(type = "runif", min = 0.65, max = 1), 
-              "phi"   = list(type = "runif", min = -1.5, max = 1.5)
+              "bet"    = 6,
+              "gam"    = 0.2,
+              "d"      = 100,
+              "nit"    = 1000,
+              "n0"     = 1,
+              "fd"     = c(2,1),
+              "nF"     = list(type = "runif", min = 2, max = 5),
+              "rpos"   = list(type = "runif", min = 0.65, max = 1), 
+              "phi"    = list(type = "runif", min = -1.5, max = 1.5)
               )
 
-mod <- sim(modbox, "strauss", prior)
+
+X <- straussMH(bet = prior$bet, gam = prior$gam, d = prior$d, 
+               nit = prior$nit, n0 = prior$n0, W = modbox, fd = prior$fd,
+               count = TRUE)
+ 
+plot(X$X, xlim = modbox$x, ylim = modbox$y)
+plot(X$n, type = "l")
+hist(X$n)
 
 
-plotTopView(mod, border = "red", col = "grey", asp = 1)
+
+mod <- sim(modbox, "strauss", prior, crossbeds = FALSE)
+
+mod2 <- crossBedding(mod, prior)
+
+
+plotTopView(mod, border = "red", col = "grey", asp = 1, add = TRUE)
+plotTopView(mod2, border = "red", col = "grey", asp = 1)
+
+mod3 <- extract(mod, modbox = list(x = c(50, 400), 
+                                   y = c(100, 500), 
+                                   z = c(0.2,     4)))
+
+plotTopView(mod3, border = "red", col = "grey", asp = 1)
+
+plotTopView(x, border = "red", col = "grey", asp = 1)
+plotTopView(bb, border = "blue", add = TRUE)
+
 
 pts <- locator(type="p",n=2)
 l_pts <- joinLine(pts)  # line joining the two points
@@ -186,7 +210,7 @@ plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
             xlim = c(0,100))
             
 # paralell
-smod <- section(mod, lv)
+smod <- section(mod, lh)
 plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
             xlim = c(0,100))
             
