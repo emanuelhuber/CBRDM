@@ -1987,6 +1987,7 @@ setMethod("crossBedding", "Deposits", function(x, prior = NULL){
 
 # setMethod("crossBedding","Trough",function(x,nF=6, phi=1.05, rpos=1){
 setMethod("crossBedding", "Trough", function(x, prior){
+    n <- length(x@id)
     if(is.null(prior)){
       nF   <- rep(6, n)
       rpos <- rep(0.75, n)
