@@ -42,10 +42,47 @@ pts <- locator(type="p",n=2)
 l_pts <- joinLine(pts)  # line joining the two points
 RConics::addLine(l_pts, col="blue")
 
+lv <- c(1, 0, -100)
+lh <- c(0, 1, -100)
+RConics::addLine(lv, col = "blue", lwd = 3)
+RConics::addLine(lh, col = "black", lwd = 4)
+
+
 smod <- section(mod, l_pts)
 plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10))
 plotSection(smod@troughs, border = "red", col = "grey", ylim = c(5,15))
 
+# perpendicular
+smod <- section(mod, lv)
+plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
+            xlim = c(0,100))
+            
+# paralell
+smod <- section(mod, lv)
+plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
+            xlim = c(0,100))
+            
+grid <- list(x = c(0, 100), z = c(0,10), dx = 1, dy = 1, dz = 0.01)
+FAC <- pixelise(smod, grid)
+plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
+
+B <- setProp(FAC$z, type = c("K"), depprop)
+B2 <- setProp(FAC$z, type = c("facies"))
+
+par(oma = c(0,0,0,0), xpd = TRUE)
+plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 2, colkey = FALSE,
+                col = c("lightsalmon4", "lightcyan4", "gold"))
+legend("top", inset = c(-0,-0.25), 
+        cex = 1.5, 
+        bty = "n", 
+        #xpd = TRUE,
+        legend = c("gp", "ow", "bm"), 
+        horiz = TRUE,
+        fill = c("lightsalmon4", "lightcyan4", "gold"))
+#         pch = c(15))
+
+plot3D::image2D(z = B,  x = FAC$x, y = FAC$y, asp = 2, 
+                main ="hydraulic conductivity (m/s)")
 
 mod2 <- crossBedding(mod)
 smod2 <- section(mod2, l_pts)

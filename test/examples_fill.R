@@ -26,7 +26,7 @@ l_pts <- joinLine(pts)  # line joining the two points
 RConics::addLine(l_pts, col="blue")
 
 so2 <- section(o2, l_pts)
-plotSection(so2, border = "red")
+plotSection(so2, border = "red", asp = 2)
 
 
 ##----------------------------- SPOON -------------------------##
