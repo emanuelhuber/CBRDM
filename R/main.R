@@ -2065,7 +2065,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior){
                     runif(n, min = modbox2[3], max = modbox2[4]),
                     rep(zLevel, nPois )), byrow = FALSE,
                     ncol = 3)
-  else if(hmodel == "strauss"){
+  }else if(hmodel == "strauss"){
     L   <- .rsim(prior$L,   n = 500)
     rLW <- .rsim(prior$rLW, n = 500)
     rLH <- .rsim(prior$rLH, n = 500)
