@@ -17,21 +17,23 @@ modbox <- list("x" = c(0,200),    # 0, 700    # before: 0, 500
              "z" = c(0,10)      # for computation range
              )
              
-prior <- list("L"   = list(type = "runif", min = 40, max = 70),
-              "rLW" = list(type = "runif", min = 3, max = 4),
-              "rLH" = list(type = "runif", min = 45, max = 66),
+prior <- list("L"     = list(type = "runif", min = 40, max = 70),
+              "rLW"   = list(type = "runif", min = 3, max = 4),
+              "rLH"   = list(type = "runif", min = 45, max = 66),
               "theta" = list(type = "runif", min = -20 * pi / 180, 
                                              max = 20 * pi / 180),
-              "rH" = 2,
-              "ag" = 0.05,
+              "rH"    = 2,
+              "ag"    = 0.05,
               "lambda" = 0.001,
-              "alpha" = -3,
-              "beta" = 20,
-              "r" = 70,
-              "fd" = c(2,1),
-              "nF" = list(type = "runif", min = 2, max = 5),
-              "rpos" = list(type = "runif", min = 0.65, max = 1), 
-              "phi" = list(type = "runif", min = -1.5, max = 1.5)
+              "bet"   = 10,
+              "gam"   = 0.5,
+              "d"     = 70,
+              "nit"   = 10000,
+              "n0"    = 50,
+              "fd"    = c(2,1),
+              "nF"    = list(type = "runif", min = 2, max = 5),
+              "rpos"  = list(type = "runif", min = 0.65, max = 1), 
+              "phi"   = list(type = "runif", min = -1.5, max = 1.5)
               )
 
 mod <- sim(modbox, "poisson", prior)
@@ -62,8 +64,8 @@ smod <- section(mod, lv)
 plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
             xlim = c(0,100))
             
-grid <- list(x = c(0, 100), z = c(0,10), dx = 1, dy = 1, dz = 0.01)
-FAC <- pixelise(smod, grid)
+mbox <- list(x = c(0, 100), z = c(0,10), dx = 1, dy = 1, dz = 0.01)
+FAC <- pixelise(smod, mbox)
 plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
 
 B <- setProp(FAC$z, type = c("K"), depprop)
@@ -91,8 +93,8 @@ plotSection(smod2, border = "red", col = "grey", asp = 5,
 
 
 ## pixelise model
-grid <- c(mod@bbox, list(dx = 1, dy = 1, dz = 0.05))
-Pix <- pixelise(mod, grid)
+mbox <- c(mod@bbox, list(dx = 1, dy = 1, dz = 0.05))
+Pix <- pixelise(mod, mbox)
 # horizontal xy
 plot3D::image2D(z = Pix$XYZ[,,5], x = Pix$x, y = Pix$y)
 # vertical xz
@@ -109,8 +111,8 @@ plot3D::image2D(z = A[5,,], x = Pix$y, y = Pix$z)
 
 
 ## pixelise section
-grid <- c(mod@bbox, list(dx = 1, dy = 1, dz = 0.01))
-FAC <- pixelise(smod, grid)
+mbox <- c(mod@bbox, list(dx = 1, dy = 1, dz = 0.01))
+FAC <- pixelise(smod, mbox)
 plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
 
 B <- setProp(FAC$z, type = c("K"), depprop)
@@ -124,7 +126,7 @@ plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 5)
 
 ##--- STRAUSS PROCESS
 
-X0 <- straussMH()
+X0 <- straussMH(nit = 50000)
 plot(X0$X)
 plot(X0$n, type = "l")
 hist(X0$n, 50)
@@ -140,8 +142,37 @@ plot(X2$n, type = "l")
 hist(X2$n)
 
 
+prior <- list("L"     = list(type = "runif", min = 40, max = 70),
+              "rLW"   = list(type = "runif", min = 3, max = 4),
+              "rLH"   = list(type = "runif", min = 45, max = 66),
+              "theta" = list(type = "runif", min = -20 * pi / 180, 
+                                             max = 20 * pi / 180),
+              "rH"    = 2,
+              "ag"    = 0.05,
+              "lambda" = 0.001,
+              "bet"   = 100,
+              "gam"   = 0.0,
+              "d"     = 10,
+              "nit"   = 1000,
+              "n0"    = 1,
+              "fd"    = c(1,1),
+              "nF"    = list(type = "runif", min = 2, max = 5),
+              "rpos"  = list(type = "runif", min = 0.65, max = 1), 
+              "phi"   = list(type = "runif", min = -1.5, max = 1.5)
+              )
 
 
+X <- straussMH(bet = prior$bet, gam = prior$gam, d = prior$d, 
+               nit = prior$nit, n0 = prior$n0, W = modbox, fd = prior$fd)
+ 
+plot(X$X)
+plot(X$n, type = "l")
+hist(X$n)
+
+
+
+plot(XL[[1]])
+plot(XL[[2]], type = "l")
 
 
 
@@ -239,7 +270,7 @@ hist(X2$n)
 # 
 # ## pixel section
 # x <- smod
-# grid <- c(mod@bbox, list(dx = 5, dy = 5, dz = 0.1))
+# mbox <- c(mod@bbox, list(dx = 5, dy = 5, dz = 0.1))
 #             
 # x <- smod2@troughs
 # y <- mod2@troughs

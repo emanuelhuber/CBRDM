@@ -852,7 +852,7 @@ setGeneric("doIntersect", function(x, y, ...) standardGeneric("doIntersect"))
 #' @name pixelise
 #' @rdname pixelise
 #' @export
-setGeneric("pixelise", function(x, grid) standardGeneric("pixelise"))
+setGeneric("pixelise", function(x, mbox) standardGeneric("pixelise"))
 
 #' crossBedding
 #'
@@ -1494,17 +1494,17 @@ setMethod("plotTopView", "Cuboid", function(x, add = FALSE, xlab = "x",
 }
 
 ##----------------------- pixelise -------------------------##
-# grid <- list(x = c(xmin, xmax),
+# mbox <- list(x = c(xmin, xmax),
 #             ...
 #             dx = 1,
 #             ...)
-setMethod("pixelise", "Trough", function(x, grid){
-    nx <- (grid$x[2] - grid$x[1])/grid$dx
-    ny <- (grid$y[2] - grid$y[1])/grid$dy
-    nz <- (grid$z[2] - grid$z[1])/grid$dz
-    vx <- seq(grid$x[1], to = grid$x[2], length.out = nx)
-    vy <- seq(grid$y[1], to = grid$y[2], length.out = ny)
-    vz <- seq(grid$z[1], to = grid$z[2], length.out = nz)
+setMethod("pixelise", "Trough", function(x, mbox){
+    nx <- (mbox$x[2] - mbox$x[1])/mbox$dx
+    ny <- (mbox$y[2] - mbox$y[1])/mbox$dy
+    nz <- (mbox$z[2] - mbox$z[1])/mbox$dz
+    vx <- seq(mbox$x[1], to = mbox$x[2], length.out = nx)
+    vy <- seq(mbox$y[1], to = mbox$y[2], length.out = ny)
+    vz <- seq(mbox$z[1], to = mbox$z[2], length.out = nz)
     XYZ <- array( 0, dim=c(nx, ny,nz))
     E <- as.matrix(x)
     cstO2E <- x@rH/(2*sqrt(2*x@rH -1))
@@ -1512,41 +1512,9 @@ setMethod("pixelise", "Trough", function(x, grid){
     vol <- numeric(n)
     b <- bbox(x)
     for(i in 1:n){
-#       e <- E[i, ]  # ellispoid e
-#       # limit x, y, z de l'ellispoid
-#       xrange0 <- ( floor((e["x"] - b@L[i]/2)/grid$dx):
-#                 ceiling((e["x"] + b@L[i]/2)/grid$dx))*grid$dx
-#       xrange <- xrange0[ (xrange0 - grid$x[1]) >= grid$dx & 
-#                           xrange0 <= grid$x[2] ]
-#       yrange0 <- ( floor ((e["y"] - b@W[i]/2)/grid$dy):
-#                 ceiling ((e["y"] + b@W[i]/2)/grid$dy))*grid$dy
-#       yrange <- yrange0[yrange0 - grid$y[1] >= grid$dy & 
-#                         yrange0 <= grid$y[2] ]
-#       zrange0 <- (floor ((e["z"] -e["H"])/grid$dz):
-#                 ceiling (e["z"]/grid$dz))*grid$dz
-#       zrange <- zrange0[ zrange0 >= grid$z[1] & zrange0 <= grid$z[2] ]
-#       if( length(xrange)!=0 && length(yrange)!=0 && length(zrange) != 0 ){
-#         xnew <- rep(xrange - e["x"], length(yrange))
-#         ynew <- rep(yrange - e["y"], each = length(xrange))
-#         xComponent <- (( xnew * cos(e["theta"]) + ynew *sin(e["theta"])) / 
-#                         (e["L"] * cstO2E[i]))^2
-#         yComponent <- (( -xnew*sin(e["theta"]) + ynew*cos(e["theta"])) / 
-#                         (e["W"] * cstO2E[i]))^2
-#         xyComponent <- xComponent + yComponent
-#         id_i <- round((xrange-grid$x[1])/grid$dx)
-#         id_j <- round((yrange-grid$y[1])/grid$dy)
-#         z <- e["z"]  + e["H"] * (e["rH"] - 1)
-#         zComponent <- (( zrange - z) / (e["H"] * e["rH"]) )^2
-#         id_k <- round((zrange-grid$z[1])/grid$dz)
-#         for(k in seq_along(zrange)){
-#           condition <- (xyComponent + zComponent[k]) <= 1
-#           vol[i] <- vol[i] + sum(condition)
-#           XYZ[id_i, id_j, id_k[k]][condition] <- i
-#         }
-#       }
       A <- .pixeliseTrough(e = E[i, ], i, L = b@L[i], W = b@W[i],
                                 vx = vx, vy = vy, vz = vz, 
-                                grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
+                                mbox = mbox, XYZ = XYZ, cstO2Ei = cstO2E[i])
       vol[i] <- A$vol
       XYZ <- A$XYZ
     }
@@ -1556,16 +1524,16 @@ setMethod("pixelise", "Trough", function(x, grid){
 
 
 
-setMethod("pixelise", "Deposits", function(x, grid){
-    # 0. grid
-    nx <- (grid$x[2] - grid$x[1])/grid$dx
-    ny <- (grid$y[2] - grid$y[1])/grid$dy
-    nz <- (grid$z[2] - grid$z[1])/grid$dz
-    vx <- seq(grid$x[1] + grid$dx/2, to = grid$x[2] - grid$dx/2, 
+setMethod("pixelise", "Deposits", function(x, mbox){
+    # 0. mbox
+    nx <- (mbox$x[2] - mbox$x[1])/mbox$dx
+    ny <- (mbox$y[2] - mbox$y[1])/mbox$dy
+    nz <- (mbox$z[2] - mbox$z[1])/mbox$dz
+    vx <- seq(mbox$x[1] + mbox$dx/2, to = mbox$x[2] - mbox$dx/2, 
               length.out = nx)
-    vy <- seq(grid$y[1] + grid$dy/2, to = grid$y[2] - grid$dy/2, 
+    vy <- seq(mbox$y[1] + mbox$dy/2, to = mbox$y[2] - mbox$dy/2, 
               length.out = ny)
-    vz <- seq(grid$z[1] + grid$dz/2, to = grid$z[2] - grid$dz/2, 
+    vz <- seq(mbox$z[1] + mbox$dz/2, to = mbox$z[2] - mbox$dz/2, 
               length.out = nz)
     XYZ <- array( 0, dim=c(nx, ny,nz))
     # 1. discretise layers
@@ -1589,7 +1557,7 @@ setMethod("pixelise", "Deposits", function(x, grid){
       if((it %% 2) == 0) it <- it + 1
       A <- .pixeliseTrough(e = E[i, ], it, L = b@L[i], W = b@W[i],
                                 vx = vx, vy = vy, vz = vz,  
-                                grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
+                                mbox = mbox, XYZ = XYZ, cstO2Ei = cstO2E[i])
       vol[i] <- A$vol
       XYZ <- A$XYZ
       if(!is.null(x@troughs@fill[[i]]) && length(x@troughs@fill[[i]]) > 0){
@@ -1598,7 +1566,7 @@ setMethod("pixelise", "Deposits", function(x, grid){
           it <- it + 1
           A <- .pixeliseTrough(e = Ei[k, ], it, L = b@L[i], W = b@W[i],
                                 vx = vx, vy = vy, vz = vz, 
-                                grid = grid, XYZ = XYZ, cstO2Ei = cstO2E[i])
+                                mbox = mbox, XYZ = XYZ, cstO2Ei = cstO2E[i])
           vol[i] <- A$vol
           XYZ <- A$XYZ
         }
@@ -1609,12 +1577,12 @@ setMethod("pixelise", "Deposits", function(x, grid){
   }
 )
 
-setMethod("pixelise", "Deposits2D", function(x, grid){
-    nx <- (grid$x[2] - grid$x[1])/grid$dx
-    nz <- (grid$z[2] - grid$z[1])/grid$dz
-    vx <- seq(grid$x[1] + grid$dx/2, to = grid$x[2] - grid$dx/2, 
+setMethod("pixelise", "Deposits2D", function(x, mbox){
+    nx <- (mbox$x[2] - mbox$x[1])/mbox$dx
+    nz <- (mbox$z[2] - mbox$z[1])/mbox$dz
+    vx <- seq(mbox$x[1] + mbox$dx/2, to = mbox$x[2] - mbox$dx/2, 
               length.out = nx)
-    vz <- seq(grid$z[1] + grid$dz/2, to = grid$z[2] - grid$dz/2, 
+    vz <- seq(mbox$z[1] + mbox$dz/2, to = mbox$z[2] - mbox$dz/2, 
               length.out = nz)
     XZ <- matrix(0, nrow = nx, ncol = nz)
     # 1. discretise layers
@@ -1646,14 +1614,6 @@ setMethod("pixelise", "Deposits2D", function(x, grid){
                                 vx = vx, vz = vz, XZ)
         }
       }
-#       testx <- vx >= (e["x"] - L/2)    & vx <= (e["x"] + L/2)
-#       testz <- vz >= (e["zmax"] - H) & vz <= (e["y"])
-#       if( any(testx) && any(testz) ){
-#         xComponent <- ( (vx[testx] - e["x"]) / e["a"] )^2
-#         zComponent <- ( (vz[testz] - e["y"]) / e["b"] )^2
-#         xyComponent <- outer(xComponent,zComponent,'+')
-#         XZ[testx, testz][xyComponent <=1 ] <- i
-#       }    
     }
     return(list(z = XZ, x = vx, y = vz))
   }
@@ -1676,7 +1636,7 @@ setMethod("pixelise", "Deposits2D", function(x, grid){
 # W <- b@W[i]
 # cstO2Ei <- cstO2E[i]
 # voli <- vol[i]
-.pixeliseTrough <- function(e, i, L, W, vx, vy, vz, grid, XYZ, cstO2Ei){
+.pixeliseTrough <- function(e, i, L, W, vx, vy, vz, mbox, XYZ, cstO2Ei){
   vol <- 0
   xr <- vx[ vx >= (e["x"] - L/2)    & vx <= (e["x"] + L/2)]
   yr <- vy[ vy >= (e["y"] - W/2)    & vy <= (e["y"] + W/2)]
@@ -1689,11 +1649,11 @@ setMethod("pixelise", "Deposits2D", function(x, grid){
     yComponent <- ((-xnew*sin(e["theta"]) + ynew*cos(e["theta"])) / 
                     (e["W"] * cstO2Ei))^2
     xyComponent <- xComponent + yComponent
-    id_i <- round((xr - grid$x[1] + grid$dx/2) / grid$dx)
-    id_j <- round((yr - grid$y[1] + grid$dy/2) / grid$dy)
+    id_i <- round((xr - mbox$x[1] + mbox$dx/2) / mbox$dx)
+    id_j <- round((yr - mbox$y[1] + mbox$dy/2) / mbox$dy)
     z <- e["z"]  + e["H"] * (e["rH"] - 1)
     zComponent <- (( zr - z) / (e["H"] * e["rH"]) )^2
-    id_k <- round((zr - grid$z[1] + grid$dz/2) / grid$dz)
+    id_k <- round((zr - mbox$z[1] + mbox$dz/2) / mbox$dz)
     for(k in seq_along(zr)){
       condition <- (xyComponent + zComponent[k]) <= 1
       vol <- vol + sum(condition)
@@ -2076,42 +2036,71 @@ setMethod("crossBedding", "Trough", function(x, nF = 6, phi = 1.05, rpos = 1){
 #'
 #' Simulate coarse, braided river deposits
 #' @export
-sim <- function(modbox, model = c("poisson", "straus"), prior){
-  # number of levels is Poisson distributed
+sim <- function(modbox, hmodel = c("poisson", "strauss"), prior){
+  hmodel <- match.arg(tolower(hmodel), c("poisson", "strauss"))
+  #--- 1. vertical distribution layers: Poisson process
   dz <- diff(modbox$z)
   lambdaz <- dz/prior$ag
   nZ <- rpois(1, lambdaz)
   zLevel <- sort(modbox$z[1] + dz*runif(nZ))
-  # number of objects is Poisson distributed
-  meanNObjects <- prior$lambda * diff(modbox$x) * diff(modbox$y)
-  nPois <- rpois(nZ, meanNObjects)
-  # total number of object
-  n <-  sum(nPois)
-  # length
-  L <- .rsim(prior$L, n)
-  rLW <- .rsim(prior$rLW, n)
-  rLH <- .rsim(prior$rLH, n)
-  W <- L/rLW
-  # position
-  maxL <- max(L, W)
-  modbox2 <- c("xmin" = modbox$x[1] - maxL,
-               "xmax" = modbox$x[2] + maxL,
-               "ymin" = modbox$y[1] - maxL,
-               "ymax" = modbox$y[2] + maxL)
-  xyz <- matrix(c(runif(n, min = modbox2[1], max = modbox2[2]),
-                  runif(n, min = modbox2[3], max = modbox2[4]),
-                  rep(zLevel, nPois )), byrow = FALSE,
-                  ncol = 3)
+  #--- 2. horizontal distribution scour fill: Poisson|Strauss model
+  if(hmodel == "poisson"){
+    # number of objects is Poisson distributed
+    meanNObjects <- prior$lambda * diff(modbox$x) * diff(modbox$y)
+    nPois <- rpois(nZ, meanNObjects)
+    # total number of object
+    n <-  sum(nPois)
+    # length
+    L   <- .rsim(prior$L, n)
+    rLW <- .rsim(prior$rLW, n)
+    rLH <- .rsim(prior$rLH, n)
+    W <- L/rLW
+    # position
+    maxL <- max(L, W)
+    modbox2 <- c("xmin" = modbox$x[1] - maxL,
+                 "xmax" = modbox$x[2] + maxL,
+                 "ymin" = modbox$y[1] - maxL,
+                 "ymax" = modbox$y[2] + maxL)
+    xyz <- matrix(c(runif(n, min = modbox2[1], max = modbox2[2]),
+                    runif(n, min = modbox2[3], max = modbox2[4]),
+                    rep(zLevel, nPois )), byrow = FALSE,
+                    ncol = 3)
+  else if(hmodel == "strauss"){
+    L   <- .rsim(prior$L,   n = 500)
+    rLW <- .rsim(prior$rLW, n = 500)
+    rLH <- .rsim(prior$rLH, n = 500)
+    W <- L/rLW
+    # position
+    maxL <- ceiling(max(L, W)*1.1)
+    modbox2 <- c("xmin" = modbox$x[1] - 2 * prior$d - maxL,
+                 "xmax" = modbox$x[2] + 2 * prior$d + maxL,
+                 "ymin" = modbox$y[1] - 2 * prior$d - maxL,
+                 "ymax" = modbox$y[2] + 2 * prior$d + maxL)
+    XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
+                                  d   = prior$d,   nit = prior$nit, 
+                                  n0  = prior$n0,  W = modbox, fd = prior$fd) )
+    Xmat <- do.call(rbind, XL)
+    nStrauss <- sapply(XL, nrow)
+    n <- nrow(Xmat)
+    xyz <- matrix(nrow = n, ncol = 3)
+    xyz[,1:2] <- Xmat
+    xyz[,3] <- rep(zLevel, nStrauss )
+    L   <- .rsim(prior$L, n)
+    rLW <- .rsim(prior$rLW, n)
+    rLH <- .rsim(prior$rLH, n)
+    W   <- L/rLW
+  }
   trgh <- new("Trough",
-            version="0.1",
-            id = seq_len(n),
-            pos = xyz,
-            L = L,
-            W = W,
-            H = L/rLH,
-            theta = .rsim(prior$theta, n),  # depth position
-            rH = rep(prior$rH, n)
-          )
+              version = "0.1",
+              id      = seq_len(n),
+              pos     = xyz,
+              L       = L,
+              W       = W,
+              H       = L/rLH,
+              theta   = .rsim(prior$theta, n),  # depth position
+              rH      = rep(prior$rH, n)
+            )
+  #--- 3. CROSS-BEDS
   nF <- round(W / .rsim(prior$nF, n)) +1
   rpos <- .rsim(prior$rpos, n)
   phi <- .rsim(prior$phi, n)
@@ -2147,9 +2136,11 @@ sim <- function(modbox, model = c("poisson", "straus"), prior){
 #' with 0 <= gam <= 1 and bet > 0
 #' if gam = 1, Strauss process = Poisson process
 #' if gam = 0, Strauss process = Hard core process
+#' @param count boolean TRUE: return the number of points for each iteration
 #' @export
 straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
-                      W = list(x = c(0, 1), y = c(0, 1)), fd = NULL){
+                      W = list(x = c(0, 1), y = c(0, 1)), fd = NULL,
+                      count = FALSE){
   # initialisation
   if(gam < 0 || gam > 1) stop("gam must be >= 0 and <= 0!\n")
   if(is.null(fd)) fd <- c(1,1)
@@ -2174,7 +2165,7 @@ straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
       if(runif(1) <= min(1, pp)){
           #X <- X[c(seq_len(n), n), ]
           #X[n + 1, ] <- x_cand
-          X <- rbind(X, x_cand)
+          X <- rbind(X, x_cand, deparse.level = 0)
           n <- n + 1
       }
     # DEATH
@@ -2191,7 +2182,11 @@ straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
   }
   X[,1] <- W$x[1] + (X[,1]) * fd[1]
   X[,2] <- W$y[1] + (X[,2]) * fd[2]
-  return(list("X"=X,"n"=nv))
+  if( isTRUE(count) ){
+    return( list("X" = X,"n" = nv) )
+  }else{
+    return( X )
+  }
 }
 
 distxtoX <- function(X,x){
