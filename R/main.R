@@ -2147,6 +2147,7 @@ sim <- function(modbox, model = c("poisson", "straus"), prior){
 #' with 0 <= gam <= 1 and bet > 0
 #' if gam = 1, Strauss process = Poisson process
 #' if gam = 0, Strauss process = Hard core process
+#' @export
 straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
                       W = list(x = c(0, 1), y = c(0, 1)), fd = NULL){
   # initialisation
