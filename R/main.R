@@ -2141,72 +2141,16 @@ sim <- function(modbox, model = c("poisson", "straus"), prior){
 
 
 ##--------------------------- POINT PROCESS ----------------------##
-# strauss process: bet^(n(y)) * gam^(s(y))
-# exp(-gam) <=> beta' (in spatstat::rStrauss)
-# exp(-beta) <=> gamma (in spatstat::rStrauss)
-# gam <0
-# if beta >> 0 (large) => hard sphere process
-# fd = c(1,1)|NULL
-straussMH2 <- function(gam = -3, bet = 1.5, d = 0.1, n0 = 10, nit = 5000,
-                      W = list(x = c(0, 100),"y" = c(0, 100)), fd = NULL){
-    # initialisation
-    xmax  <- diff(W$x)/fd[1]
-    ymax  <- diff(W$y)/fd[2]
-    X     <- matrix(ncol = 2,nrow = n0)
-    X[,1] <- runif(n0, 0, xmax)
-    X[,2] <- runif(n0, 0, ymax)
-    n     <- integer(nit)
-    i     <- 0
-    n[1] <- n0
-    while(i < nit){
-        i <- i + 1
-        n[i + 1] <- n[i]
-        # BIRTH
-        if(n[i] <= 1 || sample(c(TRUE,FALSE),1)){
-            x_cand <- c(runif(1, 0, xmax), runif(1, 0, ymax))
-            phi <- sum(distxtoX(X, x_cand) <= d)
-            if(is.infinite(bet) && phi==0){
-                pp <- 1/(n[i]+1) * exp(-gam )
-            }else{
-                pp <- 1/(n[i]+1) * exp(-gam - bet*phi)
-            }
-            if(runif(1) <= min(1,pp)){
-                X <- X[c(1:n[i],n[i]),]
-                X[n[i]+1,] <- x_cand
-                n[i + 1] <- n[i] + 1
-            }
-        # DEATH
-        }else{
-            x_cand_pos <- sample(seq_along(X[,1]),1)
-            phi <- sum(distxtoX(X[-x_cand_pos, ,drop=FALSE], 
-                                X[ x_cand_pos,,drop=FALSE])  <= d)
-            if(is.infinite(bet) && phi==0){
-                pm <- n[i]*exp(gam)
-            }else{
-                pm <- n[i]*exp(gam + bet*phi)
-            }
-            if(runif(1) <= min(1,pm)){
-                X <- X[-x_cand_pos,,drop=FALSE]
-                n[i + 1] <- n[i] - 1
-            }
-        }
-    }
-    X[,1] <- W$x[1] + (X[,1]) * fd[1]
-    X[,2] <- W$y[1] + (X[,2]) * fd[2]
-    
-    return(list("X"=X,"n"=n))
-}
-
-r = 0.1; gam = 0.2; beta = 100; %parameters
-n = 200; x = rand(n,2); %initial pp
-K = 1000;
-
-
-
-# strauss process: bet^(n(y)) * gam^(s(y))
-straussMH <- function(bet = 100, gam = 1.5, d = 0.1, n0 = 200, nit = 1000,
+#' Strauss process simulation (MCMC)
+#'
+#' strauss process: bet^(n(y)) * gam^(s(y))
+#' with 0 <= gam <= 1 and bet > 0
+#' if gam = 1, Strauss process = Poisson process
+#' if gam = 0, Strauss process = Hard core process
+straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
                       W = list(x = c(0, 1), y = c(0, 1)), fd = NULL){
   # initialisation
+  if(gam < 0 || gam > 1) stop("gam must be >= 0 and <= 0!\n")
   if(is.null(fd)) fd <- c(1,1)
   xmax  <- diff(W$x)/fd[1]
   ymax  <- diff(W$y)/fd[2]

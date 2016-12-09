@@ -87,6 +87,11 @@ plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 5)
 
 ##--- STRAUSS PROCESS
 
+X0 <- straussMH()
+plot(X0$X)
+plot(X0$n, type = "l")
+hist(X0$n, 50)
+
 X1 <- straussMH(bet = 100, gam = 1, d = 0.05, nit = 50000, n0 = 100)
 plot(X1$X)
 plot(X1$n, type = "l")
