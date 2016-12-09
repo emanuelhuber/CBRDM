@@ -2140,6 +2140,76 @@ sim <- function(modbox, model = c("poisson", "straus"), prior){
 
 
 
+# ##--------------------------- POINT PROCESS ----------------------##
+# # strauss process: get^(n(y)) * gam^(s(y))
+# # exp(-alpha) <=> beta' (in spatstat::rStrauss)
+# # exp(-beta) <=> gamma (in spatstat::rStrauss)
+# # alpha <0
+# # if beta >> 0 (large) => hard sphere process
+# # fd = c(1,1)|NULL
+# straussMH <- function(alpha = -3, gam = 1.5, d = 0.1, n0 = 10, nit = 5000,
+#                       W = list(x = c(0, 100),"y" = c(0, 100)), fd = NULL){
+#     # initialisation
+#     xmax  <- diff(W$x)/fd[1]
+#     ymax  <- diff(W$y)/fd[2]
+#     X     <- matrix(ncol = 2,nrow = n0)
+#     X[,1] <- runif(n0, 0, xmax)
+#     X[,2] <- runif(n0, 0, ymax)
+#     n     <- integer(nit)
+#     i     <- 0
+#     while(i < nit){
+#         i <- i + 1
+#         n[i] <- nrow(X)
+#         # BIRTH
+#         if(n[i] <= 1 || sample(c(TRUE,FALSE),1)){
+#             x_cand <- c(runif(1,0,xmax), runif(1,0,ymax))
+#             phi <- sum(distxtoX(X,x_cand)<=d)
+#             if(is.infinite(gam) && phi==0){
+#                 pp <- 1/(n[i]+1) * exp(-alpha )
+#             }else{
+#                 pp <- 1/(n[i]+1) * exp(-alpha - gam*phi)
+#             }
+#             if(runif(1) <= min(1,pp)){
+#                 X <- X[c(1:n[i],n[i]),]
+#                 X[n[i]+1,] <- x_cand
+#             }
+#         # DEATH
+#         }else{
+#             x_cand_pos <- sample(seq_along(X[,1]),1)
+#             phi <- 
+# sum(distxtoX(X[-x_cand_pos,,drop=FALSE],X[x_cand_pos,,drop=FALSE])<=d)
+#             if(is.infinite(gam) && phi==0){
+#                 pm <- n[i]*exp(alpha)
+#             }else{
+#                 pm <- n[i]*exp(alpha + gam*phi)
+#             }
+#             if(runif(1) <= min(1,pm)){
+#                 X <- X[-x_cand_pos,,drop=FALSE]
+#             }
+#         }
+#     }
+#     X[,1] <- W$x[1]+(X[,1])*fd[1]
+#     X[,2] <- W$y[1]+(X[,2])*fd[2]
+#     
+#     return(list("X"=X,"n"=n))
+# }
+# 
+# 
+# 
+# distxtoX <- function(X,x){
+#     sqrt(rowSums(sweep(X,2,x,'-')^2))
+#     # sqrt(apply((X - matrix(x,nrow=nrow(X),ncol=ncol(X),byrow=TRUE))^2,1,sum))
+# }
+# 
+# distxtoXfd <- function(X,x,fd){
+#     myDif <- sweep(X,2,x,'-')
+#     # sqrt(apply((X - matrix(x,nrow=nrow(X),ncol=ncol(X),byrow=TRUE))^2,1,sum))
+#     sqrt(rowSums(sweep(myDif,2,prior$fd,'/')^2))
+# }
+# 
+
+
+
 ##--------------------------- HELPER FUNCTIONS ----------------------##
 # example:
 # pts <- locator(type="p",n=2)

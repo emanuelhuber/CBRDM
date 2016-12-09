@@ -1,8 +1,5 @@
 
-## TODO: PIXELISE 
-##            > Deposits
-##            > Trough2D
-##            > Deposits2D
+
 ## TODO: STRAUSS MODEL
 ## TODO: SUBSURFACE FLOW SIMULATION
 
