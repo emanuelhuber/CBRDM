@@ -85,7 +85,17 @@ plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 5)
 
 
 
+##--- STRAUSS PROCESS
 
+X1 <- straussMH(bet = 100, gam = 1, d = 0.05, nit = 50000, n0 = 100)
+plot(X1$X)
+plot(X1$n, type = "l")
+hist(X1$n, 50)
+
+X2 <- straussMH(bet = 50, gam = 0.5, d = 0.2, nit = 50000, n0 = 60)
+plot(X2$X)
+plot(X2$n, type = "l")
+hist(X2$n)
 
 
 
@@ -149,7 +159,8 @@ plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 5)
 # ugp <- unique(FAC$z[bm])
 # ngp <- length(ugp)
 # gpK <- runif(ngp, 0, 1)
-# gpK <- rlognorm(ngp, mean = depprop[[vl]]["K"], sdlog = depprop[[vl]]["K"])     
+# gpK <- rlognorm(ngp, mean = depprop[[vl]]["K"], sdlog = depprop[[vl]]["K"])   
+  
 #        
 #             
 # range(as.vector(Pix$XYZ))
