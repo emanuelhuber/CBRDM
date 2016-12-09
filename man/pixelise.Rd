@@ -4,7 +4,7 @@
 \alias{pixelise}
 \title{pixelise}
 \usage{
-pixelise(x, grid)
+pixelise(x, mbox)
 }
 \description{
 pixelise

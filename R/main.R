@@ -859,7 +859,7 @@ setGeneric("pixelise", function(x, mbox) standardGeneric("pixelise"))
 #' @name crossBedding
 #' @rdname crossBedding
 #' @export
-setGeneric("crossBedding", function(x, nF = 6, phi = 1.05, rpos = 1)     
+setGeneric("crossBedding", function(x, prior)     
             standardGeneric("crossBedding"))
 
 #' plotTopView
@@ -1964,24 +1964,42 @@ setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
 }
 
 ##-------------------------------- FILLING --------------------------##
-setMethod("crossBedding", "Deposits", function(x, nF = 6, phi = 1.05, rpos = 1){
-    n <- length(x@troughs@id)
-    xbed <- list()
-    for( i in seq_len(n)){
-      xbed[[x@troughs@id[i]]] <- .regCrossBedding(x@troughs[[i]], nF = 6,
-                                                  rpos = 0.75, phi = 2.2)
-    }
-    x@troughs@fill <- xbed
+setMethod("crossBedding", "Deposits", function(x, prior = NULL){
+#     n <- length(x@troughs@id)
+#     if(is.null(prior)){
+#       nF   <- rep(6, n)
+#       rpos <- rep(0.75, n)
+#       phi  <- rep(2.2, n)
+#     }else{
+#       nF <- round(W / .rsim(prior$nF, n)) +1
+#       rpos <- .rsim(prior$rpos, n)
+#       phi  <- .rsim(prior$phi, n)
+#     }
+#     xbed <- list()
+#     for( i in seq_len(n)){
+#       xbed[[x@troughs@id[i]]] <- .regCrossBedding(x@troughs[[i]], nF = nF[i],
+#                                              rpos = rpos[i], phi = phi[i])
+#     }
+    x@troughs@fill <- crossBedding(x@troughs, prior)
     return(x)
   }
 )
 
-setMethod("crossBedding", "Trough", function(x, nF = 6, phi = 1.05, rpos = 1){
-    n <- length(x@id)
+# setMethod("crossBedding","Trough",function(x,nF=6, phi=1.05, rpos=1){
+setMethod("crossBedding", "Trough", function(x, prior){
+    if(is.null(prior)){
+      nF   <- rep(6, n)
+      rpos <- rep(0.75, n)
+      phi  <- rep(2.2, n)
+    }else{
+      nF <- round(x@W / .rsim(prior$nF, n)) +1
+      rpos <- .rsim(prior$rpos, n)
+      phi  <- .rsim(prior$phi, n)
+    }
     xbed <- list()
     for( i in seq_len(n)){
-      xbed[[x@id[i]]] <- .regCrossBedding(x[[i]], nF = 6, rpos = 0.75, 
-                                          phi = 2.2)
+      xbed[[x@id[i]]] <- .regCrossBedding(x[[i]], nF = nF[i],
+                                             rpos = rpos[i], phi = phi[i])
     }
     x@fill <- xbed
     return(x)
@@ -2036,7 +2054,8 @@ setMethod("crossBedding", "Trough", function(x, nF = 6, phi = 1.05, rpos = 1){
 #'
 #' Simulate coarse, braided river deposits
 #' @export
-sim <- function(modbox, hmodel = c("poisson", "strauss"), prior){
+sim <- function(modbox, hmodel = c("poisson", "strauss"), prior, 
+                crossbeds = TRUE){
   hmodel <- match.arg(tolower(hmodel), c("poisson", "strauss"))
   #--- 1. vertical distribution layers: Poisson process
   dz <- diff(modbox$z)
@@ -2101,15 +2120,17 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior){
               rH      = rep(prior$rH, n)
             )
   #--- 3. CROSS-BEDS
-  nF <- round(W / .rsim(prior$nF, n)) +1
-  rpos <- .rsim(prior$rpos, n)
-  phi <- .rsim(prior$phi, n)
-  xbed <- list()
-  for( i in seq_len(n)){
-    xbed[[trgh@id[i]]] <- .regCrossBedding(trgh[[i]], nF = nF[i],
-                                                  rpos = rpos[i], phi = phi[i])
+  if(isTRUE(crossbeds)){
+    nF <- round(W / .rsim(prior$nF, n)) +1
+    rpos <- .rsim(prior$rpos, n)
+    phi  <- .rsim(prior$phi, n)
+    xbed <- list()
+    for( i in seq_len(n)){
+      xbed[[trgh@id[i]]] <- .regCrossBedding(trgh[[i]], nF = nF[i],
+                                             rpos = rpos[i], phi = phi[i])
+    }
+    trgh@fill <- xbed
   }
-  trgh@fill <- xbed
   new("Deposits",
       version = "0.1",
       troughs = trgh,

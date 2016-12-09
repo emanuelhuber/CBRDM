@@ -5,7 +5,10 @@
 \title{Strauss process simulation (MCMC)}
 \usage{
 straussMH(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
-  W = list(x = c(0, 1), y = c(0, 1)), fd = NULL)
+  W = list(x = c(0, 1), y = c(0, 1)), fd = NULL, count = FALSE)
+}
+\arguments{
+\item{count}{boolean TRUE: return the number of points for each iteration}
 }
 \description{
 strauss process: bet^(n(y)) * gam^(s(y))

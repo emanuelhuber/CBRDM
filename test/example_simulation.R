@@ -141,6 +141,10 @@ plot(X2$X)
 plot(X2$n, type = "l")
 hist(X2$n)
 
+modbox <- list("x" = c(0, 1000),    # 0, 700    # before: 0, 500
+               "y" = c(0, 1000),    # 0, 500    # before: 100, 400
+               "z" = c(0, 5)      # for computation range
+             )
 
 prior <- list("L"     = list(type = "runif", min = 40, max = 70),
               "rLW"   = list(type = "runif", min = 3, max = 4),
@@ -150,24 +154,63 @@ prior <- list("L"     = list(type = "runif", min = 40, max = 70),
               "rH"    = 2,
               "ag"    = 0.05,
               "lambda" = 0.001,
-              "bet"   = 100,
-              "gam"   = 0.0,
-              "d"     = 10,
-              "nit"   = 1000,
+              "bet"   = 10,
+              "gam"   = 0.1,
+              "d"     = 250,
+              "nit"   = 10000,
               "n0"    = 1,
-              "fd"    = c(1,1),
+              "fd"    = c(2,1),
               "nF"    = list(type = "runif", min = 2, max = 5),
               "rpos"  = list(type = "runif", min = 0.65, max = 1), 
               "phi"   = list(type = "runif", min = -1.5, max = 1.5)
               )
 
+mod <- sim(modbox, "strauss", prior)
 
-X <- straussMH(bet = prior$bet, gam = prior$gam, d = prior$d, 
-               nit = prior$nit, n0 = prior$n0, W = modbox, fd = prior$fd)
- 
-plot(X$X)
-plot(X$n, type = "l")
-hist(X$n)
+
+plotTopView(mod, border = "red", col = "grey", asp = 1)
+
+pts <- locator(type="p",n=2)
+l_pts <- joinLine(pts)  # line joining the two points
+RConics::addLine(l_pts, col="blue")
+
+lv <- c(1, 0, -100)
+lh <- c(0, 1, -100)
+RConics::addLine(lv, col = "blue", lwd = 3)
+RConics::addLine(lh, col = "black", lwd = 4)
+
+
+# perpendicular
+smod <- section(mod, lv)
+plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
+            xlim = c(0,100))
+            
+# paralell
+smod <- section(mod, lv)
+plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
+            xlim = c(0,100))
+            
+mbox <- list(x = c(0, 100), z = c(0,10), dx = 1, dy = 1, dz = 0.01)
+FAC <- pixelise(smod, mbox)
+plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
+
+B <- setProp(FAC$z, type = c("K"), depprop)
+B2 <- setProp(FAC$z, type = c("facies"))
+
+par(oma = c(0,0,0,0), xpd = TRUE)
+plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 2, colkey = FALSE,
+                col = c("lightsalmon4", "lightcyan4", "gold"))
+legend("top", inset = c(-0,-0.25), 
+        cex = 1.5, 
+        bty = "n", 
+        #xpd = TRUE,
+        legend = c("gp", "ow", "bm"), 
+        horiz = TRUE,
+        fill = c("lightsalmon4", "lightcyan4", "gold"))
+#         pch = c(15))
+
+
+
 
 
 

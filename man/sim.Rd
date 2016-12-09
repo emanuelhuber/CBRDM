@@ -4,7 +4,7 @@
 \alias{sim}
 \title{Simulate}
 \usage{
-sim(modbox, model = c("poisson", "straus"), prior)
+sim(modbox, hmodel = c("poisson", "strauss"), prior)
 }
 \description{
 Simulate coarse, braided river deposits
