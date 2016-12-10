@@ -176,19 +176,21 @@ hist(X$n)
 
 
 
-mod <- sim(modbox, "strauss", prior, crossbeds = FALSE)
+mod <- sim(modbox, hmodel = "strauss", prior, crossbeds = FALSE)
 
 mod2 <- crossBedding(mod, prior)
 
 
-plotTopView(mod, border = "red", col = "grey", asp = 1, add = TRUE)
+plotTopView(mod@troughs, border = "red", col = "grey", asp = 1)
 plotTopView(mod2, border = "red", col = "grey", asp = 1)
 
+mod3 <- extract(mod, modbox)
 mod3 <- extract(mod, modbox = list(x = c(50, 400), 
                                    y = c(100, 500), 
                                    z = c(-1,     6)))
 
 plotTopView(mod3, border = "black", col = "green", asp = 1, add = TRUE)
+rect(modbox$x[1], modbox[3], modbox
 
 plotTopView(x, border = "red", col = "grey", asp = 1)
 plotTopView(bb, border = "blue", add = TRUE)

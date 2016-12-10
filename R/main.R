@@ -4,9 +4,10 @@
 ## TODO
 # - section: Cuboid
 # - plotObj: Trough2D
-# - fill !!!!
-# to do: if model size too small for strauss, increase it enough and
-# then use the extract function
+# - extract()
+# - length()
+# - getParameters()
+
 
 # don't return NULL but empty object (length 0)
 
@@ -1133,8 +1134,8 @@ setMethod("extract", "Deposits", function(x, modbox){
 )
 setMethod("extract", "Trough", function(x, modbox){
     bb <- bbox(x)
-    bbmin <- bb@pos - c(bb@L, bb@W, bb@H)/2
-    bbmax <- bb@pos + c(bb@L, bb@W, bb@H)/2
+    bbmin <- bb@pos + c(bb@L, bb@W, bb@H)/2
+    bbmax <- bb@pos - c(bb@L, bb@W, bb@H)/2
     mbmin <- matrix(c(modbox$x[1], modbox$y[1], modbox$z[1]),
                     nrow = nrow(bbmin), ncol = 3, byrow = TRUE)
     mbmax <-  matrix(c(modbox$x[2], modbox$y[2], modbox$z[2]),
@@ -2108,25 +2109,22 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior,
     W <- L/rLW
     # position
     maxL <- max(L, W)
-    modbox2 <- c("xmin" = modbox$x[1] - maxL,
-                 "xmax" = modbox$x[2] + maxL,
-                 "ymin" = modbox$y[1] - maxL,
-                 "ymax" = modbox$y[2] + maxL)
-    xyz <- matrix(c(runif(n, min = modbox2[1], max = modbox2[2]),
-                    runif(n, min = modbox2[3], max = modbox2[4]),
-                    rep(zLevel, nPois )), byrow = FALSE,
-                    ncol = 3)
+    xyz <- matrix(c(runif(n, min = modbox$x[1] - maxL, 
+                             max = modbox$x[2] + maxL),
+                    runif(n, min = modbox$y[1] - maxL, 
+                             max = modbox$y[2] + maxL),
+                    rep(zLevel, nPois )), byrow = FALSE, ncol = 3)
   }else if(hmodel == "strauss"){
     L   <- .rsim(prior$L,   n = 500)
     rLW <- .rsim(prior$rLW, n = 500)
     rLH <- .rsim(prior$rLH, n = 500)
     W <- L/rLW
     # position
-    maxL <- ceiling(max(L, W)*1.1)
-    modbox2 <- c("xmin" = modbox$x[1] - 2 * prior$d - maxL,
-                 "xmax" = modbox$x[2] + 2 * prior$d + maxL,
-                 "ymin" = modbox$y[1] - 2 * prior$d - maxL,
-                 "ymax" = modbox$y[2] + 2 * prior$d + maxL)
+    maxL <- ceiling(max(L, W)*1.5)
+    modbox2 <- list(x = c(modbox$x[1] - 2 * prior$d - maxL,
+                          modbox$x[2] + 2 * prior$d + maxL),
+                    y = c(modbox$y[1] - 2 * prior$d - maxL,
+                          modbox$y[2] + 2 * prior$d + maxL))
     XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
                                   d   = prior$d,   nit = prior$nit, 
                                   n0  = prior$n0,  W = modbox2, fd = prior$fd) )
@@ -2151,6 +2149,9 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior,
               theta   = .rsim(prior$theta, n),  # depth position
               rH      = rep(prior$rH, n)
             )
+  if(hmodel == "strauss"){
+    trgh <- extract(trgh, modbox)
+  }
   #--- 3. CROSS-BEDS
   if(isTRUE(crossbeds)){
     nF <- round(W / .rsim(prior$nF, n)) +1
@@ -2171,7 +2172,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior,
      )
 }
 
-
+#' @export
 .rsim <- function(x, n=1){
   arg <- x[-1]
   arg[["n"]] <- n
