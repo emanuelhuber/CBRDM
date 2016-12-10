@@ -141,8 +141,8 @@ plot(X2$X)
 plot(X2$n, type = "l")
 hist(X2$n)
 
-modbox <- list("x" = c(0, 100),    # 0, 700    # before: 0, 500
-               "y" = c(0, 50),    # 0, 500    # before: 100, 400
+modbox <- list("x" = c(0, 200),    # 0, 700    # before: 0, 500
+               "y" = c(0, 200),    # 0, 500    # before: 100, 400
                "z" = c(0, 5)      # for computation range
              )
 
@@ -213,7 +213,7 @@ l <- lv       # perpendicular
 l <- lh       # paralell
 smod <- section(mod, l)
 plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
-            xlim = c(0,100))
+            xlim = c(-100,100))
          
 mbox <- list(x = c(0, 100), z = c(0,5), dx = 1, dy = 1, dz = 0.01)
 FAC <- pixelise(smod, mbox)
