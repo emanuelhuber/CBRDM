@@ -142,7 +142,7 @@ plot(X2$n, type = "l")
 hist(X2$n)
 
 modbox <- list("x" = c(0, 100),    # 0, 700    # before: 0, 500
-               "y" = c(0, 100),    # 0, 500    # before: 100, 400
+               "y" = c(0, 50),    # 0, 500    # before: 100, 400
                "z" = c(0, 5)      # for computation range
              )
 
@@ -152,13 +152,13 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "theta"  = list(type = "runif", min = -20 * pi / 180, 
                                              max = 20 * pi / 180),
               "rH"     = 2,
-              "ag"     = 0.001,
+              "ag"     = 0.01,
               "lambda" = 0.001,
-              "bet"    = 10,
-              "gam"    = 0.2,
-              "d"      = 200,
-              "nit"    = 1000,
-              "n0"     = 10,
+              "bet"    = 65,
+              "gam"    = 0.1,
+              "d"      = 100,
+              "nit"    = 5000,
+              "n0"     = 1,
               "fd"     = c(2,1),
               "nF"     = list(type = "runif", min = 2, max = 5),
               "rpos"   = list(type = "runif", min = 0.65, max = 1), 
@@ -168,12 +168,17 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
 # saveRDS(list(prior = prior, modbox = modbox, mod = mod), 
 #         file = "sim01_strauss_veryhighAg.rds")
 
+modbox2 <- list("x" = c(0, 900),    # 0, 700    # before: 0, 500
+                "y" = c(0, 900),    # 0, 500    # before: 100, 400
+                "z" = c(0, 5)      # for computation range
+               )
+               
 X <- straussMH(bet = prior$bet, gam = prior$gam, d = prior$d, 
-               nit = prior$nit, n0  = prior$n0,  W = modbox, fd = prior$fd,
+               nit = prior$nit, n0  = prior$n0,  W = modbox2, fd = prior$fd,
                count = TRUE)
  
-plot(X$X, xlim = modbox$x, ylim = modbox$y)
-plot(X$n, type = "l")
+plot(X$X, xlim = modbox2$x, ylim = modbox2$y)
+plot(X$n, type = "l", ylim = c(0, 50))
 hist(X$n)
 
 
