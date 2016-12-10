@@ -141,8 +141,8 @@ plot(X2$X)
 plot(X2$n, type = "l")
 hist(X2$n)
 
-modbox <- list("x" = c(0, 500),    # 0, 700    # before: 0, 500
-               "y" = c(0, 500),    # 0, 500    # before: 100, 400
+modbox <- list("x" = c(0, 100),    # 0, 700    # before: 0, 500
+               "y" = c(0, 100),    # 0, 500    # before: 100, 400
                "z" = c(0, 5)      # for computation range
              )
 
@@ -154,9 +154,9 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "rH"     = 2,
               "ag"     = 0.05,
               "lambda" = 0.001,
-              "bet"    = 6,
+              "bet"    = 3.5,
               "gam"    = 0.2,
-              "d"      = 100,
+              "d"      = 250,
               "nit"    = 1000,
               "n0"     = 1,
               "fd"     = c(2,1),
@@ -181,7 +181,7 @@ mod <- sim(modbox, hmodel = "strauss", prior, crossbeds = FALSE)
 mod2 <- crossBedding(mod, prior)
 
 
-plotTopView(mod@troughs, border = "red", col = "grey", asp = 1)
+plotTopView(mod, border = "red", col = "grey", asp = 1)
 plotTopView(mod2, border = "red", col = "grey", asp = 1)
 
 mod3 <- extract(mod, modbox)
@@ -190,7 +190,7 @@ mod3 <- extract(mod, modbox = list(x = c(50, 400),
                                    z = c(-1,     6)))
 
 plotTopView(mod3, border = "black", col = "green", asp = 1, add = TRUE)
-rect(modbox$x[1], modbox[3], modbox
+rect(modbox$x[1], modbox$y[1], modbox$x[2], modbox$y[2])
 
 plotTopView(x, border = "red", col = "grey", asp = 1)
 plotTopView(bb, border = "blue", add = TRUE)
@@ -200,8 +200,8 @@ pts <- locator(type="p",n=2)
 l_pts <- joinLine(pts)  # line joining the two points
 RConics::addLine(l_pts, col="blue")
 
-lv <- c(1, 0, -100)
-lh <- c(0, 1, -100)
+lv <- c(1, 0, -50)
+lh <- c(0, 1, -50)
 RConics::addLine(lv, col = "blue", lwd = 3)
 RConics::addLine(lh, col = "black", lwd = 4)
 

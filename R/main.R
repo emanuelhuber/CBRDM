@@ -1297,9 +1297,10 @@ setMethod("plotObj", "Trough2D", function(x, add = FALSE, xlab = "x",
     if(length(E) > 0 ){
       for(i in seq_len(n)){
         .plotTrEllipse(E[i,], ...)
+        idfill <- x@id[i]
         if(length(x@fill) != 0){
-          if(!is.null(x@fill[[i]])){
-            plotObj(as(x@fill[[i]], "TrEllipse"), add = TRUE, ...)
+          if(!is.null(x@fill[[ idfill ]])){
+            plotObj(as(x@fill[[ idfill ]], "TrEllipse"), add = TRUE, ...)
           }
         }
       }
@@ -1420,8 +1421,8 @@ setMethod("plotTopView", "Trough", function(x, add = FALSE, xlab = "x",
       for(i in seq_len(n)){
         .plotTroughTop(E[i,], ...)
         if(length(x@fill) != 0){
-          if(!is.null(x@fill[[i]])){
-            plotTopView(x@fill[[i]], add = TRUE, ...)
+          if(!is.null(x@fill[[ x@id[i] ]])){
+            plotTopView(x@fill[[ x@id[i] ]], add = TRUE, ...)
           }
         }
       }
@@ -1584,7 +1585,7 @@ setMethod("pixelise", "Deposits", function(x, mbox){
     vol <- numeric(n)
     b <- bbox(x@troughs)
     it <- 0
-    for(i in 1:n){
+    for(i in seq_len(n)){
       it <- it + 1
       if((it %% 2) == 0) it <- it + 1
       A <- .pixeliseTrough(e = E[i, ], it, L = b@L[i], W = b@W[i],
@@ -1592,8 +1593,10 @@ setMethod("pixelise", "Deposits", function(x, mbox){
                                 mbox = mbox, XYZ = XYZ, cstO2Ei = cstO2E[i])
       vol[i] <- A$vol
       XYZ <- A$XYZ
-      if(!is.null(x@troughs@fill[[i]]) && length(x@troughs@fill[[i]]) > 0){
-        Ei <- as.matrix(x@troughs@fill[[i]])
+      idfill <- x@troughs@id[i]
+      if(!is.null(x@troughs@fill[[ idfill ]]) && 
+          length(x@troughs@fill[[ idfill ]]) > 0){
+        Ei <- as.matrix(x@troughs@fill[[ idfill ]])
         for(k in 1:nrow(Ei)){
           it <- it + 1
           A <- .pixeliseTrough(e = Ei[k, ], it, L = b@L[i], W = b@W[i],
@@ -1638,8 +1641,10 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
       H <- b@H[i]
       XZ <- .pixeliseTrEllipse(e = E[i,], i = it, L = b@L[i], H = b@H[i], 
                          vx, vz, XZ)
-      if(!is.null(x@troughs@fill[[i]]) && length(x@troughs@fill[[i]]) > 0){
-        Ei <- as.matrix(as(x@troughs@fill[[i]], "TrEllipse"))
+      idfill <- x@troughs@id[i]
+      if(!is.null(x@troughs@fill[[ idfill ]]) && 
+         length(x@troughs@fill[[ idfill ]]) > 0){
+        Ei <- as.matrix(as(x@troughs@fill[[ idfill ]], "TrEllipse"))
         for(k in 1:nrow(Ei)){
           it <- it + 1
           XZ <- .pixeliseTrEllipse(e = Ei[k, ], i = it, L = b@L[i], H = b@H[i],
@@ -2151,6 +2156,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior,
             )
   if(hmodel == "strauss"){
     trgh <- extract(trgh, modbox)
+    #trgh@id <- seq_along(trgh@id)
   }
   #--- 3. CROSS-BEDS
   if(isTRUE(crossbeds)){
