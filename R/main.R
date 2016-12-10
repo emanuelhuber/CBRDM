@@ -25,21 +25,21 @@
 # p = porosity
 # de = dielectric number saturated zone
 #
-depprop <- list(gp = c(p  = 0.201,
-                       K = 1.5e-3,
+depprop <- list(gp = c(p      = 0.201,
+                       K      = 1.5e-3,
                        sdlogK = 0.5,
-                       vaniK = 6,
-                       de = 12.1),
-                bm = c(p  = 0.25,
-                       K = 1.5e-3,
+                       vaniK  = 6,
+                       de     = 12.1),
+                bm = c(p      = 0.25,
+                       K      = 1.5e-3,
                        sdlogK = 0.1,
-                       vaniK = 1,
-                       de = 9.2),
-                ow = c(p  = 0.35,
-                       K = 1e-1,
+                       vaniK  = 1,
+                       de     = 9.2),
+                ow = c(p      = 0.35,
+                       K      = 1e-1,
                        sdlogK = 0.1,
-                       vaniK = 1,
-                       de = 26.9))
+                       vaniK  = 1,
+                       de     = 26.9))
                        
 meanlog <- function(xmean, xsdlog){
   return( log(xmean) - 0.5*xsdlog^2 )
@@ -1619,12 +1619,12 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
               length.out = nx)
     vz <- seq(mbox$z[1] + mbox$dz/2, to = mbox$z[2] - mbox$dz/2, 
               length.out = nz)
-    XZ <- matrix(0, nrow = nx, ncol = nz)
+    XZ <- matrix(-1, nrow = nx, ncol = nz)
     # 1. discretise layers
     #    -> negative id
     lay <- x@layers
     for(i in seq_along(lay)){
-      XZ[, lay[i] <= vz] <- -i
+      XZ[, lay[i] <= vz] <- -(i + 1)
     }
     # Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz)
     # 2. discretise trough
@@ -1705,7 +1705,7 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
 
 #' Set properties
 #'
-#' 
+#' @param FUN A function that returns for... 
 #' @export
 setProp <- function(A, type = c("facies", "K"), FUN, ...){
   fac <- list()
@@ -1823,7 +1823,7 @@ setMethod("section", "Trough", function(x, l, pref = NULL, lim = NULL){
     if(!is.null(El)){
       xsec <- as(El, "Trough2D")
       if(length(x@fill) > 0){
-        xsec@fill <- lapply(x@fill[El@id], section, l = l, 
+        xsec@fill[El@id] <- lapply(x@fill[El@id], section, l = l, 
                             pref = pref, lim = lim)
       }
       return(xsec)
@@ -2156,11 +2156,12 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior,
             )
   if(hmodel == "strauss"){
     trgh <- extract(trgh, modbox)
-    #trgh@id <- seq_along(trgh@id)
+    trgh@id <- seq_along(trgh@id)
   }
   #--- 3. CROSS-BEDS
   if(isTRUE(crossbeds)){
-    nF <- round(W / .rsim(prior$nF, n)) +1
+    n <- length(trgh@id)
+    nF <- round(trgh@W / .rsim(prior$nF, n)) +1
     rpos <- .rsim(prior$rpos, n)
     phi  <- .rsim(prior$phi, n)
     xbed <- list()

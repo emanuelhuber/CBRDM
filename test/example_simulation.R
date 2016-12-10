@@ -152,22 +152,24 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "theta"  = list(type = "runif", min = -20 * pi / 180, 
                                              max = 20 * pi / 180),
               "rH"     = 2,
-              "ag"     = 0.05,
+              "ag"     = 0.001,
               "lambda" = 0.001,
-              "bet"    = 3.5,
+              "bet"    = 10,
               "gam"    = 0.2,
-              "d"      = 250,
+              "d"      = 200,
               "nit"    = 1000,
-              "n0"     = 1,
+              "n0"     = 10,
               "fd"     = c(2,1),
               "nF"     = list(type = "runif", min = 2, max = 5),
               "rpos"   = list(type = "runif", min = 0.65, max = 1), 
               "phi"    = list(type = "runif", min = -1.5, max = 1.5)
               )
 
+# saveRDS(list(prior = prior, modbox = modbox, mod = mod), 
+#         file = "sim01_strauss_veryhighAg.rds")
 
 X <- straussMH(bet = prior$bet, gam = prior$gam, d = prior$d, 
-               nit = prior$nit, n0 = prior$n0, W = modbox, fd = prior$fd,
+               nit = prior$nit, n0  = prior$n0,  W = modbox, fd = prior$fd,
                count = TRUE)
  
 plot(X$X, xlim = modbox$x, ylim = modbox$y)
@@ -176,7 +178,7 @@ hist(X$n)
 
 
 
-mod <- sim(modbox, hmodel = "strauss", prior, crossbeds = FALSE)
+mod <- sim(modbox, hmodel = "strauss", prior, crossbeds = TRUE)
 
 mod2 <- crossBedding(mod, prior)
 
@@ -192,31 +194,23 @@ mod3 <- extract(mod, modbox = list(x = c(50, 400),
 plotTopView(mod3, border = "black", col = "green", asp = 1, add = TRUE)
 rect(modbox$x[1], modbox$y[1], modbox$x[2], modbox$y[2])
 
-plotTopView(x, border = "red", col = "grey", asp = 1)
-plotTopView(bb, border = "blue", add = TRUE)
 
 
-pts <- locator(type="p",n=2)
-l_pts <- joinLine(pts)  # line joining the two points
-RConics::addLine(l_pts, col="blue")
-
+plotTopView(mod, border = "red", col = "grey", asp = 1)
 lv <- c(1, 0, -50)
 lh <- c(0, 1, -50)
 RConics::addLine(lv, col = "blue", lwd = 3)
 RConics::addLine(lh, col = "black", lwd = 4)
 
 
-# perpendicular
-smod <- section(mod, lv)
+
+l <- lv       # perpendicular
+l <- lh       # paralell
+smod <- section(mod, l)
 plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
             xlim = c(0,100))
-            
-# paralell
-smod <- section(mod, lh)
-plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
-            xlim = c(0,100))
-            
-mbox <- list(x = c(0, 100), z = c(0,10), dx = 1, dy = 1, dz = 0.01)
+         
+mbox <- list(x = c(0, 100), z = c(0,5), dx = 1, dy = 1, dz = 0.01)
 FAC <- pixelise(smod, mbox)
 plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
 
@@ -226,7 +220,7 @@ B2 <- setProp(FAC$z, type = c("facies"))
 par(oma = c(0,0,0,0), xpd = TRUE)
 plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 2, colkey = FALSE,
                 col = c("lightsalmon4", "lightcyan4", "gold"))
-legend("top", inset = c(-0,-0.25), 
+legend("top", inset = c(-0,-0.1), 
         cex = 1.5, 
         bty = "n", 
         #xpd = TRUE,
@@ -234,7 +228,9 @@ legend("top", inset = c(-0,-0.25),
         horiz = TRUE,
         fill = c("lightsalmon4", "lightcyan4", "gold"))
 #         pch = c(15))
-
+par(xpd = NA)
+plot3D::image2D(z = B,  x = FAC$x, y = FAC$y, asp = 2, 
+                main ="hydraulic conductivity (m/s)")
 
 
 
