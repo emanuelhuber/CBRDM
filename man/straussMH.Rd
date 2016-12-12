@@ -4,7 +4,7 @@
 \alias{straussMH}
 \title{Strauss process simulation (MCMC)}
 \usage{
-straussMH(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
+straussMH(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
   W = list(x = c(0, 1), y = c(0, 1)), fd = NULL, count = FALSE)
 }
 \arguments{

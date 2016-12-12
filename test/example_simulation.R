@@ -10,7 +10,7 @@ rm(list=ls(all=TRUE))
 library(devtools)
 devtools::install_github("emanuelhuber/CBRDM")
 library(CBRDM)
-
+library(spatstat)
 
 modbox <- list("x" = c(0,200),    # 0, 700    # before: 0, 500
              "y" = c(0,200),    # 0, 500    # before: 100, 400
@@ -131,15 +131,61 @@ plot(X0$X)
 plot(X0$n, type = "l")
 hist(X0$n, 50)
 
-X1 <- straussMH(bet = 100, gam = 1, d = 0.05, nit = 50000, n0 = 100)
+X1 <- straussMH(bet = 10, gam = 1, d = 0.05, nit = 50000, n0 = 100)
 plot(X1$X)
 plot(X1$n, type = "l")
 hist(X1$n, 50)
 
-X2 <- straussMH(bet = 50, gam = 0.5, d = 0.2, nit = 50000, n0 = 60)
+X2 <- straussMH(bet = 50, gam = 0.5, d = 0.2, nit = 50000, n0 = 60, 
+                count = TRUE)
 plot(X2$X)
 plot(X2$n, type = "l")
 hist(X2$n)
+
+# Strauss process.
+bet <- 2
+gam <- 0.2
+r <- 0.7
+
+mod01 <- list(cif = "strauss", par = list(beta = bet, gamma = gam, r = r),
+              w = c(0, 10, 0, 10))
+X0 <- rmh(model = mod01, start=list( n.start = 2),
+                  control = list(nrep = 1e5, nverb = 10000))
+plot(X0$x, X0$y, xlim = c(0, 10), ylim = c(0, 10))
+X0$n
+
+X1 <- rStrauss(beta = bet, gamma = gam, R = r, W = square(10))
+plot(X1$x, X1$y, xlim = c(0, 10), ylim = c(0, 10))
+X1$n
+
+frStrauss <- function(...){
+  rStrauss(...)$n
+}
+
+nX1 <- replicate(10000, frStrauss(beta = bet, gamma = gam, R = r, 
+                                  W = square(10)))
+hist(nX1)                                  
+
+
+X2 <- straussMH(bet = bet/3, gam = 0.2, d = r, nit = 1e4, n0 = 1, 
+                W = list(x = c(0, 10), y = c(0,10)), count = TRUE)
+plot(X2$X)
+plot(X2$n, type = "l")
+hist(X2$n)
+
+
+system.time({
+A <- replicate(10000, distxtoX2(X, x_cand))
+})
+
+system.time({
+A <- replicate(10000, distxtoX3(X, x_cand))
+})
+
+
+X1 <- rStrauss(beta = bet, gamma = gam, R = 8, W = square(10))
+plot(X1$x, X1$y, xlim = c(0, 10), ylim = c(0, 10))
+X1$n
 
 modbox <- list("x" = c(0, 200),    # 0, 700    # before: 0, 500
                "y" = c(0, 200),    # 0, 500    # before: 100, 400

@@ -6,6 +6,9 @@
 \usage{
 setProp(A, type = c("facies", "K"), FUN, ...)
 }
+\arguments{
+\item{FUN}{A function that returns for...}
+}
 \description{
 Set properties
 }

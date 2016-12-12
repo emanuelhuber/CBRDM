@@ -9,5 +9,6 @@ License: MIT
 LazyData: TRUE
 BugReports: https://github.com/emanuelhuber/CBRDM/issues
 Imports:
-    RConics
+    RConics,
+	spatstat
 RoxygenNote: 5.0.1

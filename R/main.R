@@ -2092,7 +2092,7 @@ setMethod("crossBedding", "Trough", function(x, prior){
 #'
 #' Simulate coarse, braided river deposits
 #' @export
-sim <- function(modbox, hmodel = c("poisson", "strauss"), prior, 
+sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior, 
                 crossbeds = TRUE){
   hmodel <- match.arg(tolower(hmodel), c("poisson", "strauss"))
   #--- 1. vertical distribution layers: Poisson process
@@ -2130,9 +2130,12 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior,
                           modbox$x[2] + 2 * prior$d + maxL),
                     y = c(modbox$y[1] - 2 * prior$d - maxL,
                           modbox$y[2] + 2 * prior$d + maxL))
-    XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
-                                  d   = prior$d,   nit = prior$nit, 
-                                  n0  = prior$n0,  W = modbox2, fd = prior$fd) )
+    # XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
+    #                             d   = prior$d,   nit = prior$nit, 
+    #                             n0  = prior$n0,  W = modbox2, fd = prior$fd))
+    XL <- replicate(nZ, spatstat::rStrauss(beta = prior$bet, gamma = prior$gam,
+                                 R = prior$d, W = owin(xrange = modbox2$x,
+                                                       yrange = modbox2$y)))
     Xmat <- do.call(rbind, XL)
     nStrauss <- sapply(XL, nrow)
     n <- nrow(Xmat)
@@ -2199,7 +2202,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss"), prior,
 #' if gam = 0, Strauss process = Hard core process
 #' @param count boolean TRUE: return the number of points for each iteration
 #' @export
-straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
+straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
                       W = list(x = c(0, 1), y = c(0, 1)), fd = NULL,
                       count = FALSE){
   # initialisation
@@ -2207,39 +2210,50 @@ straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = 10, nit = 5000,
   if(is.null(fd)) fd <- c(1,1)
   xmax  <- diff(W$x)/fd[1]
   ymax  <- diff(W$y)/fd[2]
+    areaW <- xmax * ymax
+  if(is.null(n0)){
+    n0 <- round(beta * areaW)
+  }
   X     <- matrix(ncol = 2, nrow = n0)
   X[,1] <- runif(n0, 0, xmax)
   X[,2] <- runif(n0, 0, ymax)
   nv     <- integer(nit)
+  d2 <- d*d
   i     <- 0
+  eps <- .Machine$double.eps^0.75
   n <- n0
+  phi0 <- sum(dist(X) <= d)
+  bet <- bet * areaW
   while(i < nit){
     i <- i + 1
     nv[i] <- n
-    #if(nv[i] != nrow(X)) stop()
-    #n[i] <- nrow(X)
     # BIRTH
     if(n <= 1 || sample(c(TRUE,FALSE), 1 )){
       x_cand <- c(runif(1, 0, xmax), runif(1, 0, ymax))
-      phi <- sum(distxtoX(X, x_cand) <= d)
-      pp <- bet * gam^phi / (n + 1)
-      if(runif(1) <= min(1, pp)){
-          #X <- X[c(seq_len(n), n), ]
-          #X[n + 1, ] <- x_cand
+     # Y <- rbind(X, x_cand, deparse.level = 0)
+     #A <- sum(dist(X) <= d)
+     #B <- sum(dist(Y) <= d)
+     #(bet * gam^(A - B)) / (n + 1)
+      # phi <- sum(distxtoX(X, x_cand) <= d)
+      phi <- sum(distxtoX3(X, x_cand) <= d2)
+      if(phi < phi0 || runif(1) <= min(1, (bet * gam^phi) / (n + 1))){
           X <- rbind(X, x_cand, deparse.level = 0)
           n <- n + 1
+          phi0 <- phi
       }
     # DEATH
     }else{
       x_cand_pos <- sample(seq_along(X[,1]),1)
-      phi <- sum(distxtoX(X[-x_cand_pos, , drop=FALSE], 
-                          X[ x_cand_pos, , drop=FALSE])  <= d)
-      pm <- n * gam^phi / bet
-      if(runif(1) <= min(1, pm)){
+      phi <- sum(distxtoX3(X[-x_cand_pos, , drop=FALSE], 
+                           X[ x_cand_pos, , drop=FALSE])  <= d2)
+      #pm <- (n * gam^phi) / bet
+      if(phi < phi0 || runif(1) <= min(1, (n * gam^phi) / bet)){
           X <- X[-x_cand_pos,,drop=FALSE]
           n <- n - 1
+          phi0 <- phi
       }
     }
+    # plot(X, xlim = W$x, ylim = W$y)
   }
   X[,1] <- W$x[1] + (X[,1]) * fd[1]
   X[,2] <- W$y[1] + (X[,2]) * fd[2]
@@ -2254,8 +2268,13 @@ distxtoX <- function(X,x){
     sqrt(rowSums(sweep(X,2,x,'-')^2))
 }
 
+distxtoX2 <- function(X,x){
+    rowSums(sweep(X,2,x,'-')^2)
+}
 
-
+distxtoX3 <- function(X,x){
+  rowSums((X - matrix(x, ncol = ncol(X), nrow = nrow(X), byrow = TRUE))^2)
+}
 
 ##--------------------------- HELPER FUNCTIONS ----------------------##
 # example:
