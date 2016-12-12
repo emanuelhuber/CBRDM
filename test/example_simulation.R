@@ -187,8 +187,8 @@ X1 <- rStrauss(beta = bet, gamma = gam, R = 8, W = square(10))
 plot(X1$x, X1$y, xlim = c(0, 10), ylim = c(0, 10))
 X1$n
 
-modbox <- list("x" = c(0, 200),    # 0, 700    # before: 0, 500
-               "y" = c(0, 200),    # 0, 500    # before: 100, 400
+modbox <- list("x" = c(0, 100),    # 0, 700    # before: 0, 500
+               "y" = c(0, 100),    # 0, 500    # before: 100, 400
                "z" = c(0, 5)      # for computation range
              )
 
@@ -198,12 +198,12 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "theta"  = list(type = "runif", min = -20 * pi / 180, 
                                              max = 20 * pi / 180),
               "rH"     = 2,
-              "ag"     = 0.5,
+              "ag"     = 0.01,
               "lambda" = 0.001,
-              "bet"    = 0.001,
-              "gam"    = 0.1,
+              "bet"    = 0.01,
+              "gam"    = 0.2,
               "d"      = 100,
-              "nit"    = 5000,
+              "nit"    = 1e5,
               "n0"     = 1,
               "fd"     = c(2,1),
               "nF"     = list(type = "runif", min = 2, max = 5),
@@ -226,7 +226,7 @@ modbox2 <- list("x" = c(0, 900),    # 0, 700    # before: 0, 500
 mod01 <- list(cif = "strauss", par = list(beta = prior$bet, gamma = prior$gam, 
               r = prior$d), w = c(modbox2$x, modbox2$y))
 X0 <- rmh(model = mod01, start=list( n.start = 2),
-                  control = list(nrep = 1e5))
+                  control = list(nrep = 1e7))
 plot(X0$x, X0$y, xlim = modbox2$x, ylim = modbox2$y)   
 X0$n
 X0
@@ -274,7 +274,7 @@ l <- lv       # perpendicular
 l <- lh       # paralell
 smod <- section(mod, l)
 plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
-            xlim = c(-100,100))
+            xlim = c(0,100))
          
 mbox <- list(x = c(0, 100), z = c(0,5), dx = 1, dy = 1, dz = 0.01)
 FAC <- pixelise(smod, mbox)
