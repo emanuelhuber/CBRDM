@@ -2133,9 +2133,16 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
     # XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
     #                             d   = prior$d,   nit = prior$nit, 
     #                             n0  = prior$n0,  W = modbox2, fd = prior$fd))
-    XL <- replicate(nZ, spatstat::rStrauss(beta = prior$bet, gamma = prior$gam,
-                                 R = prior$d, W = owin(xrange = modbox2$x,
-                                                       yrange = modbox2$y)))
+    #XL <- replicate(nZ, spatstat::rStrauss(beta = prior$bet, gamma = prior$gam,
+    #                             R = prior$d, W = owin(xrange = modbox2$x,
+    #                                                   yrange = modbox2$y)))
+    XL <- replicate(nZ, straussr(model = list(cif = "strauss", 
+                                         par = list(beta  = prior$bet, 
+                                                    gamma = prior$gam, 
+                                                    r     = prior$d),
+                                         w = c(modbox2$x, modbox2$y)), 
+                            start=list( n.start = prior$n0),
+                            control = list(nrep = prior$nit)))
     Xmat <- do.call(rbind, XL)
     nStrauss <- sapply(XL, nrow)
     n <- nrow(Xmat)
@@ -2194,6 +2201,15 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
 
 
 ##--------------------------- POINT PROCESS ----------------------##
+straussr <- function(...){
+  X <- rmh(...)
+  Y <- matrix(nrow = X$n, ncol=2)
+  Y[,1] <- X$x
+  Y[,2] <- X$y
+  return(Y)
+}
+
+
 #' Strauss process simulation (MCMC)
 #'
 #' strauss process: bet^(n(y)) * gam^(s(y))

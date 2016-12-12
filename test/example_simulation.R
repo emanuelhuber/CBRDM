@@ -198,9 +198,9 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "theta"  = list(type = "runif", min = -20 * pi / 180, 
                                              max = 20 * pi / 180),
               "rH"     = 2,
-              "ag"     = 0.01,
+              "ag"     = 0.5,
               "lambda" = 0.001,
-              "bet"    = 65,
+              "bet"    = 0.001,
               "gam"    = 0.1,
               "d"      = 100,
               "nit"    = 5000,
@@ -219,10 +219,25 @@ modbox2 <- list("x" = c(0, 900),    # 0, 700    # before: 0, 500
                 "z" = c(0, 5)      # for computation range
                )
                
-X <- straussMH(bet = prior$bet, gam = prior$gam, d = prior$d, 
-               nit = prior$nit, n0  = prior$n0,  W = modbox2, fd = prior$fd,
-               count = TRUE)
- 
+# X <- straussMH(bet = prior$bet, gam = prior$gam, d = prior$d, 
+#                nit = prior$nit, n0  = prior$n0,  W = modbox2, fd = prior$fd,
+#                count = TRUE)
+
+mod01 <- list(cif = "strauss", par = list(beta = prior$bet, gamma = prior$gam, 
+              r = prior$d), w = c(modbox2$x, modbox2$y))
+X0 <- rmh(model = mod01, start=list( n.start = 2),
+                  control = list(nrep = 1e5))
+plot(X0$x, X0$y, xlim = modbox2$x, ylim = modbox2$y)   
+X0$n
+X0
+names(X0)
+
+X1 <- rStrauss(beta = prior$bet, gamma = prior$gam, R = prior$d, 
+              W = owin(modbox2$x, modbox2$y))
+plot(X1$x, X1$y, xlim = c(0, 10), ylim = c(0, 10))
+X1$n
+
+
 plot(X$X, xlim = modbox2$x, ylim = modbox2$y)
 plot(X$n, type = "l", ylim = c(0, 50))
 hist(X$n)
