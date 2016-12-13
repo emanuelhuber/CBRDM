@@ -2130,19 +2130,25 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
                           modbox$x[2] + 2 * prior$d + maxL),
                     y = c(modbox$y[1] - 2 * prior$d - maxL,
                           modbox$y[2] + 2 * prior$d + maxL))
+    f <- max(modbox2$x, modbox2$y)
     # XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
     #                             d   = prior$d,   nit = prior$nit, 
     #                             n0  = prior$n0,  W = modbox2, fd = prior$fd))
     #XL <- replicate(nZ, spatstat::rStrauss(beta = prior$bet, gamma = prior$gam,
     #                             R = prior$d, W = owin(xrange = modbox2$x,
     #                                                   yrange = modbox2$y)))
-    XL <- replicate(nZ, straussr(model = list(cif = "strauss", 
-                                         par = list(beta  = prior$bet, 
-                                                    gamma = prior$gam, 
-                                                    r     = prior$d),
-                                         w = c(modbox2$x, modbox2$y)), 
-                            start=list( n.start = prior$n0),
-                            control = list(nrep = prior$nit)))
+    # XL <- replicate(nZ, .straussr(model = list(cif = "strauss", 
+    #                                     par = list(beta  = prior$bet, 
+    #                                                gamma = prior$gam, 
+    #                                                r     = prior$d),
+    #                                     w = c(modbox2$x, modbox2$y)), 
+    #                        start=list( n.start = prior$n0),
+    #                        control = list(nrep = prior$nit)))
+    XL <- replicate(nZ, .rStrauss(f = f,
+                                  beta  = prior$bet, 
+                                  gamma = prior$gam, 
+                                  R     = prior$d/f, 
+                                  W     = owin(modbox2$x/f, modbox2$y/f)))
     Xmat <- do.call(rbind, XL)
     nStrauss <- sapply(XL, nrow)
     n <- nrow(Xmat)
@@ -2201,11 +2207,18 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
 
 
 ##--------------------------- POINT PROCESS ----------------------##
-straussr <- function(...){
+.straussMH <- function(...){
   X <- rmh(...)
   Y <- matrix(nrow = X$n, ncol=2)
   Y[,1] <- X$x
   Y[,2] <- X$y
+  return(Y)
+}
+.rStrauss <- function(f, ...){
+  X <- rStrauss(...)
+  Y <- matrix(nrow = X$n, ncol=2)
+  Y[,1] <- X$x*f
+  Y[,2] <- X$y*f
   return(Y)
 }
 
