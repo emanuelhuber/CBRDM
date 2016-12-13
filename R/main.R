@@ -2130,7 +2130,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
                           modbox$x[2] + 2 * prior$d + maxL),
                     y = c(modbox$y[1] - 2 * prior$d - maxL,
                           modbox$y[2] + 2 * prior$d + maxL))
-    f <- max(modbox2$x, modbox2$y)
+    f <- 1
     # XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
     #                             d   = prior$d,   nit = prior$nit, 
     #                             n0  = prior$n0,  W = modbox2, fd = prior$fd))

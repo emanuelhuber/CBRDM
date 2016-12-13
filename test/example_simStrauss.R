@@ -14,20 +14,15 @@ library(spatstat)
 
 
 
-modbox <- list("x" = c(0, 100),    # 0, 700    # before: 0, 500
-               "y" = c(0, 100),    # 0, 500    # before: 100, 400
-               "z" = c(0, 5)      # for computation range
-             )
-
 prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "rLW"    = list(type = "runif", min = 3, max = 4),
               "rLH"    = list(type = "runif", min = 45, max = 66),
               "theta"  = list(type = "runif", min = -20 * pi / 180, 
                                              max = 20 * pi / 180),
               "rH"     = 2,
-              "ag"     = 0.01,
+              "ag"     = 0.5,
               "lambda" = 0.001,
-              "bet"    = 1,
+              "bet"    = 50,
               "gam"    = 0.1,
               "d"      = 100,
               "nit"    = 1e5,
@@ -39,30 +34,50 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               )
 
 modbox2 <- list("x" = c(0, 900),    # 0, 700    # before: 0, 500
-                "y" = c(0, 900),    # 0, 500    # before: 100, 400
+                "y" = c(0, 1800),    # 0, 500    # before: 100, 400
                 "z" = c(0, 5)      # for computation range
                )
 
 
 
-f <- 200
-f2 <- 2
+f <- max(modbox2$x, modbox2$y)
+f2 <- 1
 area <- (modbox2$x[2]/f*f2 *  modbox2$y[2]/f*f2)
-mod01 <- list(cif = "strauss", par = list(beta = prior$bet*area, 
+mod01 <- list(cif = "strauss", par = list(beta = prior$bet, #*area, 
               gamma = prior$gam, r = prior$d/f), 
               w = c(modbox2$x/f*f2, modbox2$y/f*f2))
 X0 <- rmh(model = mod01, start=list( n.start = 2),
                   control = list(nrep = 1e6))
-plot(X0$x*f, X0$y*f, xlim = modbox2$x, ylim = modbox2$y)   
+plot(X0, asp = 1)   
 X0$n
 area
-X0$n/area
+X0$n*area
 
 X1 <- rStrauss(beta = prior$bet, gamma = prior$gam, R = prior$d/f, 
                 W = owin(modbox2$x/f, modbox2$y/f))
-plot(X1$x*f, X1$y*f, xlim = modbox2$x, ylim = modbox2$y)
+plot(X1)
+plot(X1$x*f, X1$y*f, xlim = modbox2$x, ylim = modbox2$y, asp = 1)
 X1$n
 
+A <- dist(cbind(X1$x*f, X1$y*f))
+hist(A)
+
+
+prior$bet
+[1] 100
+prior$gam
+[1] 0.1
+prior$d/f
+[1] 0.05555556
+owin(modbox2$x/f, modbox2$y/f)
+window: rectangle = [0, 0.5] x [0, 1] units
+
+
+Xx <- rStrauss(beta  = prior$bet, 
+               gamma = prior$gam, 
+               R     = prior$d/f, 
+               W     = owin(modbox2$x/f, modbox2$y/f))
+plot(Xx)
 
 
 
@@ -78,38 +93,70 @@ X1$n
 
 
 
-
-
-
-
-
-modbox <- list("x" = c(0,200),    # 0, 700    # before: 0, 500
-             "y" = c(0,200),    # 0, 500    # before: 100, 400
+modbox <- list("x" = c(0,100),    # 0, 700    # before: 0, 500
+             "y" = c(0,100),    # 0, 500    # before: 100, 400
              "z" = c(0,10)      # for computation range
              )
-             
-prior <- list("L"     = list(type = "runif", min = 40, max = 70),
-              "rLW"   = list(type = "runif", min = 3, max = 4),
-              "rLH"   = list(type = "runif", min = 45, max = 66),
-              "theta" = list(type = "runif", min = -20 * pi / 180, 
-                                             max = 20 * pi / 180),
-              "rH"    = 2,
-              "ag"    = 0.05,
-              "lambda" = 0.001,
-              "bet"   = 10,
-              "gam"   = 0.5,
-              "d"     = 70,
-              "nit"   = 10000,
-              "n0"    = 50,
-              "fd"    = c(2,1),
-              "nF"    = list(type = "runif", min = 2, max = 5),
-              "rpos"  = list(type = "runif", min = 0.65, max = 1), 
-              "phi"   = list(type = "runif", min = -1.5, max = 1.5)
-              )
 
-mod <- sim(modbox, "poisson", prior)
+prior$ag <- 0.5
+prior$ag <- 0.05    # 5 cm
+
+mod <- sim(modbox, hmodel = "poisson", prior)
+mod <- sim(modbox, hmodel = "strauss", prior)
+
 
 plotTopView(mod, border = "red", col = "grey", asp = 1)
+
+lv <- c(1, 0, -50)
+lh <- c(0, 1, -50)
+RConics::addLine(lv, col = "blue", lwd = 3)
+RConics::addLine(lh, col = "black", lwd = 4)
+
+
+
+l <- lv       # perpendicular
+l <- lh       # paralell
+smod <- section(mod, l)
+plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
+            xlim = c(0,100))
+         
+mbox <- list(x = c(0, 100), z = c(0,5), dx = 1, dy = 1, dz = 0.01)
+FAC <- pixelise(smod, mbox)
+plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
+
+B <- setProp(FAC$z, type = c("K"), depprop)
+B2 <- setProp(FAC$z, type = c("facies"))
+
+par(oma = c(0,0,0,0), xpd = TRUE)
+plot3D::image2D(z = B2, x = FAC$x, y = FAC$y, asp = 2, colkey = FALSE,
+                col = c("lightsalmon4", "lightcyan4", "gold"))
+legend("top", inset = c(-0,-0.1), 
+        cex = 1.5, 
+        bty = "n", 
+        #xpd = TRUE,
+        legend = c("gp", "ow", "bm"), 
+        horiz = TRUE,
+        fill = c("lightsalmon4", "lightcyan4", "gold"))
+#         pch = c(15))
+par(xpd = NA)
+plot3D::image2D(z = B,  x = FAC$x, y = FAC$y, asp = 2, 
+                main ="hydraulic conductivity (m/s)")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 pts <- locator(type="p",n=2)
 l_pts <- joinLine(pts)  # line joining the two points

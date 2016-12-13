@@ -2,10 +2,31 @@
 
 ROOT  <- "/home/huber/WORK/UNIBAS/"
 source(paste(ROOT,"softwares/codeR/MODFLOW/RMODFLOW.R",sep=""), chdir=TRUE)
-# source(paste(ROOT,"softwares/codeR/utils/binaryConnections.R",sep=""))
+
+library(devtools)
+devtools::install_github("emanuelhuber/CBRDM")
+library(CBRDM)
 
 
-
+prior <- list("L"      = list(type = "runif", min = 40, max = 70),
+              "rLW"    = list(type = "runif", min = 3, max = 4),
+              "rLH"    = list(type = "runif", min = 45, max = 66),
+              "theta"  = list(type = "runif", min = -20 * pi / 180, 
+                                             max = 20 * pi / 180),
+              "rH"     = 2,
+              "ag"     = 0.5,
+              "lambda" = 0.001,
+              "bet"    = 100,
+              "gam"    = 0.1,
+              "d"      = 100,
+              "nit"    = 1e5,
+              "n0"     = 1,
+              "fd"     = c(2,1),
+              "nF"     = list(type = "runif", min = 2, max = 5),
+              "rpos"   = list(type = "runif", min = 0.65, max = 1), 
+              "phi"    = list(type = "runif", min = -1.5, max = 1.5)
+              )
+              
 # 10 cm vertical auf lösung!
 # braucht es "layers" oder only 3D array?
 
