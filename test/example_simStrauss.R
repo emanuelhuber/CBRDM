@@ -22,8 +22,8 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "rH"     = 2,
               "ag"     = 0.5,
               "lambda" = 0.001,
-              "bet"    = 50,
-              "gam"    = 0.1,
+              "bet"    = 7e-4,
+              "gam"    = 0.2,
               "d"      = 100,
               "nit"    = 1e5,
               "n0"     = 1,
@@ -43,17 +43,20 @@ modbox2 <- list("x" = c(0, 900),    # 0, 700    # before: 0, 500
 f <- max(modbox2$x, modbox2$y)
 f2 <- 1
 area <- (modbox2$x[2]/f*f2 *  modbox2$y[2]/f*f2)
-mod01 <- list(cif = "strauss", par = list(beta = prior$bet, #*area, 
+mod01 <- list(cif = "strauss", par = list(beta = prior$bet/1000000, #*area, 
               gamma = prior$gam, r = prior$d/f), 
               w = c(modbox2$x/f*f2, modbox2$y/f*f2))
 X0 <- rmh(model = mod01, start=list( n.start = 2),
                   control = list(nrep = 1e6))
-plot(X0, asp = 1)   
+plot(X0, asp = 1, axes = TRUE)  
+axis(1)
 X0$n
 area
 X0$n*area
 
-X1 <- rStrauss(beta = prior$bet, gamma = prior$gam, R = prior$d/f, 
+f
+f <- 1
+X1 <- rStrauss(beta = prior$bet/500000, gamma = prior$gam, R = prior$d/f, 
                 W = owin(modbox2$x/f, modbox2$y/f))
 plot(X1)
 plot(X1$x*f, X1$y*f, xlim = modbox2$x, ylim = modbox2$y, asp = 1)
@@ -99,9 +102,12 @@ modbox <- list("x" = c(0,100),    # 0, 700    # before: 0, 500
              )
 
 prior$ag <- 0.5
-prior$ag <- 0.05    # 5 cm
+prior$ag <- 0.005    # 5 cm
+prior$bet <- 1e-4    # 5 cm
+prior$gam <- 0.2    # 5 cm
 
 mod <- sim(modbox, hmodel = "poisson", prior)
+
 mod <- sim(modbox, hmodel = "strauss", prior)
 
 
