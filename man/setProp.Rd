@@ -4,7 +4,7 @@
 \alias{setProp}
 \title{Set properties}
 \usage{
-setProp(A, type = c("facies", "K"), FUN, ...)
+setProp(A, type = c("facies", "K", "vani"), FUN, ...)
 }
 \arguments{
 \item{FUN}{A function that returns for...}
