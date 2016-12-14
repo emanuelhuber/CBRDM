@@ -2214,6 +2214,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
   Y[,2] <- X$y
   return(Y)
 }
+
 .rStrauss <- function(f, ...){
   X <- spatstat::rStrauss(...)
   Y <- matrix(nrow = X$n, ncol=2)
