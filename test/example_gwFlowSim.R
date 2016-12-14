@@ -39,17 +39,13 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               )
               
 
-prior$ag <- 0.5
-# prior$bet <- 1e-4    # 5 cm
-# prior$gam <- 0.2    # 5 cm
-
-# high aggradation
-id <- "test" # model run identifier
+##---- high aggradation
+id <- "highAg" # model run identifier
 prior$ag <- 0.005    # 5 cm
 
-# low aggradation
-id <- "lowAg"
-prior$ag <- 0.05
+##---- low aggradation
+# id <- "lowAg"
+# prior$ag <- 0.05
 
 # 10 cm vertical auf lösung!
 # braucht es "layers" oder only 3D array?
@@ -65,7 +61,7 @@ modgrid <- list(L = c(min = modbox$x[1], max = modbox$x[2]),
                 H = diff(modbox$z),
                 nx = 200,      # number of cells (x axis)
                 ny = 200,      # number of cells (y axis)
-                nz = 100)      # number of cells (z axis)
+                nz = 200)      # number of cells (z axis)
 grad_hyd <- 0.01
 ##----------------------------------------##
 
