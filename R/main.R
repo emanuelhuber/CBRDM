@@ -2148,7 +2148,8 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
                                   beta  = prior$bet, 
                                   gamma = prior$gam, 
                                   R     = prior$d/f, 
-                                  W     = owin(modbox2$x/f, modbox2$y/f)))
+                                  W     = spatstat::owin(modbox2$x/f, 
+                                                         modbox2$y/f)))
     Xmat <- do.call(rbind, XL)
     nStrauss <- sapply(XL, nrow)
     n <- nrow(Xmat)
