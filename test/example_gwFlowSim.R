@@ -3,7 +3,14 @@
 
 rm(list=ls(all=TRUE))
 
+
 ROOT  <- "/home/huber/WORK/UNIBAS/"
+DIR0  <- file.path("RESEARCH/coarse_braided_deposits/Auswertung/OBJECT_BASED",
+                   "09_package")
+DIR     <- file.path(ROOT,DIR0)
+setwd(DIR)
+getwd()
+
 source(paste(ROOT,"softwares/codeR/MODFLOW/RMODFLOW.R",sep=""), chdir=TRUE)
 
 library(devtools)
@@ -51,9 +58,9 @@ mod <- sim(modbox, hmodel = "strauss", prior)
 modgrid <- list(L = c(min = modbox$x[1], max = modbox$x[2]),
                 W = c(min = modbox$y[1], max = modbox$y[2]),
                 H = diff(modbox$z),
-                nx = 100,      # number of cells (x axis)
-                ny = 100,      # number of cells (y axis)
-                nz = 50)      # number of cells (z axis)
+                nx = 200,      # number of cells (x axis)
+                ny = 200,      # number of cells (y axis)
+                nz = 100)      # number of cells (z axis)
 grad_hyd <- 0.01
 ##----------------------------------------##
 
@@ -69,6 +76,8 @@ names(gwMod)
 ##----------------------------------------##
 
 ##--------- HYDRAULIC PROPERTIES ---------##
+data(faciesProp)
+
 mbox <- list(x = modbox$x, y = modbox$y, z = modbox$z, 
             dx = diff(modbox$x)/modgrid$nx, 
             dy = diff(modbox$y)/modgrid$ny, 
@@ -78,8 +87,24 @@ FAC <- pixelise(mod, mbox)
 A <- setProp(FAC$XYZ, type = c("facies"))
 plot3D::image2D(A[,,30])
 plot3D::image2D(A[,30,])
-data(faciesProp)
+B <- FAC$XYZ[,30,]
+B1 <- B
+B1[B>= 0] <- 0
+plot3D::image2D(B1)
+
 HK <- setProp(FAC$XYZ, type = c("K"), fprop = faciesProp)
+plot3D::image2D(HK[,,30])
+plot3D::image2D(HK[30,,])
+plot3D::image2D(HK[,30,])
+
+VANI <- setProp(FAC$XYZ, type = c("Kvani"), fprop = faciesProp)
+plot3D::image2D(VANI[,,30])
+plot3D::image2D(VANI[30,,])
+plot3D::image2D(VANI[,30,])
+
+PORO <- setProp(FAC$XYZ, type = c("p"), fprop = faciesProp)
+plot3D::image2D(PORO[,,30])
+plot3D::image2D(PORO[30,,])
 
 #--- HK
 for(i in 1:nlay(gwMod)){
@@ -112,12 +137,14 @@ for(i in 1:nlay(gwMod)){
 rCHD <- gwMod[[1]]
 rCHD[] <- NA
 ztopmax <- cellStats(gwMod[["lay1.top"]], max)
-rCHD[1,] <- ztopmax + grad_hyd*(yFromRow(rCHD, row = 1) - 
+rCHD[1,] <- ztopmax
+rCHD[nrow(rCHD),] <- ztopmax - grad_hyd*(yFromRow(rCHD, row = 1) - 
               yFromRow(rCHD, row = nrow(rCHD)))
-rCHD[nrow(rCHD),] <- ztopmax
 plot(rCHD)
 names(rCHD) <- "chd"
 gwMod <- stackRaster(gwMod, rCHD)
+
+plot(gwMod[[1]])
 
 rcCHD   <- rowColFromCell(rCHD, which(!is.na(values(rCHD))))
 val <- valueFromRowCol(rCHD, rcCHD)
@@ -128,25 +155,30 @@ CHDFrame <- corCHD(gwMod, rcCHD, val, "ss")
 
 ##-------------- INITIAL HEADS -----------##
 r <- gwMod[[1]]
-r[] <- ztopmax + grad_hyd*(yFromCell(rCHD, 1:ncell(rCHD)) - yFromRow(rCHD, 
-row=nrow(rCHD)))
+r[] <- ztopmax - grad_hyd*(yFromCell(rCHD, ncell(rCHD):1) - 
+                           yFromRow(rCHD, row=nrow(rCHD)))
 gwMod <- initialHeads(gwMod, r) 
 cat("grad_hyd = ", grad_hyd, "\n")
+plot(gwMod[["lay1.strt"]])
+plot(gwMod[["lay1.strt"]] - gwMod[[1]])
 ##----------------------------------------##
 
 
 ##--------------- PARTICLES --------------##
-rnames <- c("lay1.top",paste0("lay",1:nlay(gwMod),".bot"))
-PPP <- matrix(nrow=nlay(gwMod)*ncol(gwMod), ncol=8)
-names(PPP) <- 
-c("Layer","Row","Column","LocalX","LocalY","LocalZ","ReleaseTime","Label")
-for(i in seq_len(nlay(gwMod))){
-  PPP[(i-1)*ncol(gwMod) + 1:ncol(gwMod), 1] <- i
-  PPP[(i-1)*ncol(gwMod) + 1:ncol(gwMod), 2] <- 1
-  PPP[(i-1)*ncol(gwMod) + 1:ncol(gwMod), 3] <- 1:ncol(gwMod)
-  PPP[(i-1)*ncol(gwMod) + 1:ncol(gwMod), 4:6] <- 0.5
-  PPP[(i-1)*ncol(gwMod) + 1:ncol(gwMod), 7] <- 0
-  PPP[(i-1)*ncol(gwMod) + 1:ncol(gwMod), 8] <- i
+rnames <- c("lay1.top", paste0("lay",1:nlay(gwMod), ".bot"))
+vp <- seq(5, to = nlay(gwMod), by = 5)
+vx <- seq(5, to = ncol(gwMod), by = 5)
+PPP <- matrix(nrow = length(vp) * length(vx), ncol = 8)
+names(PPP) <- c("Layer", "Row", "Column", "LocalX", "LocalY", "LocalZ", 
+                "ReleaseTime", "Label")
+for(i in seq_along(vp)){
+  vr <- (i-1) * length(vx) + seq_along(vx)
+  PPP[vr, 1] <- i
+  PPP[vr, 2] <- 1
+  PPP[vr, 3] <- vx
+  PPP[vr, 4:6] <- 0.5
+  PPP[vr, 7] <- 0
+  PPP[vr, 8] <- i
 }
 
 particles <- list(as.data.frame(PPP))
@@ -154,10 +186,10 @@ particles <- list(as.data.frame(PPP))
 
 
 ##---------------- MODFLOW/MODPATH RUN -------------------##
-# id <- "threeFacies" # model run identifier
-dir.out <- file.path(getwd(), id)
-dir.create(path = dir.out)
-dir.run <- file.path(dir.out, "Run")
+dirproj <- file.path(getwd(), "gwflw_simulation")
+dir.create(path = dirproj)
+id <- "test" # model run identifier
+dirrun <- file.path(dirproj, id)
 
 saveRDS(particles, file=file.path(dir.out,"particles.rds"))
 saveRDS(gwMod, file=file.path(dir.out,"gwMod.rds"))
@@ -168,43 +200,70 @@ saveRDS(XYZ, file=file.path(getwd(),"XYZ.rds"))
 # saveRDS(IDE, file=file.path(getwd(),"IDE.rds"))
 
 
-arguments <- list(rs.model = gwMod, 
-             chd = CHDFrame,
-                id = id, 
-             dir.run = dir.run, 
-           ss.perlen = 1L, 
-      is.convertible = TRUE,
-             uni = c("seconds","meters"),
-              timeFormat = "%Y%m%d",
-              verbose=TRUE)
+arguments <- list(rs.model       = gwMod, 
+                  chd            = CHDFrame,
+                  id             = id, 
+                  dir.run        = dirrun, 
+                  ss.perlen      = 1L, 
+                  is.convertible = TRUE,
+                  uni            = c("seconds","meters"),
+                  timeFormat     = "%Y%m%d",
+                  verbose        = TRUE)
 
 do.call(WriteModflowInputFiles, arguments)
 
 # Create and execute a batch ﬁle containing commands that run MODFLOW-USG.
-output <- runModflowUsg(dirpath=dir.run, exe="mfusg")
+output <- runModflowUsg(dirpath = dirrun, id = id, exe = "mfusg")
 
 ##--- Initial heads = output previous simulation
 # read head files
-fhds <- file.path(dir.run , paste0(id , ".hds"))
-rs.head <- get.heads(fhds,kper=1,kstp=1, r=gwMod[[1]])
+fhds <- file.path(dirrun , paste0(id , ".hds"))
+rhead <- get.heads(fhds,kper = 1, kstp = 1, r = gwMod[[1]])
 # if(exists("rs.head")){
-gwMod <- initialHeads(gwMod, rs.head) 
+gwMod <- initialHeads(gwMod, rhead) 
 arguments[["rs.model"]] <- gwMod
 do.call(WriteModflowInputFiles, arguments)
-output <- runModflowUsg(dirpath=dir.run, exe="mfusg")
+output <- runModflowUsg(dirpath = dirrun, id = id, exe = "mfusg")
 
 
 
-fbud <- file.path(dir.run , paste0(id , ".bud"))
+fhds <- file.path(dirrun , paste0(id , ".hds"))
+rhead <- get.heads(fhds,kper = 1, kstp = 1, r = gwMod[[1]])
 
-writeModpathInputFiles(id=id,dir.run= dir.run,
-            optionFlags = c("StopOption" = 2), 
-            fbud=fbud,
-            rs.model=gwMod,
-            particles = particles,
-            unconfined=TRUE,
-            verbose = TRUE)
+i <- 45
+plot(rhead[[i]])
+poly <- r2polygons(gwMod,n = which(t(A[,,i]) == 2))
+plotPoly(poly, col=rgb(0.1,0.1,0.2,0.2))
+contour(rhead[[i]], levels=seq(0,30,by=0.05), add=TRUE)
+
+#plot(gwMod[[paste0("lay",i,".hk")]])
+#contour(rhead[[i]], levels=seq(0,30,by=0.05), add=TRUE)
+  
+
+fbud <- file.path(dirrun , paste0(id , ".bud"))
+
+writeModpathInputFiles(id          = id,
+                       dir.run     = dirrun,
+                       optionFlags = c("StopOption" = 2), 
+                       fbud        = fbud,
+                       rs.model    = gwMod,
+                       particles   = particles,
+                       unconfined  = TRUE,
+                       verbose     = TRUE)
 
    
-outputMP <- runModpath(dirpath=dir.run, exe="mp6", batFile="runModpath.bat")   
+outputMP <- runModpath(dirpath = dirrun, id = id, exe = "mp6", 
+                       batFile = "runModpath.bat")   
 ##--------------------------------------------------------##
+
+
+
+partE <- readParticles(id, dirrun, type="end")
+partP <- readParticles(id, dirrun, type="path", ext=extent3D(gwMod))   
+
+i <- 25
+plot(rhead[[i]])
+points(partE[,c("x","y")], pch = 20, col = "blue")  # end (final)
+plotPathXY(partP)
+
+

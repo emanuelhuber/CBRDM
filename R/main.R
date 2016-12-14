@@ -1549,12 +1549,12 @@ setMethod("pixelise", "Deposits", function(x, mbox){
               length.out = ny)
     vz <- seq(mbox$z[1] + mbox$dz/2, to = mbox$z[2] - mbox$dz/2, 
               length.out = nz)
-    XYZ <- array( 0, dim=c(nx, ny,nz))
+    XYZ <- array( -1, dim=c(nx, ny,nz))
     # 1. discretise layers
     #    -> negative id
     lay <- x@layers
     for(i in seq_along(lay)){
-      XYZ[, , lay[i] <= vz] <- -i
+      XYZ[, , lay[i] <= vz] <- -(i + 1)
     }
     # Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz)
     # 2. discretise trough
