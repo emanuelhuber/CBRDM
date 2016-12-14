@@ -16,8 +16,8 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "rH"     = 2,
               "ag"     = 0.5,
               "lambda" = 0.001,
-              "bet"    = 100,
-              "gam"    = 0.1,
+              "bet"    = 1e-4,
+              "gam"    = 0.2,
               "d"      = 100,
               "nit"    = 1e5,
               "n0"     = 1,
@@ -29,15 +29,29 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               
 # 10 cm vertical auf lösung!
 # braucht es "layers" oder only 3D array?
+modbox <- list("x" = c(0,100),    # 0, 700    # before: 0, 500
+             "y" = c(0,100),    # 0, 500    # before: 100, 400
+             "z" = c(0,10)      # for computation range
+             )
+
+prior$ag <- 0.5
+prior$ag <- 0.005    # 5 cm
+prior$bet <- 1e-4    # 5 cm
+prior$gam <- 0.2    # 5 cm
+
+mod <- sim(modbox, hmodel = "poisson", prior)
+
+mod <- sim(modbox, hmodel = "strauss", prior)
+
 
 
 ##------------ PARAMETERS ----------------##
 modgrid <- list(L = c(min = modbox$x[1], max = modbox$x[2]),
-             W = c(min = modbox$y[1], max = modbox$y[2]),
-             H = diff(modbox$z),
-             nx = 100,      # number of cells (x axis)
-             ny = 100,      # number of cells (y axis)
-             nz = 500)      # number of cells (z axis)
+                W = c(min = modbox$y[1], max = modbox$y[2]),
+                H = diff(modbox$z),
+                nx = 100,      # number of cells (x axis)
+                ny = 100,      # number of cells (y axis)
+                nz = 50)      # number of cells (z axis)
 grad_hyd <- 0.01
 ##----------------------------------------##
 
