@@ -18,28 +18,7 @@
 # y1 <- obj@W * sqrt( 1 - (x1 / obj@L)^2 )
 
 
-#--- physical properties facies
-# Huggenberger (1993)
-# Jussel et al (1994)
-# Huber and Huggenberger (2016) doi:10.5194/hess-20-2035-2016
-# p = porosity
-# de = dielectric number saturated zone
-#
-depprop <- list(gp = c(p      = 0.201,
-                       K      = 1.5e-3,
-                       sdlogK = 0.5,
-                       vaniK  = 6,
-                       de     = 12.1),
-                bm = c(p      = 0.25,
-                       K      = 1.5e-3,
-                       sdlogK = 0.1,
-                       vaniK  = 1,
-                       de     = 9.2),
-                ow = c(p      = 0.35,
-                       K      = 1e-1,
-                       sdlogK = 0.1,
-                       vaniK  = 1,
-                       de     = 26.9))
+
                        
 meanlog <- function(xmean, xsdlog){
   return( log(xmean) - 0.5*xsdlog^2 )
@@ -1707,7 +1686,7 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
 #'
 #' @param FUN A function that returns for... 
 #' @export
-setProp <- function(A, type = c("facies", "K"), FUN, ...){
+setProp <- function(A, type = c("facies", "K", "vani"), FUN, ...){
   fac <- list()
   fac$gp <- A < 0                # poorly sorted gravel (GP)
   fac$bm <- (A %% 2) == 0 & !fac$gp   # bimodal gravel (BM)
@@ -1715,8 +1694,10 @@ setProp <- function(A, type = c("facies", "K"), FUN, ...){
   if(!is.null(type)){
     type <- match.arg(type, c("facies", "K"))
     if(type == "K"){
-      TT <- lapply(names(fac), .setProp, A, fac, .funK, depprop)
+      TT <- lapply(names(fac), .setProp, A, fac, .funK, fprop)
     }else if( type == "facies"){
+      TT <- lapply(names(fac), .setProp, A, fac, .funn)
+    }else if( type == "vani"){
       TT <- lapply(names(fac), .setProp, A, fac, .funn)
     }
   }else{
@@ -1741,9 +1722,9 @@ setProp <- function(A, type = c("facies", "K"), FUN, ...){
   return(A0)
 }
 
-.funK <- function(n, facies, depprop){
-  rlognorm(n, mean = depprop[[facies]]["K"], 
-              sdlog = depprop[[facies]]["sdlogK"])
+.funK <- function(n, facies, fprop){
+  rlognorm(n, mean = fprop[[facies]]["Kmean"], 
+              sdlog = fprop[[facies]]["Klogsd"])
 }
 
 .funn <- function(n, facies){
@@ -1751,6 +1732,10 @@ setProp <- function(A, type = c("facies", "K"), FUN, ...){
   if(facies == "bm") x <- 1L
   if(facies == "ow") x <- 2L
   rep(x, n)
+}
+
+.funvani <- function(n, facies, fprop){
+  rep(fprop[[facies]]["vani"], n)
 }
 
 ##--------------------------- INTERSECT ----------------------##
