@@ -11,8 +11,8 @@ library(CBRDM)
 prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "rLW"    = list(type = "runif", min = 3, max = 4),
               "rLH"    = list(type = "runif", min = 45, max = 66),
-              "theta"  = list(type = "runif", min = -20 * pi / 180, 
-                                             max = 20 * pi / 180),
+              "theta"  = list(type = "runif", min = 90-20 * pi / 180, 
+                                             max = 90+20 * pi / 180),
               "rH"     = 2,
               "ag"     = 0.5,
               "lambda" = 0.001,
@@ -30,16 +30,15 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
 # 10 cm vertical auf lösung!
 # braucht es "layers" oder only 3D array?
 modbox <- list("x" = c(0,100),    # 0, 700    # before: 0, 500
-             "y" = c(0,100),    # 0, 500    # before: 100, 400
-             "z" = c(0,10)      # for computation range
-             )
+               "y" = c(0,100),    # 0, 500    # before: 100, 400
+               "z" = c(0,10)      # for computation range
+              )
 
 prior$ag <- 0.5
 prior$ag <- 0.005    # 5 cm
 prior$bet <- 1e-4    # 5 cm
 prior$gam <- 0.2    # 5 cm
 
-mod <- sim(modbox, hmodel = "poisson", prior)
 
 mod <- sim(modbox, hmodel = "strauss", prior)
 
@@ -57,17 +56,24 @@ grad_hyd <- 0.01
 
 
 ##-------- SPATIAL DISCRETISATION --------##
-gwMod <- modGrid3D(modgrid)
+valleyFloor <- function(x,y, a = 0.02, b = 10){
+    z <- b - y * a
+    return(z)
+}
+
+gwMod <- modGrid3D(modgrid, fun = valleyFloor, a = -grad_hyd, b = 10)
 names(gwMod)
 ##----------------------------------------##
 
 ##--------- HYDRAULIC PROPERTIES ---------##
-mbox <- list(x = c(0, 100), y = c(0, 100), z = c(0,5), 
-            dx = 1, dy = 1, dz = 0.01)
+mbox <- list(x = modbox$x, y = modbox$y, z = modbox$z, 
+            dx = diff(modbox$x)/modgrid$nx, 
+            dy = diff(modbox$y)/modgrid$ny, 
+            dz = diff(modbox$z)/modgrid$nz)
 FAC <- pixelise(mod, mbox)
 
 A <- setProp(FAC$XYZ, type = c("facies"))
-
+HK <- setProp(FAC$XYZ, type = c("K"), depprop)
 
 #--- HK
 for(i in 1:nlay(gwMod)){
