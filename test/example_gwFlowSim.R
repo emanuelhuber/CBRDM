@@ -16,6 +16,7 @@ source(paste(ROOT,"softwares/codeR/MODFLOW/RMODFLOW.R",sep=""), chdir=TRUE)
 library(devtools)
 devtools::install_github("emanuelhuber/CBRDM")
 library(CBRDM)
+library(plot3D)
 
 
 prior <- list("L"      = list(type = "runif", min = 40, max = 70),
@@ -37,21 +38,25 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "phi"    = list(type = "runif", min = -1.5, max = 1.5)
               )
               
+
+prior$ag <- 0.5
+# prior$bet <- 1e-4    # 5 cm
+# prior$gam <- 0.2    # 5 cm
+
+# high aggradation
+id <- "test" # model run identifier
+prior$ag <- 0.005    # 5 cm
+
+# low aggradation
+id <- "lowAg"
+prior$ag <- 0.05
+
 # 10 cm vertical auf lösung!
 # braucht es "layers" oder only 3D array?
 modbox <- list("x" = c(0,100),    # 0, 700    # before: 0, 500
                "y" = c(0,100),    # 0, 500    # before: 100, 400
                "z" = c(0,10)      # for computation range
               )
-
-prior$ag <- 0.5
-prior$ag <- 0.005    # 5 cm
-prior$bet <- 1e-4    # 5 cm
-prior$gam <- 0.2    # 5 cm
-
-
-mod <- sim(modbox, hmodel = "strauss", prior)
-
 
 
 ##------------ PARAMETERS ----------------##
@@ -62,6 +67,10 @@ modgrid <- list(L = c(min = modbox$x[1], max = modbox$x[2]),
                 ny = 200,      # number of cells (y axis)
                 nz = 100)      # number of cells (z axis)
 grad_hyd <- 0.01
+##----------------------------------------##
+
+##------------ GEOMETRIC MODEL -----------##
+mod <- sim(modbox, hmodel = "strauss", prior)
 ##----------------------------------------##
 
 
@@ -165,15 +174,16 @@ plot(gwMod[["lay1.strt"]] - gwMod[[1]])
 
 
 ##--------------- PARTICLES --------------##
-rnames <- c("lay1.top", paste0("lay",1:nlay(gwMod), ".bot"))
+
 vp <- seq(5, to = nlay(gwMod), by = 5)
 vx <- seq(5, to = ncol(gwMod), by = 5)
 PPP <- matrix(nrow = length(vp) * length(vx), ncol = 8)
 names(PPP) <- c("Layer", "Row", "Column", "LocalX", "LocalY", "LocalZ", 
                 "ReleaseTime", "Label")
+                
 for(i in seq_along(vp)){
   vr <- (i-1) * length(vx) + seq_along(vx)
-  PPP[vr, 1] <- i
+  PPP[vr, 1] <- vp[i]
   PPP[vr, 2] <- 1
   PPP[vr, 3] <- vx
   PPP[vr, 4:6] <- 0.5
@@ -188,16 +198,9 @@ particles <- list(as.data.frame(PPP))
 ##---------------- MODFLOW/MODPATH RUN -------------------##
 dirproj <- file.path(getwd(), "gwflw_simulation")
 dir.create(path = dirproj)
-id <- "test" # model run identifier
 dirrun <- file.path(dirproj, id)
 
-saveRDS(particles, file=file.path(dir.out,"particles.rds"))
-saveRDS(gwMod, file=file.path(dir.out,"gwMod.rds"))
-saveRDS(CHDFrame, file=file.path(dir.out,"CHDFrame.rds"))
-saveRDS(XYZ, file=file.path(dir.out,"XYZ.rds"))
-saveRDS(XYZ, file=file.path(getwd(),"XYZ.rds"))
-# saveRDS(IDE, file=file.path(dir.out,"IDE.rds"))
-# saveRDS(IDE, file=file.path(getwd(),"IDE.rds"))
+
 
 
 arguments <- list(rs.model       = gwMod, 
@@ -256,14 +259,42 @@ outputMP <- runModpath(dirpath = dirrun, id = id, exe = "mp6",
                        batFile = "runModpath.bat")   
 ##--------------------------------------------------------##
 
-
+fhds <- file.path(dirrun , paste0(id , ".hds"))
+rhead <- get.heads(fhds,kper = 1, kstp = 1, r = gwMod[[1]])
 
 partE <- readParticles(id, dirrun, type="end")
 partP <- readParticles(id, dirrun, type="path", ext=extent3D(gwMod))   
+
+saveRDS(particles, file=file.path(dirrun,"particles.rds"))
+saveRDS(gwMod, file=file.path(dirrun,"gwMod.rds"))
+saveRDS(partE, file=file.path(dirrun,"partE.rds"))
+saveRDS(partP, file=file.path(dirrun,"partP.rds"))
+saveRDS(rhead, file=file.path(dirrun,"rhead.rds"))
+saveRDS(mod, file=file.path(dirrun,"mod.rds"))
+saveRDS(prior, file=file.path(dirrun,"prior.rds"))
+
+# saveRDS(XYZ, file=file.path(dirrun,"XYZ.rds"))
+# saveRDS(IDE, file=file.path(dir.out,"IDE.rds"))
+# saveRDS(IDE, file=file.path(getwd(),"IDE.rds"))
+
 
 i <- 25
 plot(rhead[[i]])
 points(partE[,c("x","y")], pch = 20, col = "blue")  # end (final)
 plotPathXY(partP)
 
+hist(partP[,"z"])
 
+points3D(partP[,"x"], partP[,"y"], partP[,"z"], 
+        colvar = partE[partP[,"id"],"x0"], 
+         bty = "f", cex = 0.01, 
+         pch = 20, clab = "inflow y-position (m)", ticktype = "detailed",
+         theta = 40 , expand = 5, scale = FALSE, xlim = extent3D(gwMod)[1:2], 
+         ylim = extent3D(gwMod)[3:4], zlim = extent3D(gwMod)[5:6],
+         xlab="y",ylab="x",shade=TRUE,border="black",
+         colkey = list(width = 0.5, length = 0.5,cex.axis = 0.8, side = 1),
+         col.axis = "black", col.panel = "white", col.grid = "grey", 
+         lwd.panel = 1, lwd.grid = 2, box = TRUE)
+
+         
+plot(gwMod[["lay95.bot"]])       
