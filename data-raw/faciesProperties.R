@@ -19,5 +19,5 @@ faciesProp <- list(gp = c(p      = 0.201,
                    ow = c(p      = 0.35,
                           Kmean  = 1e-1,
                           Klogsd = 0.1,
-                          vaniK  = 1,
+                          Kvani  = 1,
                           de     = 26.9))

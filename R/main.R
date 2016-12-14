@@ -19,10 +19,12 @@
 
 
 
-                       
+#' @export
 meanlog <- function(xmean, xsdlog){
   return( log(xmean) - 0.5*xsdlog^2 )
 }
+
+#' @export
 rlognorm <- function(n, mean, sdlog){
   rlnorm(n, meanlog = meanlog(mean, sdlog), sdlog = sdlog)
 }
@@ -1686,19 +1688,21 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
 #'
 #' @param FUN A function that returns for... 
 #' @export
-setProp <- function(A, type = c("facies", "K", "vani"), FUN, ...){
+setProp <- function(A, type = c("facies", "K", "Kvani", "p"), FUN, ...){
   fac <- list()
   fac$gp <- A < 0                # poorly sorted gravel (GP)
   fac$bm <- (A %% 2) == 0 & !fac$gp   # bimodal gravel (BM)
   fac$ow <- (A %% 2) != 0 & !fac$gp   # open-framework gravel (OW)
   if(!is.null(type)){
-    type <- match.arg(type, c("facies", "K"))
+    type <- match.arg(type, c("facies", "K", "Kvani", "p"))
     if(type == "K"){
-      TT <- lapply(names(fac), .setProp, A, fac, .funK, fprop)
+      TT <- lapply(names(fac), .setProp, A, fac, .funK, ...)
     }else if( type == "facies"){
       TT <- lapply(names(fac), .setProp, A, fac, .funn)
-    }else if( type == "vani"){
-      TT <- lapply(names(fac), .setProp, A, fac, .funn)
+    }else if( type == "Kvani"){
+      TT <- lapply(names(fac), .setProp, A, fac, .funKvani, ...)
+    }else if( type == "p"){
+      TT <- lapply(names(fac), .setProp, A, fac, .funp, ...)
     }
   }else{
     TT <- lapply(names(fac), .setProp, A, fac, FUN, ...)
@@ -1734,8 +1738,11 @@ setProp <- function(A, type = c("facies", "K", "vani"), FUN, ...){
   rep(x, n)
 }
 
-.funvani <- function(n, facies, fprop){
-  rep(fprop[[facies]]["vani"], n)
+.funKvani <- function(n, facies, fprop){
+  rep(fprop[[facies]]["Kvani"], n)
+}
+.funKvani <- function(n, facies, fprop){
+  rep(fprop[[facies]]["p"], n)
 }
 
 ##--------------------------- INTERSECT ----------------------##

@@ -1,5 +1,8 @@
 
 
+
+rm(list=ls(all=TRUE))
+
 ROOT  <- "/home/huber/WORK/UNIBAS/"
 source(paste(ROOT,"softwares/codeR/MODFLOW/RMODFLOW.R",sep=""), chdir=TRUE)
 
@@ -73,7 +76,10 @@ mbox <- list(x = modbox$x, y = modbox$y, z = modbox$z,
 FAC <- pixelise(mod, mbox)
 
 A <- setProp(FAC$XYZ, type = c("facies"))
-HK <- setProp(FAC$XYZ, type = c("K"), depprop)
+plot3D::image2D(A[,,30])
+plot3D::image2D(A[,30,])
+data(faciesProp)
+HK <- setProp(FAC$XYZ, type = c("K"), fprop = faciesProp)
 
 #--- HK
 for(i in 1:nlay(gwMod)){
