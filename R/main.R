@@ -2208,14 +2208,14 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
 
 ##--------------------------- POINT PROCESS ----------------------##
 .straussMH <- function(...){
-  X <- rmh(...)
+  X <- spatstat::rmh(...)
   Y <- matrix(nrow = X$n, ncol=2)
   Y[,1] <- X$x
   Y[,2] <- X$y
   return(Y)
 }
 .rStrauss <- function(f, ...){
-  X <- rStrauss(...)
+  X <- spatstat::rStrauss(...)
   Y <- matrix(nrow = X$n, ncol=2)
   Y[,1] <- X$x*f
   Y[,2] <- X$y*f
