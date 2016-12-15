@@ -1593,6 +1593,9 @@ setMethod("pixelise", "Deposits", function(x, mbox){
   }
 )
 
+# i < 0 = layer
+# i odd (1, 3, 5) = BM
+# i even (2, 4, 6)= OW
 setMethod("pixelise", "Deposits2D", function(x, mbox){
     nx <- (mbox$x[2] - mbox$x[1])/mbox$dx
     nz <- (mbox$z[2] - mbox$z[1])/mbox$dz
@@ -1616,6 +1619,7 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
     it <- 0
     for(i in 1:nrow(E)){
       it <- it + 1
+      # if even
       if((it %% 2) == 0) it <- it + 1
       e <- E[i,]  # ellispoid e
       L <- b@L[i]
@@ -1690,9 +1694,9 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
 #' @export
 setProp <- function(A, type = c("facies", "K", "Kvani", "p"), FUN, ...){
   fac <- list()
-  fac$gp <- A < 0                # poorly sorted gravel (GP)
-  fac$bm <- (A %% 2) == 0 & !fac$gp   # bimodal gravel (BM)
-  fac$ow <- (A %% 2) != 0 & !fac$gp   # open-framework gravel (OW)
+  fac$gp <-  A < 0                    # poorly sorted gravel (GP)
+  fac$bm <- (A %% 2) != 0 & !fac$gp   # bimodal gravel (BM)
+  fac$ow <- (A %% 2) == 0 & !fac$gp   # open-framework gravel (OW)
   if(!is.null(type)){
     type <- match.arg(type, c("facies", "K", "Kvani", "p"))
     if(type == "K"){

@@ -18,11 +18,11 @@ library(plot3D)
 library(Cairo)
 
 
-
+data(faciesProp)
 
 ##---- id
-id <- "highAg" # model run identifier
 id <- "lowAg"
+id <- "highAg" # model run identifier
 
 dirproj <- file.path(getwd(), "gwflw_simulation")
 dirrun <- file.path(dirproj, id)
@@ -58,6 +58,34 @@ scatter2D(partE[,"x"], max(partP[,"z"]) -partE[,"z"], pch = 20,
           cex = 1, xaxs = "i", yaxs = "i", colkey = list(plot = FALSE),
           xlim = extent3D(gwMod)[1:2], ylim = extent3D(gwMod)[5:6] )
 dev.off()
+
+
+##----------------- MODEL 3D - part -------------------##
+
+library(Cairo)
+Cairo(file      = file.path(dirproj, paste0(id, "_mod3D_x.png")), 
+      type      = "png",
+      units     = "in", 
+      width     = 8, 
+      height    = 8, 
+      pointsize = 14, 
+      dpi       = 300)
+      
+      
+par(mfrow = c(1,1))
+points3D(partE[,"x0"], partE[,"y0"], max(partE[,"z0"]) - partE[,"z0"], 
+        colvar = partE[,"z0"], 
+         bty = "f", cex = 0.5, 
+         pch = 20, clab = "inflow y-position (m)", ticktype = "detailed",
+         theta = 40 , expand = 5, scale = FALSE, xlim = extent3D(gwMod)[1:2], 
+         ylim = extent3D(gwMod)[3:4], zlim = extent3D(gwMod)[5:6],
+         xlab="y",ylab="x",shade=TRUE,border="black",
+         colkey = list(width = 0.5, length = 0.5,cex.axis = 0.8, side = 1),
+         col.axis = "black", col.panel = "white", col.grid = "grey", 
+         lwd.panel = 1, lwd.grid = 2, box = TRUE)
+dev.off()
+         
+
 ##----------------- PARTICLES 3D -------------------##
 
 library(Cairo)
@@ -119,13 +147,14 @@ HK <- setProp(FAC$XYZ, type = c("K"), fprop = faciesProp)
 # plot3D::image2D(HK[,1,])
 # plot3D::image2D(HK[,200,])
 
-Cairo(file      = file.path(dirrun, "HK.png"), 
+Cairo(file      = file.path(dirproj, paste0(id,"_HK.png")), 
       type      = "png",
       units     = "in", 
       width     = 8, 
       height    = 8, 
       pointsize = 14, 
       dpi       = 300)
+      
 par(mfrow = c(1,1))
 vy <- FAC$x
 vx <- rep(100, length(FAC$x))
@@ -137,14 +166,16 @@ surf3D(M1$x, M1$y, vz, colvar = t(HK[,200,]),
         col = jet2.col(201),
         bty = "f", cex = 0.01, pch = 20,  clim = range(HK),
         clab = "hydraulic conductivity (m/s)", ticktype = "detailed",
-        theta = 40, expand = 5, scale = FALSE, resfac = 0, clog = TRUE,
-        xlim = extent3D(gwMod)[1:2], ylim = extent3D(gwMod)[3:4], 
-        zlim = c(0,10), #extent3D(gwMod)[5:6],
+        theta = 40 , expand = 5, scale = FALSE, resfac = 0, clog = TRUE,
+        xlim = modbox$x, ylim = modbox$y, 
+        zlim = modbox$z, #extent3D(gwMod)[5:6],
         xlab = "x", ylab = "y", shade = TRUE, ltheta = -125, lphi = 45,
         colkey = list(plot = TRUE, width = 0.5, length = 0.5,
         cex.axis = 0.8, side = 1),
         col.axis = "black", col.panel = "white", col.grid = "grey",
         lwd.panel = 1, lwd.grid = 2, box = TRUE)
+
+#image2D(HK[,200,], col = jet2.col(201) )       
         
 vy <- (FAC$x)
 vx <- rep(0, length(FAC$x))
@@ -158,8 +189,8 @@ surf3D(M1$y, M1$x, vz, colvar = t(HK[1,,]),
         colkey = list(plot = FALSE))
 
 
-vy <- FAC$x
-vx <- FAC$x
+vx <- rev(FAC$x)
+vy <- FAC$y
 vz <- matrix(rep(rep(max(FAC$z), length(FAC$z)), each = length(vx)), 
               ncol = length(vx), nrow = length(vy), byrow = TRUE)
 M1 <- mesh(vx, vy)
@@ -210,7 +241,7 @@ Cairo(file      = file.path(dirrun, "section_prop.png"),
       pointsize = 14, 
       dpi       = 300)
 par(mfrow = c(2,1))
-data(faciesProp)
+
 mbox <- list(x = c(0, 100), z = c(0,5), dx = 1, dy = 1, dz = 0.01)
 FACsec <- pixelise(smodpar, mbox)
 #plot3D::image2D(z = FAC$z, x = FAC$x, y = FAC$y)
