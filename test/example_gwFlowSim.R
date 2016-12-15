@@ -40,12 +40,12 @@ prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               
 
 ##---- high aggradation
-# id <- "highAg" # model run identifier
-# prior$ag <- 0.005    # 5 cm
+id <- "highAg" # model run identifier
+prior$ag <- 0.005    # 5 cm
 
 ##---- low aggradation
-id <- "lowAg"
-prior$ag <- 0.05
+# id <- "lowAg"
+# prior$ag <- 0.05
 
 # 10 cm vertical auf lösung!
 # braucht es "layers" oder only 3D array?

@@ -21,8 +21,9 @@ library(Cairo)
 data(faciesProp)
 
 ##---- id
+id <- "highAg_saved" # model run identifier
 id <- "lowAg"
-id <- "highAg" # model run identifier
+id <- "highAg"
 
 dirproj <- file.path(getwd(), "gwflw_simulation")
 dirrun <- file.path(dirproj, id)
@@ -39,7 +40,7 @@ prior <- readRDS(file=file.path(dirrun,"prior.rds"))
 
 myAsp <-2
 ##----------------- PARTICLES 2D -------------------##
-Cairo(file      = file.path(dirrun, "part2D_xz.png"), 
+Cairo(file      = file.path(dirproj, paste0(id, "_part2D_xz.png")), 
       type      = "png",
       units     = "in", 
       width     = 14, 
@@ -73,10 +74,10 @@ Cairo(file      = file.path(dirproj, paste0(id, "_mod3D_x.png")),
       
       
 par(mfrow = c(1,1))
-points3D(partE[,"x0"], partE[,"y0"], max(partE[,"z0"]) - partE[,"z0"], 
+points3D(partE[,"x0"], partE[,"y0"], partE[,"z0"], 
         colvar = partE[,"z0"], 
          bty = "f", cex = 0.5, 
-         pch = 20, clab = "inflow y-position (m)", ticktype = "detailed",
+         pch = 20, clab = "inflow z-position (m)", ticktype = "detailed",
          theta = 40 , expand = 5, scale = FALSE, xlim = extent3D(gwMod)[1:2], 
          ylim = extent3D(gwMod)[3:4], zlim = extent3D(gwMod)[5:6],
          xlab="y",ylab="x",shade=TRUE,border="black",
@@ -89,24 +90,24 @@ dev.off()
 ##----------------- PARTICLES 3D -------------------##
 
 library(Cairo)
-Cairo(file      = file.path(dirrun, "part3D_x.png"), 
+Cairo(file      = file.path(dirproj, paste0(id, "_part3D_x.png")), 
       type      = "png",
       units     = "in", 
-      width     = 14, 
+      width     = 8, 
       height    = 8, 
       pointsize = 14, 
       dpi       = 300)
-par(mfrow = c(1,2))
-points3D(partP[,"x"], partP[,"y"], max(partP[,"z"]) - partP[,"z"], 
-        colvar = partE[partP[,"id"],"x0"], 
-         bty = "f", cex = 0.01, 
-         pch = 20, clab = "inflow y-position (m)", ticktype = "detailed",
-         theta = 40 , expand = 5, scale = FALSE, xlim = extent3D(gwMod)[1:2], 
-         ylim = extent3D(gwMod)[3:4], zlim = extent3D(gwMod)[5:6],
-         xlab="y",ylab="x",shade=TRUE,border="black",
-         colkey = list(width = 0.5, length = 0.5,cex.axis = 0.8, side = 1),
-         col.axis = "black", col.panel = "white", col.grid = "grey", 
-         lwd.panel = 1, lwd.grid = 2, box = TRUE)
+par(mfrow = c(1,1))
+# points3D(partP[,"x"], partP[,"y"], partP[,"z"], 
+#         colvar = partE[partP[,"id"],"x0"], 
+#          bty = "f", cex = 0.01, 
+#          pch = 20, clab = "inflow y-position (m)", ticktype = "detailed",
+#          theta = 40 , expand = 5, scale = FALSE, xlim = extent3D(gwMod)[1:2],
+#          ylim = extent3D(gwMod)[3:4], zlim = extent3D(gwMod)[5:6],
+#          xlab="y",ylab="x",shade=TRUE,border="black",
+#          colkey = list(width = 0.5, length = 0.5,cex.axis = 0.8, side = 1),
+#          col.axis = "black", col.panel = "white", col.grid = "grey", 
+#          lwd.panel = 1, lwd.grid = 2, box = TRUE)
 points3D(partP[,"x"], partP[,"y"], partP[,"z"], 
         colvar = partE[partP[,"id"],"z0"], 
          bty = "f", cex = 0.01, 
@@ -211,7 +212,7 @@ lh <- c(0, 1, -50)
 # RConics::addLine(lh, col = "black", lwd = 4)
 
 
-Cairo(file      = file.path(dirrun, "section.png"), 
+Cairo(file      = file.path(dirproj, paste0(id, "_section.png")), 
       type      = "png",
       units     = "in", 
       width     = 14, 
@@ -233,7 +234,7 @@ title("Along valley orientation")
 dev.off()
 
 
-Cairo(file      = file.path(dirrun, "section_prop.png"), 
+Cairo(file      = file.path(dirproj, paste0(id, "_section_prop.png")), 
       type      = "png",
       units     = "in", 
       width     = 14, 
