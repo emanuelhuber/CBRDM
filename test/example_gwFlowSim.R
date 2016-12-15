@@ -22,8 +22,8 @@ library(plot3D)
 prior <- list("L"      = list(type = "runif", min = 40, max = 70),
               "rLW"    = list(type = "runif", min = 3, max = 4),
               "rLH"    = list(type = "runif", min = 45, max = 66),
-              "theta"  = list(type = "runif", min = 90-20 * pi / 180, 
-                                             max = 90+20 * pi / 180),
+              "theta"  = list(type = "runif", min = (180 - 20) * pi / 180, 
+                                              max = (180 + 20) * pi / 180),
               "rH"     = 2,
               "ag"     = 0.5,
               "lambda" = 0.001,
@@ -98,7 +98,7 @@ B1[B>= 0] <- 0
 plot3D::image2D(B1)
 
 HK <- setProp(FAC$XYZ, type = c("K"), fprop = faciesProp)
-plot3D::image2D(HK[,,30])
+plot3D::image2D(HK[,,1])
 plot3D::image2D(HK[30,,])
 plot3D::image2D(HK[,30,])
 
@@ -114,7 +114,7 @@ plot3D::image2D(PORO[30,,])
 #--- HK
 for(i in 1:nlay(gwMod)){
   r <- gwMod[[paste0("lay",i,".bot")]]
-  r[] <- HK[,,i]
+  r[] <- (HK[,,nlay(gwMod) - i + 1])
   names(r) <- paste0("lay",i,".hk")
   gwMod <- stackRaster(gwMod, r)
 }
@@ -122,7 +122,7 @@ for(i in 1:nlay(gwMod)){
 #--- vani
 for(i in 1:nlay(gwMod)){
   r <- gwMod[[paste0("lay",i,".bot")]]
-  r[] <- VANI[,,i]
+  r[] <- VANI[,,nlay(gwMod) - i + 1]
   names(r) <- paste0("lay",i,".vani")
   gwMod <- stackRaster(gwMod, r)
 }
@@ -130,7 +130,7 @@ for(i in 1:nlay(gwMod)){
 #--- porosity
 for(i in 1:nlay(gwMod)){
   r <- gwMod[[paste0("lay",i,".bot")]]
-  r[] <- PORO[,,i]
+  r[] <- PORO[,,nlay(gwMod) - i + 1]
   names(r) <- paste0("lay",i,".porosity")
   gwMod <- stackRaster(gwMod, r)
 }
@@ -149,7 +149,6 @@ plot(rCHD)
 names(rCHD) <- "chd"
 gwMod <- stackRaster(gwMod, rCHD)
 
-plot(gwMod[[1]])
 
 rcCHD   <- rowColFromCell(rCHD, which(!is.na(values(rCHD))))
 val <- valueFromRowCol(rCHD, rcCHD)
@@ -164,15 +163,15 @@ r[] <- ztopmax - grad_hyd*(yFromCell(rCHD, ncell(rCHD):1) -
                            yFromRow(rCHD, row=nrow(rCHD)))
 gwMod <- initialHeads(gwMod, r) 
 cat("grad_hyd = ", grad_hyd, "\n")
-plot(gwMod[["lay1.strt"]])
-plot(gwMod[["lay1.strt"]] - gwMod[[1]])
+# plot(gwMod[["lay1.strt"]])
+# plot(gwMod[["lay1.strt"]] - gwMod[[1]])
 ##----------------------------------------##
 
 
 ##--------------- PARTICLES --------------##
 
-vp <- seq(5, to = nlay(gwMod), by = 5)
-vx <- seq(5, to = ncol(gwMod), by = 5)
+vp <- seq(10, to = nlay(gwMod), by = 10)
+vx <- seq(10, to = ncol(gwMod), by = 10)
 PPP <- matrix(nrow = length(vp) * length(vx), ncol = 8)
 names(PPP) <- c("Layer", "Row", "Column", "LocalX", "LocalY", "LocalZ", 
                 "ReleaseTime", "Label")
@@ -197,8 +196,6 @@ dir.create(path = dirproj)
 dirrun <- file.path(dirproj, id)
 
 
-
-
 arguments <- list(rs.model       = gwMod, 
                   chd            = CHDFrame,
                   id             = id, 
@@ -214,26 +211,26 @@ do.call(WriteModflowInputFiles, arguments)
 # Create and execute a batch ﬁle containing commands that run MODFLOW-USG.
 output <- runModflowUsg(dirpath = dirrun, id = id, exe = "mfusg")
 
-##--- Initial heads = output previous simulation
-# read head files
-fhds <- file.path(dirrun , paste0(id , ".hds"))
-rhead <- get.heads(fhds,kper = 1, kstp = 1, r = gwMod[[1]])
-# if(exists("rs.head")){
-gwMod <- initialHeads(gwMod, rhead) 
-arguments[["rs.model"]] <- gwMod
-do.call(WriteModflowInputFiles, arguments)
-output <- runModflowUsg(dirpath = dirrun, id = id, exe = "mfusg")
+# ##--- Initial heads = output previous simulation
+# # read head files
+# fhds <- file.path(dirrun , paste0(id , ".hds"))
+# rhead <- get.heads(fhds,kper = 1, kstp = 1, r = gwMod[[1]])
+# # if(exists("rs.head")){
+# gwMod <- initialHeads(gwMod, rhead) 
+# arguments[["rs.model"]] <- gwMod
+# do.call(WriteModflowInputFiles, arguments)
+# output <- runModflowUsg(dirpath = dirrun, id = id, exe = "mfusg")
 
 
 
 fhds <- file.path(dirrun , paste0(id , ".hds"))
 rhead <- get.heads(fhds,kper = 1, kstp = 1, r = gwMod[[1]])
-
-i <- 45
-plot(rhead[[i]])
-poly <- r2polygons(gwMod,n = which(t(A[,,i]) == 2))
-plotPoly(poly, col=rgb(0.1,0.1,0.2,0.2))
-contour(rhead[[i]], levels=seq(0,30,by=0.05), add=TRUE)
+# 
+# i <- 45
+# plot(rhead[[i]])
+# poly <- r2polygons(gwMod,n = which(t(A[,,i]) == 2))
+# plotPoly(poly, col=rgb(0.1,0.1,0.2,0.2))
+# contour(rhead[[i]], levels=seq(0,30,by=0.05), add=TRUE)
 
 #plot(gwMod[[paste0("lay",i,".hk")]])
 #contour(rhead[[i]], levels=seq(0,30,by=0.05), add=TRUE)
@@ -273,24 +270,24 @@ saveRDS(prior, file=file.path(dirrun,"prior.rds"))
 # saveRDS(IDE, file=file.path(dir.out,"IDE.rds"))
 # saveRDS(IDE, file=file.path(getwd(),"IDE.rds"))
 
-
-i <- 25
-plot(rhead[[i]])
-points(partE[,c("x","y")], pch = 20, col = "blue")  # end (final)
-plotPathXY(partP)
-
-hist(partP[,"z"])
-
-points3D(partP[,"x"], partP[,"y"], partP[,"z"], 
-        colvar = partE[partP[,"id"],"x0"], 
-         bty = "f", cex = 0.01, 
-         pch = 20, clab = "inflow y-position (m)", ticktype = "detailed",
-         theta = 40 , expand = 5, scale = FALSE, xlim = extent3D(gwMod)[1:2], 
-         ylim = extent3D(gwMod)[3:4], zlim = extent3D(gwMod)[5:6],
-         xlab="y",ylab="x",shade=TRUE,border="black",
-         colkey = list(width = 0.5, length = 0.5,cex.axis = 0.8, side = 1),
-         col.axis = "black", col.panel = "white", col.grid = "grey", 
-         lwd.panel = 1, lwd.grid = 2, box = TRUE)
-
-         
-plot(gwMod[["lay95.bot"]])       
+# 
+# i <- 25
+# plot(rhead[[i]])
+# points(partE[,c("x","y")], pch = 20, col = "blue")  # end (final)
+# plotPathXY(partP)
+# 
+# hist(partP[,"z"])
+# 
+# points3D(partP[,"x"], partP[,"y"], partP[,"z"], 
+#         colvar = partE[partP[,"id"],"x0"], 
+#          bty = "f", cex = 0.01, 
+#          pch = 20, clab = "inflow y-position (m)", ticktype = "detailed",
+#          theta = 40 , expand = 5, scale = FALSE, xlim = extent3D(gwMod)[1:2], 
+#          ylim = extent3D(gwMod)[3:4], zlim = extent3D(gwMod)[5:6],
+#          xlab="y",ylab="x",shade=TRUE,border="black",
+#          colkey = list(width = 0.5, length = 0.5,cex.axis = 0.8, side = 1),
+#          col.axis = "black", col.panel = "white", col.grid = "grey", 
+#          lwd.panel = 1, lwd.grid = 2, box = TRUE)
+# 
+#          
+# plot(gwMod[["lay95.bot"]])       

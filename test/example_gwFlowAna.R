@@ -34,7 +34,7 @@ partP <- readRDS(file=file.path(dirrun,"partP.rds"))
 rhead <- readRDS(file=file.path(dirrun,"rhead.rds"))
 mod   <- readRDS(file=file.path(dirrun,"mod.rds"))
 # saveRDS(mod, file=file.path(dirrun,"mod.rds"))
-# saveRDS(prior, file=file.path(dirrun,"prior.rds"))
+prior <- readRDS(file=file.path(dirrun,"prior.rds"))
 
 
 myAsp <-2
