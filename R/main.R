@@ -2089,9 +2089,18 @@ setMethod("crossBedding", "Trough", function(x, para){
       rpos <- rep(0.75, n)
       phi  <- rep(2.2, n)
     }else{
-      nF <- round(x@W / .rsim(para$nF, n)) +1
-      rpos <- .rsim(para$rpos, n)
-      phi  <- .rsim(para$phi, n)
+      nF <- para$nF         #round(x@W / .rsim(para$nF, n)) +1
+      if(length(nF) == 1){
+        nF <- rep(nF, n)
+      }
+      rpos <- para$rpos     #.rsim(para$rpos, n)
+      if(length(rpos) == 1){
+        rpos <- rep(rpos, n)
+      }
+      phi  <- para$phi      #.rsim(para$phi, n)
+      if(length(phi) == 1){
+        phi <- rep(phi, n)
+      }
     }
     xbed <- list()
     for( i in seq_len(n)){

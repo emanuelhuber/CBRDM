@@ -31,4 +31,15 @@ TF <- trough(pos   = matrix(runif(9, 10,90), nrow=3, ncol=3),
              rH    = rep(6, 3))
 ```
 
-To visualise this trough fills, use the function
+To visualise this trough fills, use the function `plotTopView()`:
+
+```r
+plotTopView(TF, border = "blue", col = "grey", asp = 1)
+```
+
+To plot one specific trough fill:
+```r
+plotTopView(TF[[2]], border = "blue", col = "green", asp = 1, add = TRUE)
+```
+
+
