@@ -3,17 +3,42 @@
 \docType{class}
 \name{Trough-class}
 \alias{Trough-class}
-\title{An S4 class to represent trough structure.}
+\title{An S4 class to represent trough fill elements}
 \description{
-An S4 class to represent trough structure.
+An instance of the class \code{Trough} contains \eqn{n} trough fills (with
+\eqn{ 0 \leq n}. The trough are defined as truncated ellipsoids.
+}
+\details{
+Note that the third object position coordinate (z) corresponds to the 
+object top elevation.
+The truncation ratio \code{rH} is defined as rH x H = c.
+The fills of the trough are defined by several trough of smaller size.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{version}}{A length-n character vector indicating the version of RGPR}
+\item{\code{version}}{A character vector indicating the version of CBRDM}
 
-\item{\code{id}}{A length-n numeric vector}
+\item{\code{id}}{A length-\eqn{n} numeric vector specifying a unique id for each
+troughs.}
 
-\item{\code{pos}}{A nx3 numeric matrix corresponding to object center position.}
+\item{\code{pos}}{A \eqn{n \times 3} numeric matrix defining the object position 
+coordinates.}
+
+\item{\code{L}}{A length-\eqn{n} numeric vector specifying the object lengths.}
+
+\item{\code{W}}{A length-\eqn{n} numeric vector specifying the object widhts}
+
+\item{\code{H}}{A length-\eqn{n} numeric vector specifying the object heights.}
+
+\item{\code{theta}}{A length-\eqn{n} numeric vector specifying the object 
+orientation (horizontal angle in radian).}
+
+\item{\code{rH}}{A length-\eqn{n} numeric vector specifying the truncation ratio.}
+
+\item{\code{fill}}{A length-\eqn{n} list specifying the object fills}
 }}
+\seealso{
+\code{\link{Deposits-class}}, \code{\link{TrEllipsoid-class}}
+}
 

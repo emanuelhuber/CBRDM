@@ -33,11 +33,28 @@ rlognorm <- function(n, mean, sdlog){
                        
 ##------------------- CLASSES ------------------##
 
-#' An S4 class to represent trough structure.
+#' An S4 class to represent trough fill elements
 #'
-#' @slot version A length-n character vector indicating the version of RGPR
-#' @slot id A length-n numeric vector
-#' @slot pos A nx3 numeric matrix corresponding to object center position.
+#' An instance of the class \code{Trough} contains \eqn{n} trough fills (with
+#' \eqn{ 0 \leq n}. The trough are defined as truncated ellipsoids.
+#'
+#' Note that the third object position coordinate (z) corresponds to the 
+#' object top elevation.
+#' The truncation ratio \code{rH} is defined as rH x H = c.
+#' The fills of the trough are defined by several trough of smaller size.
+#' @slot version A character vector indicating the version of CBRDM
+#' @slot id A length-\eqn{n} numeric vector specifying a unique id for each
+#'          troughs.
+#' @slot pos A \eqn{n \times 3} numeric matrix defining the object position 
+#'          coordinates.
+#' @slot L A length-\eqn{n} numeric vector specifying the object lengths.
+#' @slot W A length-\eqn{n} numeric vector specifying the object widhts
+#' @slot H A length-\eqn{n} numeric vector specifying the object heights.
+#' @slot theta A length-\eqn{n} numeric vector specifying the object 
+#'              orientation (horizontal angle in radian).
+#' @slot rH A length-\eqn{n} numeric vector specifying the truncation ratio.
+#' @slot fill A length-\eqn{n} list specifying the object fills
+#' @seealso  \code{\link{Deposits-class}}, \code{\link{TrEllipsoid-class}}
 setClass(
   Class="Trough",  
   slots=c(
@@ -53,11 +70,16 @@ setClass(
   )
 )
 
-#' An S4 class to represent Deposits.
+#' An S4 class to represent coarse braided deposits.
 #'
-#' @slot version A length-n character vector indicating the version of RGPR
-#' @slot id A length-n numeric vector
-#' @slot pos A nx3 numeric matrix corresponding to object center position.
+#' An instance of the class \code{Deposits} contains an instance of the class
+#' \code{Trough} as well as the elevations of horizontal layers.
+#' @slot version A character vector indicating the version of CBRDM
+#' @slot troughs An instance of the class \code{Trough}
+#' @slot layers A \eqn{n \times 3} numeric matrix corresponding to object 
+#'              center position.
+#' @slot bbox A length-three list defining the model boundary
+#' @seealso  \code{\link{Trough-class}}
 setClass(
   Class="Deposits",  
   slots=c(
@@ -68,32 +90,45 @@ setClass(
   )
 )
 
-#' An S4 class to represent Spoon
-#'
-#' @slot version A length-n character vector indicating the version of RGPR
-#' @slot id A length-n numeric vector
-#' @slot pos A nx3 numeric matrix corresponding to object center position.
-setClass(
-  Class="Spoon",  
-  slots=c(
-    version = "character",   # version of the class
-    id = "numeric",
-    pos = "matrix",     # position, z = top of object
-    L = "numeric",
-    W = "numeric",
-    H = "numeric",
-    theta = "numeric",  # depth position
-    rH = "numeric",
-    rL = "numeric",
-    fill = "list"
-  )
-)
+# #' An S4 class to represent Spoon
+# #'
+# #' @slot version A character vector indicating the version of CBRDM
+# #' @slot id A length-n numeric vector
+# #' @slot pos A nx3 numeric matrix corresponding to object center position.
+# setClass(
+#   Class="Spoon",  
+#   slots=c(
+#     version = "character",   # version of the class
+#     id = "numeric",
+#     pos = "matrix",     # position, z = top of object
+#     L = "numeric",
+#     W = "numeric",
+#     H = "numeric",
+#     theta = "numeric",  # depth position
+#     rH = "numeric",
+#     rL = "numeric",
+#     fill = "list"
+#   )
+# )
 
-#' An S4 class to represent TrEllipsoid
+#' An S4 class to represent truncated ellipsoids
 #'
-#' @slot version A length-n character vector indicating the version of RGPR
-#' @slot id A length-n numeric vector
-#' @slot pos A nx3 numeric matrix corresponding to object center position.
+#' An instance of the class \code{TrEllipsoid} contains \eqn{n}
+#' truncated ellipsoids (with \eqn{ 0 \leq n}.
+#'
+#' @slot version A character vector indicating the version of CBRDM
+#' @slot id A length-\eqn{n} numeric vector specifying a unique id for each
+#'          troughs.
+#' @slot pos A \eqn{n \times 3} numeric matrix defining the object position 
+#'          coordinates.
+#' @slot a The semi-axis length a
+#' @slot b The semi-axis length b
+#' @slot c The semi-axis length c
+#' @slot theta A length-\eqn{n} numeric vector specifying the object 
+#'              orientation (horizontal angle in radian).
+#' @slot zmax A length-\eqn{n} numeric vector specifying the maximum elevation 
+#'            of the truncated ellipsoids
+#' @seealso  \code{\link{Trough-class}}
 setClass(
   Class="TrEllipsoid",  
   slots=c(
@@ -110,7 +145,7 @@ setClass(
 
 #' An S4 class to represent Ellipsoid
 #'
-#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot version A character vector indicating the version of CBRDM
 #' @slot id A length-n numeric vector
 #' @slot pos A nx3 numeric matrix corresponding to object center position.
 setClass(
@@ -289,34 +324,34 @@ trough <- function(id = NULL, pos, size, theta, rH, fill = list()){
   )
 }
 
-#' constructeur
-#'
-#' @export
-spoon <- function(id = NULL, pos, size, theta, rH, rL, fill = list()){
-  if(is.null(dim(pos))){
-    dim(pos) <- c(1, length(pos))
-  }
-  unname(pos)
-  colnames(pos) <- c("x", "y", "z")
-  if(is.null(dim(size))){
-    dim(size) <- c(1, length(size))
-  }
-  if(is.null(id)){
-    id <- seq_along(pos[,1])
-  }
-  new("Spoon",
-      version="0.1",
-      id = id,
-      pos = pos,     # position
-      L = size[,1],
-      W = size[,2],
-      H = size[,3],
-      theta = theta,  # depth position
-      rH = rH,
-      rL = rL,
-      fill = fill
-  )
-}
+# #' constructeur
+# #'
+# #' @export
+# spoon <- function(id = NULL, pos, size, theta, rH, rL, fill = list()){
+#   if(is.null(dim(pos))){
+#     dim(pos) <- c(1, length(pos))
+#   }
+#   unname(pos)
+#   colnames(pos) <- c("x", "y", "z")
+#   if(is.null(dim(size))){
+#     dim(size) <- c(1, length(size))
+#   }
+#   if(is.null(id)){
+#     id <- seq_along(pos[,1])
+#   }
+#   new("Spoon",
+#       version="0.1",
+#       id = id,
+#       pos = pos,     # position
+#       L = size[,1],
+#       W = size[,2],
+#       H = size[,3],
+#       theta = theta,  # depth position
+#       rH = rH,
+#       rL = rL,
+#       fill = fill
+#   )
+# }
 
 ##------------------- SUBSETTING -----------------##
 #' Subsetting
@@ -347,33 +382,33 @@ setMethod(
     }
 )
 
-#' Subsetting
-#'
-#' @rdname subsetting
-#' @export
-setMethod(
-    f= "[[",
-    signature="Spoon",
-    definition=function (x, i, j, ...){
-      if(missing(i)) i <- j
-      myFill <- x@fill
-      if(length(myFill) > 0){
-        myFill <- myFill[i]
-      }
-      new("Spoon",
-          version="0.1",
-          id = x@id[i, drop = FALSE],
-          pos = x@pos[i, , drop = FALSE],     # position
-          L = x@L[i, drop = FALSE],
-          W = x@W[i, drop = FALSE],
-          H = x@H[i, drop = FALSE],
-          theta = x@theta[i, drop = FALSE],  # depth position
-          rH = x@rH[i, drop = FALSE],
-          rL = x@rL[i, drop = FALSE],
-          fill = myFill
-      )
-    }
-)
+# #' Subsetting
+# #'
+# #' @rdname subsetting
+# #' @export
+# setMethod(
+#     f= "[[",
+#     signature="Spoon",
+#     definition=function (x, i, j, ...){
+#       if(missing(i)) i <- j
+#       myFill <- x@fill
+#       if(length(myFill) > 0){
+#         myFill <- myFill[i]
+#       }
+#       new("Spoon",
+#           version="0.1",
+#           id = x@id[i, drop = FALSE],
+#           pos = x@pos[i, , drop = FALSE],     # position
+#           L = x@L[i, drop = FALSE],
+#           W = x@W[i, drop = FALSE],
+#           H = x@H[i, drop = FALSE],
+#           theta = x@theta[i, drop = FALSE],  # depth position
+#           rH = x@rH[i, drop = FALSE],
+#           rL = x@rL[i, drop = FALSE],
+#           fill = myFill
+#       )
+#     }
+# )
 
 #' Subsetting
 #'
@@ -906,51 +941,51 @@ setMethod("bbox", "Deposits", function(x){
   }
 )
 
-spoon2trough <- function(from){
-  xl <- new("Trough",
-          version = "0.1",   # version of the class
-          id = from@id,
-          pos = from@pos,     # position
-          L = 2*from@L * (1 - from@rL),
-          W = from@W,
-          H = from@H,
-          theta = from@theta,  # depth position
-          rH = from@rH
-        )
-  xs <- new("Trough",
-          version = "0.1",   # version of the class
-          id = from@id,
-          pos = from@pos,     # position
-          L = 2*from@L * from@rL,
-          W = from@W,
-          H = from@H,
-          theta = from@theta,  # depth position
-          rH = from@rH
-        )
-  return(list(xl, xs))
-}
-
-setMethod("bbox", "Spoon", function(x){
-    xT <- spoon2trough(x)
-    bbox1 <- bbox(xT[[1]])
-    bbox2 <- bbox(xT[[2]])
-    pos <- x@pos
-    pos[,3] <- x@pos[,3] - x@H/2
-    L1 <- x@L * (1 - x@rL)
-    L2 <- x@L * x@rL
-    l <- L1 - x@L/2
-    pos[,1:2] <- l*c(cos(x@theta), sin(x@theta)) + x@pos[,1:2]
-    new("Cuboid",
-      version = "0.1",   # version of the class
-      id = x@id,
-      pos = pos,     # position
-      L = bbox1@L/2 +  bbox2@L/2,
-      W = bbox1@W/2 +  bbox2@W/2,
-      H = x@H,
-      theta = rep(0, length(x@L))
-    )
-  }
-)
+# spoon2trough <- function(from){
+#   xl <- new("Trough",
+#           version = "0.1",   # version of the class
+#           id = from@id,
+#           pos = from@pos,     # position
+#           L = 2*from@L * (1 - from@rL),
+#           W = from@W,
+#           H = from@H,
+#           theta = from@theta,  # depth position
+#           rH = from@rH
+#         )
+#   xs <- new("Trough",
+#           version = "0.1",   # version of the class
+#           id = from@id,
+#           pos = from@pos,     # position
+#           L = 2*from@L * from@rL,
+#           W = from@W,
+#           H = from@H,
+#           theta = from@theta,  # depth position
+#           rH = from@rH
+#         )
+#   return(list(xl, xs))
+# }
+# 
+# setMethod("bbox", "Spoon", function(x){
+#     xT <- spoon2trough(x)
+#     bbox1 <- bbox(xT[[1]])
+#     bbox2 <- bbox(xT[[2]])
+#     pos <- x@pos
+#     pos[,3] <- x@pos[,3] - x@H/2
+#     L1 <- x@L * (1 - x@rL)
+#     L2 <- x@L * x@rL
+#     l <- L1 - x@L/2
+#     pos[,1:2] <- l*c(cos(x@theta), sin(x@theta)) + x@pos[,1:2]
+#     new("Cuboid",
+#       version = "0.1",   # version of the class
+#       id = x@id,
+#       pos = pos,     # position
+#       L = bbox1@L/2 +  bbox2@L/2,
+#       W = bbox1@W/2 +  bbox2@W/2,
+#       H = x@H,
+#       theta = rep(0, length(x@L))
+#     )
+#   }
+# )
 
 setMethod("bbox", "TrEllipsoid", function(x){
     O <- as(x, "Trough")
@@ -1424,25 +1459,25 @@ setMethod("plotTopView", "Trough", function(x, add = FALSE, xlab = "x",
   }
 )
 
-setMethod("plotTopView", "Spoon", function(x, add = FALSE, xlab = "x",
-            ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
-    if(add==FALSE){
-      b <- boundary(x)
-      plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
-            xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
-            asp = asp, xaxs = xaxs, yaxs = yaxs)
-    }
-    E <- as.matrix(x)
-    if(length(E) > 0 ){
-      invisible(apply(E, 1, .plotTroughTop, ...) )
-      if(length(x@fill) > 0){
-        invisible(lapply(x@fill, plotTopView, add = TRUE, asp = NA, ...))
-      }
-    }else{
-      cat("no objects to plot!\n")
-    }
-  }
-)
+# setMethod("plotTopView", "Spoon", function(x, add = FALSE, xlab = "x",
+#             ylab = "y", main = "", asp = NA, xaxs = "i", yaxs = "i", ...){
+#     if(add==FALSE){
+#       b <- boundary(x)
+#       plot(0,0, type = "n", xlab = xlab, ylab = ylab, main = main,
+#             xlim = b[c("xmin", "xmax")], ylim = b[c("ymin", "ymax")],
+#             asp = asp, xaxs = xaxs, yaxs = yaxs)
+#     }
+#     E <- as.matrix(x)
+#     if(length(E) > 0 ){
+#       invisible(apply(E, 1, .plotTroughTop, ...) )
+#       if(length(x@fill) > 0){
+#         invisible(lapply(x@fill, plotTopView, add = TRUE, asp = NA, ...))
+#       }
+#     }else{
+#       cat("no objects to plot!\n")
+#     }
+#   }
+# )
 
 
 # ... arguments to be passed to "base::polygon" function

@@ -3,17 +3,24 @@
 \docType{class}
 \name{Deposits-class}
 \alias{Deposits-class}
-\title{An S4 class to represent Deposits.}
+\title{An S4 class to represent coarse braided deposits.}
 \description{
-An S4 class to represent Deposits.
+An instance of the class \code{Deposits} contains an instance of the class
+\code{Trough} as well as the elevations of horizontal layers.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{version}}{A length-n character vector indicating the version of RGPR}
+\item{\code{version}}{A character vector indicating the version of CBRDM}
 
-\item{\code{id}}{A length-n numeric vector}
+\item{\code{troughs}}{An instance of the class \code{Trough}}
 
-\item{\code{pos}}{A nx3 numeric matrix corresponding to object center position.}
+\item{\code{layers}}{A \eqn{n \times 3} numeric matrix corresponding to object 
+center position.}
+
+\item{\code{bbox}}{A length-three list defining the model boundary}
 }}
+\seealso{
+\code{\link{Trough-class}}
+}
 

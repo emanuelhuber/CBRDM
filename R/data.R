@@ -1,14 +1,19 @@
 
-#' Subsurface properties for each facies.
+#' Subsurface properties.
 #'
-#' Subsurface properties for each facies.
+#' List of subsurface properties for the following facies:
+#' poorly sorted gravel (gp), bimodal gravel (bm), and open-framework gravel 
+#' (ow). 
 #'
-#' @format A list of three vectors. gp = poorly-sorted gravel,
-#'         bm = bimodal gravel, ow = open-framework gravel
+#' @format A list of three vectors with index 'gp' (poorly-sorted gravel),
+#'         'bm' (bimodal gravel), 'ow' (open-framework gravel). Each vector 
+#' contains the following items:
 #' \describe{
-#'   \item{price}{price, in US dollars}
-#'   \item{carat}{weight of the diamond, in carats}
-#'   ...
+#'   \item{p}{porosity (-)}
+#'   \item{Kmean}{mean hydraulic conductivity (m/s)}
+#'   \item{Klogsd}{standard deviation of the log-hydraulic conductivity (m/s)}
+#'   \item{Kvani}{vertical anisotropy of the hydraulic conductivity (-)}
+#'   \item{de}{dielectric number (-)}
 #' }
 #' @source Huggenberger (1993), Jussel et al (1994), 
 #'         Huber and Huggenberger (2016) doi:10.5194/hess-20-2035-2016

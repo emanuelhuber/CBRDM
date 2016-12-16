@@ -3,17 +3,35 @@
 \docType{class}
 \name{TrEllipsoid-class}
 \alias{TrEllipsoid-class}
-\title{An S4 class to represent TrEllipsoid}
+\title{An S4 class to represent truncated ellipsoids}
 \description{
-An S4 class to represent TrEllipsoid
+An instance of the class \code{TrEllipsoid} contains \eqn{n}
+truncated ellipsoids (with \eqn{ 0 \leq n}.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{version}}{A length-n character vector indicating the version of RGPR}
+\item{\code{version}}{A character vector indicating the version of CBRDM}
 
-\item{\code{id}}{A length-n numeric vector}
+\item{\code{id}}{A length-\eqn{n} numeric vector specifying a unique id for each
+troughs.}
 
-\item{\code{pos}}{A nx3 numeric matrix corresponding to object center position.}
+\item{\code{pos}}{A \eqn{n \times 3} numeric matrix defining the object position 
+coordinates.}
+
+\item{\code{a}}{The semi-axis length a}
+
+\item{\code{b}}{The semi-axis length b}
+
+\item{\code{c}}{The semi-axis length c}
+
+\item{\code{theta}}{A length-\eqn{n} numeric vector specifying the object 
+orientation (horizontal angle in radian).}
+
+\item{\code{zmax}}{A length-\eqn{n} numeric vector specifying the maximum elevation 
+of the truncated ellipsoids}
 }}
+\seealso{
+\code{\link{Trough-class}}
+}
 

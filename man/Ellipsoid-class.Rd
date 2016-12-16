@@ -10,7 +10,7 @@ An S4 class to represent Ellipsoid
 \section{Slots}{
 
 \describe{
-\item{\code{version}}{A length-n character vector indicating the version of RGPR}
+\item{\code{version}}{A character vector indicating the version of CBRDM}
 
 \item{\code{id}}{A length-n numeric vector}
 
