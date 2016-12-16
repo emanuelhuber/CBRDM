@@ -279,25 +279,36 @@ setClass(
   )
 )
 
-#' An S4 class to represent Line
-#'
-#' @slot version A length-n character vector indicating the version of RGPR
-#' @slot id A length-n numeric vector
-#' @slot pos A nx3 numeric matrix corresponding to object center position.
-setClass(
-  Class="Line",
-  slots=c(
-    version = "character",
-    id = "numeric",
-    a = "matrix",
-    b = "numeric",
-    c = "numeric"
-  )
-)
+# #' An S4 class to represent Line
+# #'
+# #' @slot version A length-n character vector indicating the version of RGPR
+# #' @slot id A length-n numeric vector
+# #' @slot pos A nx3 numeric matrix corresponding to object center position.
+# setClass(
+#   Class="Line",
+#   slots=c(
+#     version = "character",
+#     id = "numeric",
+#     a = "matrix",
+#     b = "numeric",
+#     c = "numeric"
+#   )
+# )
 
 ##------------------- CONSTRUCTORS ------------------##
-#' constructeur
+#' Constructor - create an instance of the \code{Trough} class
 #'
+#' Create an instance of the \code{Trough} class containing \eqn{n} trough fill.
+#' @param id A length-\eqn{n} numeric vector specifying a unique id
+#' @param pos A \eqn{n \times 3} numeric matrix defining the object position 
+#'          coordinates.
+#' @slot size A \eqn{n \times 3} numeric matrix specifying the object size 
+#'            (length, width, height)
+#' @slot theta A length-\eqn{n} numeric vector specifying the object 
+#'              orientation (horizontal angle in radian).
+#' @slot rH A length-\eqn{n} numeric vector specifying the truncation ratio.
+#' @slot fill A length-\eqn{n} list specifying the object fills
+#' @seealso  \code{\link{Trough-class}}
 #' @export
 trough <- function(id = NULL, pos, size, theta, rH, fill = list()){
   if(is.null(dim(pos))){
@@ -884,17 +895,33 @@ setGeneric("pixelise", function(x, mbox) standardGeneric("pixelise"))
 
 #' crossBedding
 #'
+#' Add a cross-bedding to an existing object
+#' @param x An object.
+#' @param para A list with following elements:
+#' \describe{
+#'   \item{nF}{Number of cross-beds}
+#'   \item{rpos}{Relative position from the trough center, between 0 and 1}
+#'   \item{phi}{Angle of cross-beds in radian}
+#' }
 #' @name crossBedding
 #' @rdname crossBedding
 #' @export
-setGeneric("crossBedding", function(x, prior)     
+setGeneric("crossBedding", function(x, para)     
             standardGeneric("crossBedding"))
 
 #' plotTopView
 #'
+#' @param x An object.
+#' @param add If TRUE add the plot to an existing plot.
+#' @param xlab A length-one character vector defining the x-axis label.
+#' @param ylab A length-one character vector defining the y-axis label.
+#' @param main A length-one character vector defining an overall plot title.
+#' @param asp A length-one numeric vector defining the y/x aspect ratio.
+#' @param ... Parameters to be passed to the \code{polygon} function
 #' @name plotTopView
 #' @rdname plotTopView
 #' @export
+#' @seealso  \code{\link{polygon}}
 setGeneric("plotTopView", function(x, add = FALSE, xlab = "x",
             ylab = "y", main = "", asp = NA, ...) 
             standardGeneric("plotTopView"))
@@ -2033,38 +2060,38 @@ setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
 }
 
 ##-------------------------------- FILLING --------------------------##
-setMethod("crossBedding", "Deposits", function(x, prior = NULL){
+setMethod("crossBedding", "Deposits", function(x, para = NULL){
 #     n <- length(x@troughs@id)
-#     if(is.null(prior)){
+#     if(is.null(para)){
 #       nF   <- rep(6, n)
 #       rpos <- rep(0.75, n)
 #       phi  <- rep(2.2, n)
 #     }else{
-#       nF <- round(W / .rsim(prior$nF, n)) +1
-#       rpos <- .rsim(prior$rpos, n)
-#       phi  <- .rsim(prior$phi, n)
+#       nF <- round(W / .rsim(para$nF, n)) +1
+#       rpos <- .rsim(para$rpos, n)
+#       phi  <- .rsim(para$phi, n)
 #     }
 #     xbed <- list()
 #     for( i in seq_len(n)){
 #       xbed[[x@troughs@id[i]]] <- .regCrossBedding(x@troughs[[i]], nF = nF[i],
 #                                              rpos = rpos[i], phi = phi[i])
 #     }
-    x@troughs <- crossBedding(x@troughs, prior)
+    x@troughs <- crossBedding(x@troughs, para)
     return(x)
   }
 )
 
 # setMethod("crossBedding","Trough",function(x,nF=6, phi=1.05, rpos=1){
-setMethod("crossBedding", "Trough", function(x, prior){
+setMethod("crossBedding", "Trough", function(x, para){
     n <- length(x@id)
-    if(is.null(prior)){
+    if(is.null(para)){
       nF   <- rep(6, n)
       rpos <- rep(0.75, n)
       phi  <- rep(2.2, n)
     }else{
-      nF <- round(x@W / .rsim(prior$nF, n)) +1
-      rpos <- .rsim(prior$rpos, n)
-      phi  <- .rsim(prior$phi, n)
+      nF <- round(x@W / .rsim(para$nF, n)) +1
+      rpos <- .rsim(para$rpos, n)
+      phi  <- .rsim(para$phi, n)
     }
     xbed <- list()
     for( i in seq_len(n)){
@@ -2124,25 +2151,25 @@ setMethod("crossBedding", "Trough", function(x, prior){
 #'
 #' Simulate coarse, braided river deposits
 #' @export
-sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior, 
+sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para, 
                 crossbeds = TRUE){
   hmodel <- match.arg(tolower(hmodel), c("poisson", "strauss"))
   #--- 1. vertical distribution layers: Poisson process
   dz <- diff(modbox$z)
-  lambdaz <- dz/prior$ag
+  lambdaz <- dz/para$ag
   nZ <- rpois(1, lambdaz)
   zLevel <- sort(modbox$z[1] + dz*runif(nZ))
   #--- 2. horizontal distribution scour fill: Poisson|Strauss model
   if(hmodel == "poisson"){
     # number of objects is Poisson distributed
-    meanNObjects <- prior$lambda * diff(modbox$x) * diff(modbox$y)
+    meanNObjects <- para$lambda * diff(modbox$x) * diff(modbox$y)
     nPois <- rpois(nZ, meanNObjects)
     # total number of object
     n <-  sum(nPois)
     # length
-    L   <- .rsim(prior$L, n)
-    rLW <- .rsim(prior$rLW, n)
-    rLH <- .rsim(prior$rLH, n)
+    L   <- .rsim(para$L, n)
+    rLW <- .rsim(para$rLW, n)
+    rLH <- .rsim(para$rLH, n)
     W <- L/rLW
     # position
     maxL <- max(L, W)
@@ -2152,34 +2179,34 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
                              max = modbox$y[2] + maxL),
                     rep(zLevel, nPois )), byrow = FALSE, ncol = 3)
   }else if(hmodel == "strauss"){
-    L   <- .rsim(prior$L,   n = 500)
-    rLW <- .rsim(prior$rLW, n = 500)
-    rLH <- .rsim(prior$rLH, n = 500)
+    L   <- .rsim(para$L,   n = 500)
+    rLW <- .rsim(para$rLW, n = 500)
+    rLH <- .rsim(para$rLH, n = 500)
     W <- L/rLW
     # position
     maxL <- ceiling(max(L, W)*1.5)
-    modbox2 <- list(x = c(modbox$x[1] - 2 * prior$d - maxL,
-                          modbox$x[2] + 2 * prior$d + maxL),
-                    y = c(modbox$y[1] - 2 * prior$d - maxL,
-                          modbox$y[2] + 2 * prior$d + maxL))
+    modbox2 <- list(x = c(modbox$x[1] - 2 * para$d - maxL,
+                          modbox$x[2] + 2 * para$d + maxL),
+                    y = c(modbox$y[1] - 2 * para$d - maxL,
+                          modbox$y[2] + 2 * para$d + maxL))
     f <- 1
-    # XL <- replicate(nZ, straussMH(bet = prior$bet, gam = prior$gam, 
-    #                             d   = prior$d,   nit = prior$nit, 
-    #                             n0  = prior$n0,  W = modbox2, fd = prior$fd))
-    #XL <- replicate(nZ, spatstat::rStrauss(beta = prior$bet, gamma = prior$gam,
-    #                             R = prior$d, W = owin(xrange = modbox2$x,
+    # XL <- replicate(nZ, straussMH(bet = para$bet, gam = para$gam, 
+    #                             d   = para$d,   nit = para$nit, 
+    #                             n0  = para$n0,  W = modbox2, fd = para$fd))
+    #XL <- replicate(nZ, spatstat::rStrauss(beta = para$bet, gamma = para$gam,
+    #                             R = para$d, W = owin(xrange = modbox2$x,
     #                                                   yrange = modbox2$y)))
     # XL <- replicate(nZ, .straussr(model = list(cif = "strauss", 
-    #                                     par = list(beta  = prior$bet, 
-    #                                                gamma = prior$gam, 
-    #                                                r     = prior$d),
+    #                                     par = list(beta  = para$bet, 
+    #                                                gamma = para$gam, 
+    #                                                r     = para$d),
     #                                     w = c(modbox2$x, modbox2$y)), 
-    #                        start=list( n.start = prior$n0),
-    #                        control = list(nrep = prior$nit)))
+    #                        start=list( n.start = para$n0),
+    #                        control = list(nrep = para$nit)))
     XL <- replicate(nZ, .rStrauss(f = f,
-                                  beta  = prior$bet, 
-                                  gamma = prior$gam, 
-                                  R     = prior$d/f, 
+                                  beta  = para$bet, 
+                                  gamma = para$gam, 
+                                  R     = para$d/f, 
                                   W     = spatstat::owin(modbox2$x/f, 
                                                          modbox2$y/f)))
     Xmat <- do.call(rbind, XL)
@@ -2188,9 +2215,9 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
     xyz <- matrix(nrow = n, ncol = 3)
     xyz[,1:2] <- Xmat
     xyz[,3] <- rep(zLevel, nStrauss )
-    L   <- .rsim(prior$L, n)
-    rLW <- .rsim(prior$rLW, n)
-    rLH <- .rsim(prior$rLH, n)
+    L   <- .rsim(para$L, n)
+    rLW <- .rsim(para$rLW, n)
+    rLH <- .rsim(para$rLH, n)
     W   <- L/rLW
   }
   trgh <- new("Trough",
@@ -2200,8 +2227,8 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
               L       = L,
               W       = W,
               H       = L/rLH,
-              theta   = .rsim(prior$theta, n),  # depth position
-              rH      = rep(prior$rH, n)
+              theta   = .rsim(para$theta, n),  # depth position
+              rH      = rep(para$rH, n)
             )
   if(hmodel == "strauss"){
     trgh <- extract(trgh, modbox)
@@ -2210,9 +2237,9 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
   #--- 3. CROSS-BEDS
   if(isTRUE(crossbeds)){
     n <- length(trgh@id)
-    nF <- round(trgh@W / .rsim(prior$nF, n)) +1
-    rpos <- .rsim(prior$rpos, n)
-    phi  <- .rsim(prior$phi, n)
+    nF <- round(trgh@W / .rsim(para$nF, n)) +1
+    rpos <- .rsim(para$rpos, n)
+    phi  <- .rsim(para$phi, n)
     xbed <- list()
     for( i in seq_len(n)){
       xbed[[trgh@id[i]]] <- .regCrossBedding(trgh[[i]], nF = nF[i],

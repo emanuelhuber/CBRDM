@@ -16,6 +16,7 @@ o <- trough(pos   = matrix(runif(9, 10,90), nrow=3, ncol=3),
 o2 <- crossBedding(o)
 
 
+
 plotTopView(o2[[1]], border = "red", asp = 1, col = "grey")
 plotTopView(o[[1]], border = "blue", asp = 1, add = TRUE)
 

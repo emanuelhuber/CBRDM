@@ -7,7 +7,25 @@
 plotTopView(x, add = FALSE, xlab = "x", ylab = "y", main = "",
   asp = NA, ...)
 }
+\arguments{
+\item{x}{An object.}
+
+\item{add}{If TRUE add the plot to an existing plot.}
+
+\item{xlab}{A length-one character vector defining the x-axis label.}
+
+\item{ylab}{A length-one character vector defining the y-axis label.}
+
+\item{main}{A length-one character vector defining an overall plot title.}
+
+\item{asp}{A length-one numeric vector defining the y/x aspect ratio.}
+
+\item{...}{Parameters to be passed to the \code{polygon} function}
+}
 \description{
 plotTopView
+}
+\seealso{
+\code{\link{polygon}}
 }
 

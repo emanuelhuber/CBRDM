@@ -4,7 +4,7 @@
 \alias{sim}
 \title{Simulate}
 \usage{
-sim(modbox, hmodel = c("poisson", "strauss", "straussMH"), prior,
+sim(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   crossbeds = TRUE)
 }
 \description{

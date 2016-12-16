@@ -4,9 +4,19 @@
 \alias{crossBedding}
 \title{crossBedding}
 \usage{
-crossBedding(x, prior)
+crossBedding(x, para)
+}
+\arguments{
+\item{x}{An object.}
+
+\item{para}{A list with following elements:
+\describe{
+  \item{nF}{Number of cross-beds}
+  \item{rpos}{Relative position from the trough center, between 0 and 1}
+  \item{phi}{Angle of cross-beds in radian}
+}}
 }
 \description{
-crossBedding
+Add a cross-bedding to an existing object
 }
 
