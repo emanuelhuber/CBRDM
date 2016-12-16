@@ -163,7 +163,7 @@ plot3D::image2D(PORO[30,,])
 ```
 
 
-Plot a cube:
+Plot a cube of hydraulic conductivity:
 ```r
 nxyz <- dim(FAC$XYZ)
 vy <- FAC$y
