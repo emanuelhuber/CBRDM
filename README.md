@@ -30,11 +30,11 @@ heterogeneous, coarse, braided river deposits. AGU 2016 Fall Meeting, San Franci
 
 - E. Huber, P. Huggenberger (2016) Subsurface flow mixing in coarse, braided river deposits. Hydrology and Earth System Sciences, 20:2035–2046. DOI: [10.5194/hess-20-2035-2016](http://dx.doi.org/10.5194/hess-20-2035-2016)
 
-- Huggenberger, P., Regli, C., 2006. A sedimentological model to characterize braided river deposits for hydrogeological applications. In: Sambrook Smith, G.H., Best, J.L., Bristow, C.S., Petts, G.E. (Eds.), Braided Rivers: Process, Deposits, Ecology and Management. Blackwell Publishing Ltd, Oxford, UK, pp. 51–74 [10.1002/9781444304374.ch3](http://dx.doi.org/10.1002/9781444304374.ch3).
+- Huggenberger, P., Regli, C., 2006. A sedimentological model to characterize braided river deposits for hydrogeological applications. In: Sambrook Smith, G.H., Best, J.L., Bristow, C.S., Petts, G.E. (Eds.), Braided Rivers: Process, Deposits, Ecology and Management. Blackwell Publishing Ltd, Oxford, UK, pp. 51–74. DOI: [10.1002/9781444304374.ch3](http://dx.doi.org/10.1002/9781444304374.ch3).
 
-- Beres, M., Huggenberger, P., Green, A.G., Horstmeyer, H., 1999. Using two- and three-dimensional georadar methods to characterize glaciofluvial architecture. Sediment. Geol. 129 (1–2), 1–24. [10.1016/S0037-0738(99)00053-6](http://dx.doi.org/10.1016/S0037-0738(99)00053-6).
+- Beres, M., Huggenberger, P., Green, A.G., Horstmeyer, H., 1999. Using two- and three-dimensional georadar methods to characterize glaciofluvial architecture. Sediment. Geol. 129 (1–2), 1–24. DOI: [10.1016/S0037-0738(99)00053-6](http://dx.doi.org/10.1016/S0037-0738(99)00053-6).
 
-- Siegenthaler, C., Huggenberger, P., 1993. Pleistocene Rhine gravel: deposits of a braided river system with dominant pool preservation. Geol. Soc. Lond., Spec. Publ. 75, 147–162. [10.1144/GSL.SP.1993.075.01.09](http://dx.doi.org/10.1144/GSL.SP.1993.075.01.09).
+- Siegenthaler, C., Huggenberger, P., 1993. Pleistocene Rhine gravel: deposits of a braided river system with dominant pool preservation. Geol. Soc. Lond., Spec. Publ. 75, 147–162. DOI: [10.1144/GSL.SP.1993.075.01.09](http://dx.doi.org/10.1144/GSL.SP.1993.075.01.09).
 
 
 
