@@ -18,7 +18,15 @@ emanuel.huber@stanford.edu
 
 Thank you!
 
-## Related publication
+## Publications
+
+### How to cite
+
+Huber E., Huggenberger P., Caers J. (2016) Presentation: A 3D object-based model to simulate highly-
+heterogeneous, coarse, braided river deposits. AGU 2016 Fall Meeting, San Francisco, California, USA,
+12–16 December 2016.
+
+### Related publications
 
 - E. Huber, P. Huggenberger (2016) Subsurface flow mixing in coarse, braided river deposits. Hydrology and Earth System Sciences, 20:2035–2046. DOI: [10.5194/hess-20-2035-2016](http://dx.doi.org/10.5194/hess-20-2035-2016)
 
