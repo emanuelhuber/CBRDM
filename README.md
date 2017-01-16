@@ -1,6 +1,8 @@
 # CBRDM
 Coarse Braided River Deposit Model
 
+There is a critical need in hydrogeological modeling for geologically more realistic representation of the subsurface. Indeed, widely-used representations of the subsurface heterogeneity based on smooth basis functions such as cokriging or the pilot-point approach fail at reproducing the connectivity of high permeable geological structures that control subsurface solute transport. To realistically model the connectivity of high permeable structures of coarse, braided river deposits, multiple-point statistics and object-based models are promising alternatives. We therefore propose a new object-based model that, according to a sedimentological model, mimics the dominant processes of floodplain dynamics. Contrarily to existing models, this object-based model possesses the following properties: (1) it is consistent with field observations (outcrops, ground-penetrating radar data, etc.), (2) it allows different sedimentological dynamics to be modeled that result in different subsurface heterogeneity patterns, (3) it is light in memory and computationally fast, and (4) it can be conditioned to geophysical data. In this model, the main sedimentological elements (scour fills with open-framework–bimodal gravel cross-beds, gravel sheet deposits, open-framework and sand lenses) and their internal structures are described by geometrical objects. Several spatial distributions are proposed that allow to simulate the horizontal position of the objects on the floodplain as well as the net rate of sediment deposition. The model is grid-independent and any vertical section can be computed algebraically. Furthermore, model realizations can serve as training images for multiple-point statistics.
+
 ## How to install/load
 
 ```r
@@ -15,6 +17,18 @@ This is an ongoing project. If you have any questions, don't hesitate to contact
 emanuel.huber@stanford.edu
 
 Thank you!
+
+## Related publication
+
+- E. Huber, P. Huggenberger (2016) Subsurface flow mixing in coarse, braided river deposits. Hydrology and Earth System Sciences, 20:2035–2046. DOI: [10.5194/hess-20-2035-2016](http://dx.doi.org/10.5194/hess-20-2035-2016)
+
+- Huggenberger, P., Regli, C., 2006. A sedimentological model to characterize braided river deposits for hydrogeological applications. In: Sambrook Smith, G.H., Best, J.L., Bristow, C.S., Petts, G.E. (Eds.), Braided Rivers: Process, Deposits, Ecology and Management. Blackwell Publishing Ltd, Oxford, UK, pp. 51–74 [10.1002/9781444304374.ch3](http://dx.doi.org/10.1002/9781444304374.ch3).
+
+- Beres, M., Huggenberger, P., Green, A.G., Horstmeyer, H., 1999. Using two- and three-dimensional georadar methods to characterize glaciofluvial architecture. Sediment. Geol. 129 (1–2), 1–24. [10.1016/S0037-0738(99)00053-6](http://dx.doi.org/10.1016/S0037-0738(99)00053-6).
+
+- Siegenthaler, C., Huggenberger, P., 1993. Pleistocene Rhine gravel: deposits of a braided river system with dominant pool preservation. Geol. Soc. Lond., Spec. Publ. 75, 147–162. [10.1144/GSL.SP.1993.075.01.09](http://dx.doi.org/10.1144/GSL.SP.1993.075.01.09).
+
+
 
 ## Short tutorial
 ### Trough fill simulation
