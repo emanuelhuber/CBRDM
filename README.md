@@ -22,9 +22,9 @@ Thank you!
 
 ### How to cite
 
-Huber E., Huggenberger P., Caers J. (2016) Presentation: A 3D object-based model to simulate highly-
-heterogeneous, coarse, braided river deposits. AGU 2016 Fall Meeting, San Francisco, California, USA,
-12–16 December 2016.
+Huber E., Huggenberger P., Caers J. (2016) Presentation: A 3D object-based model to simulate highly-heterogeneous, coarse, braided river deposits. AGU 2016 Fall Meeting, San Francisco, California, USA, 12–16 December 2016. DOI: 10.13140/RG.2.2.29333.32489
+(Download presentation)[DOI: 10.13140/RG.2.2.29333.32489]
+
 
 ### Related publications
 
