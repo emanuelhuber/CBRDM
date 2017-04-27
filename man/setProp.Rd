@@ -12,4 +12,3 @@ setProp(A, type = c("facies", "K", "Kvani", "p"), FUN, ...)
 \description{
 Set properties
 }
-

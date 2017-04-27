@@ -27,4 +27,3 @@ poorly sorted gravel (gp), bimodal gravel (bm), and open-framework gravel
 (ow).
 }
 \keyword{datasets}
-

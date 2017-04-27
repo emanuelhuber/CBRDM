@@ -9,4 +9,3 @@ pixelise(x, mbox)
 \description{
 pixelise
 }
-

@@ -11,4 +11,4 @@ BugReports: https://github.com/emanuelhuber/CBRDM/issues
 Imports:
     RConics,
 	spatstat
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

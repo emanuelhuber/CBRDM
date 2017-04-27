@@ -9,4 +9,3 @@ plotObj(x, ...)
 \description{
 plotObj
 }
-

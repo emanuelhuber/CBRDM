@@ -28,7 +28,7 @@ orientation (horizontal angle in radian).}
 
 \item{\code{fill}}{A length-\eqn{n} list specifying the object fills}
 }}
+
 \seealso{
 \code{\link{Trough-class}}
 }
-

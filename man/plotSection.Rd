@@ -10,4 +10,3 @@ plotSection(x, add = FALSE, xlab = "x", ylab = "y", main = "",
 \description{
 plotSection
 }
-

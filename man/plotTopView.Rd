@@ -28,4 +28,3 @@ plotTopView
 \seealso{
 \code{\link{polygon}}
 }
-

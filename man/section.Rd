@@ -9,4 +9,3 @@ section(x, l, pref = NULL, lim = NULL)
 \description{
 section
 }
-

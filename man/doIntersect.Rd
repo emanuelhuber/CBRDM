@@ -9,4 +9,3 @@ doIntersect(x, y, ...)
 \description{
 doIntersect
 }
-

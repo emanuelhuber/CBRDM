@@ -16,4 +16,3 @@ with 0 <= gam <= 1 and bet > 0
 if gam = 1, Strauss process = Poisson process
 if gam = 0, Strauss process = Hard core process
 }
-

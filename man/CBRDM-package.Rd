@@ -24,7 +24,18 @@ heterogeneity of coarse, braided river deposits.
   \item \code{Deposits2D}
 }
 }
+
 \references{
 ...
 }
+\seealso{
+Useful links:
+\itemize{
+  \item Report bugs at \url{https://github.com/emanuelhuber/CBRDM/issues}
+}
 
+}
+\author{
+\strong{Maintainer}: Emanuel Huber \email{emanuel.huber@stanford.edu}
+
+}

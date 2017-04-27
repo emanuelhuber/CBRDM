@@ -10,4 +10,3 @@ sim(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
 \description{
 Simulate coarse, braided river deposits
 }
-

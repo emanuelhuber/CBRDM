@@ -20,7 +20,7 @@ center position.}
 
 \item{\code{bbox}}{A length-three list defining the model boundary}
 }}
+
 \seealso{
 \code{\link{Trough-class}}
 }
-

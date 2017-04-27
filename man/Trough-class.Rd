@@ -38,7 +38,7 @@ orientation (horizontal angle in radian).}
 
 \item{\code{fill}}{A length-\eqn{n} list specifying the object fills}
 }}
+
 \seealso{
 \code{\link{Deposits-class}}, \code{\link{TrEllipsoid-class}}
 }
-

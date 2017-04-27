@@ -2,15 +2,16 @@
 % Please edit documentation in R/main.R
 \docType{methods}
 \name{as.matrix,Trough-method}
+\alias{as.matrix,Trough-method}
+\alias{as.matrix,Ellipsoid-method}
+\alias{as.matrix,TrEllipsoid-method}
+\alias{as.matrix,Sphere-method}
 \alias{as.matrix,Cuboid-method}
 \alias{as.matrix,Ellipse-method}
-\alias{as.matrix,Ellipsoid-method}
-\alias{as.matrix,Rectangle-method}
-\alias{as.matrix,Sphere-method}
+\alias{as.matrix,Ellipse-method}
 \alias{as.matrix,TrEllipse-method}
-\alias{as.matrix,TrEllipsoid-method}
-\alias{as.matrix,Trough-method}
 \alias{as.matrix,Trough2D-method}
+\alias{as.matrix,Rectangle-method}
 \title{Conversion to matrix}
 \usage{
 \S4method{as.matrix}{Trough}(x)
@@ -54,4 +55,3 @@ Conversion to matrix
 
 Conversion to matrix
 }
-

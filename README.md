@@ -87,7 +87,7 @@ The object properties (`L` = length, `rLW`= length-width ratio, `rLH` = length-h
 
 The vertical position of the layers is defined by a Poisson process with parameter `ag` (the rate of sediment deposition = mean thickness of sediment deposited per event).
 
-The horizontal distribution of trough fills on each layers is defined by a Strauss process with parameters `bet` (beta), `gam` (gamma) and `d` interaction distance (the function `rStrauss` in the `spatstat` R-package). Warning: a bad parameter choice may lead to extremely long computation.
+The horizontal distribution of trough fills on each layers is defined by a Strauss process with parameters `bet` (beta), `gam` (gamma) and `d` interaction distance (the function `rStrauss` in the `spatstat` R-package). Warning: a bad parameter choice may lead to extremely long computations.
 
 The cross-bedding parameters are also defined according probability distribution. Note that here `nF` defines the cross-bed thickness (I will change that next time).
 

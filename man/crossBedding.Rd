@@ -19,4 +19,3 @@ crossBedding(x, para)
 \description{
 Add a cross-bedding to an existing object
 }
-

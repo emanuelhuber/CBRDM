@@ -2193,7 +2193,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
     rLH <- .rsim(para$rLH, n = 500)
     W <- L/rLW
     # position
-    maxL <- ceiling(max(L, W)*1.5)
+    maxL <- ceiling(max(L, W) * 1.5)
     modbox2 <- list(x = c(modbox$x[1] - 2 * para$d - maxL,
                           modbox$x[2] + 2 * para$d + maxL),
                     y = c(modbox$y[1] - 2 * para$d - maxL,
@@ -2265,7 +2265,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
 }
 
 #' @export
-.rsim <- function(x, n=1){
+.rsim <- function(x, n = 1){
   arg <- x[-1]
   arg[["n"]] <- n
   do.call(x$type, arg)
@@ -2292,7 +2292,19 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   return(Y)
 }
 
-
+# # like in "Statistical Analysis and Modelling of Spatial Point Patterns"
+# # J. Illian, A. Penttinen, H. Stoyan and D. Stoyan
+# # © 2008 John Wiley & Sons, Ltd. ISBN: 978-0-470-01491-2
+# # chapter 3, p. 152
+# bet <- exp(8)
+# gam <- exp(-exp(0.3))
+# d <- 0.08
+# W <- list(x = c(0, 1), y = c(0, 1))
+# n0 <- 120
+# n0 <- 120
+# 100 iterations -> 120 pts
+# 5000 iterations -> 166
+# 10000 iterations -> 166 (coincidence)
 #' Strauss process simulation (MCMC)
 #'
 #' strauss process: bet^(n(y)) * gam^(s(y))
@@ -2309,50 +2321,40 @@ straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
   if(is.null(fd)) fd <- c(1,1)
   xmax  <- diff(W$x)/fd[1]
   ymax  <- diff(W$y)/fd[2]
-    areaW <- xmax * ymax
+  areaW <- xmax * ymax
   if(is.null(n0)){
-    n0 <- round(beta * areaW)
+    n0 <- round(bet * areaW)
   }
-  X     <- matrix(ncol = 2, nrow = n0)
-  X[,1] <- runif(n0, 0, xmax)
-  X[,2] <- runif(n0, 0, ymax)
+  n <- as.integer(n0)
+  X     <- matrix(ncol = 2, nrow = n)
+  X[,1] <- runif(n, 0, xmax)
+  X[,2] <- runif(n, 0, ymax)
   nv     <- integer(nit)
   d2 <- d*d
-  i     <- 0
-  eps <- .Machine$double.eps^0.75
-  n <- n0
-  phi0 <- sum(dist(X) <= d)
-  bet <- bet * areaW
+  i     <- 0L
+  bet1 <- bet * areaW
   while(i < nit){
-    i <- i + 1
+    i <- i + 1L
     nv[i] <- n
     # BIRTH
-    if(n <= 1 || sample(c(TRUE,FALSE), 1 )){
+    if(n <= 1L || sample(c(TRUE, FALSE), 1 )){
       x_cand <- c(runif(1, 0, xmax), runif(1, 0, ymax))
-     # Y <- rbind(X, x_cand, deparse.level = 0)
-     #A <- sum(dist(X) <= d)
-     #B <- sum(dist(Y) <= d)
-     #(bet * gam^(A - B)) / (n + 1)
-      # phi <- sum(distxtoX(X, x_cand) <= d)
-      phi <- sum(distxtoX3(X, x_cand) <= d2)
-      if(phi < phi0 || runif(1) <= min(1, (bet * gam^phi) / (n + 1))){
-          X <- rbind(X, x_cand, deparse.level = 0)
-          n <- n + 1
-          phi0 <- phi
+      phi <- sum(distxtoX2(X, x_cand) <= d2)
+      if(runif(1) <= min(1, (bet1 * gam^phi) / (n + 1))){
+          X <- X[c(seq_len(n), n), ]
+          n <- n + 1L
+          X[n, ] <- x_cand
       }
     # DEATH
     }else{
       x_cand_pos <- sample(seq_along(X[,1]),1)
-      phi <- sum(distxtoX3(X[-x_cand_pos, , drop=FALSE], 
-                           X[ x_cand_pos, , drop=FALSE])  <= d2)
-      #pm <- (n * gam^phi) / bet
-      if(phi < phi0 || runif(1) <= min(1, (n * gam^phi) / bet)){
-          X <- X[-x_cand_pos,,drop=FALSE]
-          n <- n - 1
-          phi0 <- phi
+      phi <- sum(distxtoX2(X[-x_cand_pos, , drop = FALSE], 
+                           X[ x_cand_pos, , drop = FALSE])  <= d2)
+      if(runif(1) <= min(1, (n / (bet1 * gam^phi)))){
+          X <- X[-x_cand_pos,, drop = FALSE]
+          n <- n - 1L
       }
     }
-    # plot(X, xlim = W$x, ylim = W$y)
   }
   X[,1] <- W$x[1] + (X[,1]) * fd[1]
   X[,2] <- W$y[1] + (X[,2]) * fd[2]
@@ -2363,15 +2365,89 @@ straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
   }
 }
 
-distxtoX <- function(X,x){
+
+# # like in "Statistical Analysis and Modelling of Spatial Point Patterns"
+# # J. Illian, A. Penttinen, H. Stoyan and D. Stoyan
+# # © 2008 John Wiley & Sons, Ltd. ISBN: 978-0-470-01491-2
+# # chapter 3, p. 152
+# alpha <- -8
+# bet <- exp(0.3)
+# d <- 0.08
+# W = list(x = c(0, 1), y = c(0, 1))
+# n0 <- 120
+# 100 iterations -> 120 pts
+# 5000 iterations -> 166
+# 10000 iterations -> 166 (coincidence)
+#' Strauss process (as Gibbs process) simulation (MCMC)
+#'
+#' strauss process: exp(-(alpha*(n(y))  + beta*s(y)))
+#' with alpha >= 0 and bet > 0
+#' if beta = 0, Strauss process = Poisson process
+#' if beta = +infinity, Strauss process = Hard core process
+#' @param count boolean TRUE: return the number of points for each iteration
+#' @export
+straussMHGibbs <- function(alpha = 10, bet = 0.5, d = 0.1, n0 = NULL, nit = 5000,
+                      W = list(x = c(0, 1), y = c(0, 1)), fd = NULL,
+                      count = FALSE){
+  # initialisation
+  #if(gam < 0 || gam > 1) stop("gam must be >= 0 and <= 0!\n")
+  if(is.null(fd)) fd <- c(1,1)
+  xmax  <- diff(W$x)/fd[1]
+  ymax  <- diff(W$y)/fd[2]
+  areaW <- xmax * ymax
+  if(is.null(n0)){
+    n0 <- round(bet * areaW)
+  }
+  n <- as.integer(n0)
+  X     <- matrix(ncol = 2, nrow = n)
+  X[,1] <- runif(n, 0, xmax)
+  X[,2] <- runif(n, 0, ymax)
+  nv     <- integer(nit)
+  d2 <- d*d
+  i     <- 0L
+  # bet1 <- bet * areaW
+  while(i < nit){
+    i <- i + 1L
+    nv[i] <- n
+    # BIRTH
+    if(n <= 1L || sample(c(TRUE, FALSE), 1 )){
+      x_cand <- c(runif(1, 0, xmax), runif(1, 0, ymax))
+      phi <- sum(distxtoX2(X, x_cand) <= d2)
+      if(runif(1) <= min(1, exp(-alpha - bet * phi) / (n + 1))){
+          X <- X[c(seq_len(n), n), ]
+          n <- n + 1L
+          X[n, ] <- x_cand
+      }
+    # DEATH
+    }else{
+      x_cand_pos <- sample(seq_along(X[,1]),1)
+      phi <- sum(distxtoX2(X[-x_cand_pos, , drop = FALSE], 
+                           X[ x_cand_pos, , drop = FALSE])  <= d2)
+      if(runif(1) <= min(1, (n * exp(alpha + bet * phi)))){
+          X <- X[-x_cand_pos,, drop = FALSE]
+          n <- n - 1L
+      }
+    }
+  }
+  X[,1] <- W$x[1] + (X[,1]) * fd[1]
+  X[,2] <- W$y[1] + (X[,2]) * fd[2]
+  if( isTRUE(count) ){
+    return( list("X" = X,"n" = nv) )
+  }else{
+    return( X )
+  }
+}
+
+distxtoXold <- function(X,x){
     sqrt(rowSums(sweep(X,2,x,'-')^2))
 }
 
-distxtoX2 <- function(X,x){
+distxtoX2old <- function(X,x){
     rowSums(sweep(X,2,x,'-')^2)
 }
 
-distxtoX3 <- function(X,x){
+# **squared** distance between a point x and a ensemble of points X
+distxtoX2 <- function(X,x){
   rowSums((X - matrix(x, ncol = ncol(X), nrow = nrow(X), byrow = TRUE))^2)
 }
 

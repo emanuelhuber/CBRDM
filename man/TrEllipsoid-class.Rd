@@ -31,7 +31,7 @@ orientation (horizontal angle in radian).}
 \item{\code{zmax}}{A length-\eqn{n} numeric vector specifying the maximum elevation 
 of the truncated ellipsoids}
 }}
+
 \seealso{
 \code{\link{Trough-class}}
 }
-
