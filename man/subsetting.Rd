@@ -3,12 +3,12 @@
 \docType{methods}
 \name{[[}
 \alias{[[}
-\alias{[[,Trough2D-method}
+\alias{[,Trough2D,ANY,ANY,ANY-method}
 \title{Subsetting}
 \usage{
-\S4method{[[}{Trough}(x, i, j, ...)
+\S4method{[}{Trough,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 
-\S4method{[[}{Trough2D}(x, i, j, ...)
+\S4method{[}{Trough2D,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 }
 \description{
 Subsetting

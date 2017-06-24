@@ -3,7 +3,7 @@
 \docType{class}
 \name{Deposits-class}
 \alias{Deposits-class}
-\title{An S4 class to represent coarse braided deposits.}
+\title{An S4 class to represent coarse braided deposits NEW.}
 \description{
 An instance of the class \code{Deposits} contains an instance of the class
 \code{Trough} as well as the elevations of horizontal layers.
@@ -13,10 +13,9 @@ An instance of the class \code{Deposits} contains an instance of the class
 \describe{
 \item{\code{version}}{A character vector indicating the version of CBRDM}
 
-\item{\code{troughs}}{An instance of the class \code{Trough}}
+\item{\code{layers}}{A list of instances of the class \code{Trough}}
 
-\item{\code{layers}}{A \eqn{n \times 3} numeric matrix corresponding to object 
-center position.}
+\item{\code{z}}{A numeric vector corresponding to the layer elevations.}
 
 \item{\code{bbox}}{A length-three list defining the model boundary}
 }}

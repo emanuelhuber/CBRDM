@@ -10,5 +10,5 @@ LazyData: TRUE
 BugReports: https://github.com/emanuelhuber/CBRDM/issues
 Imports:
     RConics,
-	spatstat
+    spatstat
 RoxygenNote: 6.0.1

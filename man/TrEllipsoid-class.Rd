@@ -13,7 +13,7 @@ truncated ellipsoids (with \eqn{ 0 \leq n}.
 \describe{
 \item{\code{version}}{A character vector indicating the version of CBRDM}
 
-\item{\code{id}}{A length-\eqn{n} numeric vector specifying a unique id for each
+\item{\code{id}}{A length-\eqn{n} integer vector specifying a unique id for each
 troughs.}
 
 \item{\code{pos}}{A \eqn{n \times 3} numeric matrix defining the object position 

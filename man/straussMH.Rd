@@ -11,7 +11,7 @@ straussMH(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
 \item{count}{boolean TRUE: return the number of points for each iteration}
 }
 \description{
-strauss process: bet^(n(y)) * gam^(s(y))
+strauss process: \eqn{bet^(n(y)) * gam^(s(y))}
 with 0 <= gam <= 1 and bet > 0
 if gam = 1, Strauss process = Poisson process
 if gam = 0, Strauss process = Hard core process

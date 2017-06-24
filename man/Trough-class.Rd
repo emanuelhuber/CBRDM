@@ -19,7 +19,7 @@ The fills of the trough are defined by several trough of smaller size.
 \describe{
 \item{\code{version}}{A character vector indicating the version of CBRDM}
 
-\item{\code{id}}{A length-\eqn{n} numeric vector specifying a unique id for each
+\item{\code{id}}{A length-\eqn{n} integer vector specifying a unique id for each
 troughs.}
 
 \item{\code{pos}}{A \eqn{n \times 3} numeric matrix defining the object position 
