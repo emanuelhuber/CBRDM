@@ -2382,8 +2382,10 @@ setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
             asp = asp, xaxs = xaxs, yaxs = yaxs)
     }
     if(!is.null(lay)){
-      lay$h <- x@z
-      do.call(abline, lay)
+      if(lay != FALSE){
+        lay$h <- x@z
+        do.call(abline, lay)
+      }
     }else{
       abline(h = x@z )
     }
