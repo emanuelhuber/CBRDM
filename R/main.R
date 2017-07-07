@@ -718,7 +718,11 @@ setMethod("as.matrix", signature(x = "Deposits"),function(x){
 setAs(from = "Deposits", to = "matrix", def = function(from){
     sel <- which(lapply(from@layers, function(x) length(x@id)) > 0)
     test <- lapply(from@layers[sel], as.matrix)
-    M <- do.call(rbind, test)
+    layID <- rep(as.integer(names(test)), lapply(test, nrow))
+    M <- matrix(nrow = length(layID), ncol = 10)
+    M[, 1:9] <- do.call(rbind, test)
+    M[, 10] <- layID
+    #    M <- do.call(rbind, test)
     return(M)
   }
 )
@@ -732,7 +736,11 @@ setMethod("as.matrix", signature(x = "Deposits2D"),function(x){
 setAs(from = "Deposits2D", to = "matrix", def = function(from){
     sel <- which(lapply(from@layers, function(x) length(x@id)) > 0)
     test <- lapply(from@layers[sel], as.matrix)
-    M <- do.call(rbind, test)
+    layID <- rep(as.integer(names(test)), lapply(test, nrow))
+    M <- matrix(nrow = length(layID), ncol = 7)
+    M[,1:6] <- do.call(rbind, test)
+    M[,7] <- layID
+    #    M <- do.call(rbind, test)
     return(M)
   }
 )
@@ -3178,42 +3186,46 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   #return(list("x" = x, "id" = id, del = bd))
   return(x)
 })            
-            
+          
+          
 .insertLay <- function(x, zi, id, laynew){
-  if(length(laynew@id) == 0) return(x)
-  n <- length(x@z)
-  zbelow <- which(x@z < zi)
-  znew <- numeric(n + 1L)
-  lay <- list()
-  if(length(zbelow) == 0){
-    znew[2:(n + 1L)] <- x@z
-    znew[1] <- zi
-    names(znew)[2:(n+1L)] <- names(x@z)
-    names(znew)[1] <- paste0(id)
-    lay[[paste0(id)]] <- laynew
-    lay[names(x@z)] <- x@layers[names(x@z)]
-  }else if(max(zbelow) == n){
-    znew[1:n] <- x@z
-    znew[n + 1L] <- zi
-    names(znew)[1:n] <- names(x@z)
-    names(znew)[n + 1L] <- paste0(id)
-    lay[names(x@z)] <- x@layers[names(x@z)]
-    lay[[paste0(id)]] <- laynew
-  }else{
-    ztop <- (2L + max(zbelow)):(n + 1L)
-    v <- c(zbelow, ztop)
-    iv <- max(zbelow) + 1L
-    znew[v] <- x@z
-    names(znew)[v] <- names(x@z)
-    znew[iv] <- zi
-    names(znew)[iv] <- paste0(id)
-    lay[names(znew)[zbelow]] <- x@layers[names(znew)[zbelow]]
-    lay[[paste0(id)]] <- laynew
-    lay[names(znew)[ztop]] <- x@layers[(1L + max(zbelow)):n]
-  }
-  x@z <- znew
-  x@layers <- lay
-  return(x)
+#   if(length(laynew@id) == 0){
+#   
+#   }else{
+    n <- length(x@z)
+    zbelow <- which(x@z < zi)
+    znew <- numeric(n + 1L)
+    lay <- list()
+    if(length(zbelow) == 0){
+      znew[2:(n + 1L)] <- x@z
+      znew[1] <- zi
+      names(znew)[2:(n+1L)] <- names(x@z)
+      names(znew)[1] <- paste0(id)
+      lay[[paste0(id)]] <- laynew
+      lay[names(x@z)] <- x@layers[names(x@z)]
+    }else if(max(zbelow) == n){
+      znew[1:n] <- x@z
+      znew[n + 1L] <- zi
+      names(znew)[1:n] <- names(x@z)
+      names(znew)[n + 1L] <- paste0(id)
+      lay[names(x@z)] <- x@layers[names(x@z)]
+      lay[[paste0(id)]] <- laynew
+    }else{
+      ztop <- (2L + max(zbelow)):(n + 1L)
+      v <- c(zbelow, ztop)
+      iv <- max(zbelow) + 1L
+      znew[v] <- x@z
+      names(znew)[v] <- names(x@z)
+      znew[iv] <- zi
+      names(znew)[iv] <- paste0(id)
+      lay[names(znew)[zbelow]] <- x@layers[names(znew)[zbelow]]
+      lay[[paste0(id)]] <- laynew
+      lay[names(znew)[ztop]] <- x@layers[(1L + max(zbelow)):n]
+    }
+    x@z <- znew
+    x@layers <- lay
+    return(x)
+#   }
 }           
 .rmLay <- function(x, id){
   x@z <- x@z[-which(id == names(x@z))]
@@ -3245,6 +3257,6 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   if(length(laynew@id) > 0){
     return(laynew)
   }else{
-    stop("qwertz")
+    warning("qwertz")
   }
 }
