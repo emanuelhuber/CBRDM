@@ -722,6 +722,8 @@ setAs(from = "Deposits", to = "matrix", def = function(from){
     M <- matrix(nrow = length(layID), ncol = 10)
     M[, 1:9] <- do.call(rbind, test)
     M[, 10] <- layID
+    colnames(M) <- c("id", "x", "y", "z", "L", "W", "H", "theta", "rH", 
+                     "layid")
     #    M <- do.call(rbind, test)
     return(M)
   }
@@ -740,6 +742,7 @@ setAs(from = "Deposits2D", to = "matrix", def = function(from){
     M <- matrix(nrow = length(layID), ncol = 7)
     M[,1:6] <- do.call(rbind, test)
     M[,7] <- layID
+    colnames(M) <- c("id", "x", "z", "L", "H", "rH", "layid")
     #    M <- do.call(rbind, test)
     return(M)
   }
