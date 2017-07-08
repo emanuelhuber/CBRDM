@@ -3165,6 +3165,7 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
                      xmin = x@bbox$z[1], xmax = x@bbox$z[2])
     id <- names(x@z[i])
     layi <- x@layers[[id]]
+    layi@pos[,3] <- zi
     x <- .rmLay(x, id = id)
     x <- .insertLay(x, zi, id, layi)
     death <- FALSE
@@ -3252,7 +3253,7 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   if(para$hpp$type == "poisson"){
     # number of objects is Poisson distributed
     lambdaArea <- para$hpp$lambda * diff(modboxXL$x) * diff(modboxXL$y)
-    laynew <- lapply(zLevel, .simLayPois, para = para, modbox = x@bbox, 
+    laynew <- .simLayPois(zl = zi, para = para, modbox = x@bbox, 
                   modboxXL = modboxXL, lambdaArea = lambdaArea)
   }else if(para$hpp$type == "strauss"){
     laynew <- .simLayStrauss(zl = zi, para = para, modbox = x@bbox, 
