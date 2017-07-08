@@ -116,7 +116,7 @@ setClass(
 #' @slot bbox A length-three list defining the model boundary
 #' @seealso  \code{\link{Trough-class}}
 setClass(
-  Class="Deposits",  
+  Class="Deposits2",  
   slots=c(
     version = "character",   # version of the class
     id = "integer",
@@ -126,6 +126,32 @@ setClass(
   )
 )
 
+#' An S4 class to represent coarse braided deposits NEW.
+#'
+#' An instance of the class \code{Deposits} contains an instance of the class
+#' \code{Trough} as well as the elevations of horizontal layers.
+#' @slot version A character vector indicating the version of CBRDM
+#' @slot layers A list of lists. Each sub-list contains an id, z and
+#'                an instance of the class \code{Trough}
+#' @slot bbox A length-three list defining the model boundary
+#' @seealso  \code{\link{Trough-class}}
+setClass(
+  Class="Deposits",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "integer",
+    #z = "numeric",
+    layers = "list",
+    bbox = "list"
+  )
+)
+# layers = list()
+# layers[[k]] = list( "id" = k,
+#                     "z" = z
+#                     "obj" = x (Trough)
+    
+    
+    
 # #' An S4 class to represent Spoon
 # #'
 # #' @slot version A character vector indicating the version of CBRDM
@@ -264,6 +290,21 @@ setClass(
   )
 )
 
+    #' An S4 class to represent Deposits2DNEW
+#'
+#' @slot version A length-n character vector indicating the version of RGPR
+#' @slot id A length-n numeric vector
+#' @slot pos A nx3 numeric matrix corresponding to object center position.
+setClass(
+  Class="Deposits2D2",  
+  slots=c(
+    version = "character",   # version of the class
+    id = "integer",
+    z = "numeric",
+    layers = "list",
+    bbox = "list"
+  )
+)
 
 #' An S4 class to represent Deposits2DNEW
 #'
@@ -275,11 +316,15 @@ setClass(
   slots=c(
     version = "character",   # version of the class
     id = "integer",
-    z = "numeric",
+    #z = "numeric",
     layers = "list",
     bbox = "list"
   )
 )
+# layers = list()
+# layers[[k]] = list( "id" = k,
+#                     "z" = z
+#                     "obj" = x (Trough2D)
 
 #' An S4 class to represent TrEllipse
 #'
@@ -713,7 +758,7 @@ setAs(from = "Trough2D", to = "TrEllipse", def = function(from){
 #'
 #' @rdname as.matrix
 #' @export
-setMethod("as.matrix", signature(x = "Deposits"),function(x){ 
+setMethod("as.matrix", signature(x = "Deposits2"),function(x){ 
           as(x, "matrix") })
 setAs(from = "Deposits", to = "matrix", def = function(from){
     sel <- which(lapply(from@layers, function(x) length(x@id)) > 0)
@@ -733,7 +778,30 @@ setAs(from = "Deposits", to = "matrix", def = function(from){
 #'
 #' @rdname as.matrix
 #' @export
-setMethod("as.matrix", signature(x = "Deposits2D"),function(x){ 
+setMethod("as.matrix", signature(x = "Deposits"),function(x){ 
+          as(x, "matrix") })
+setAs(from = "Deposits", to = "matrix", def = function(from){
+    layID <- sapply(from@layers, function(x) x[['obj']]@id)
+    sel <- which(sapply(layID, function(x) length(x) > 0))
+    #sel <- which(lapply(from@layers, function(x) length(x[['obj']]@id)) > 0)
+    obj <- lapply(from@layers[sel], function(x) as.matrix(x[['obj']]))
+    objlayID <- rep(layID, sapply(obj, nrow))
+    M <- matrix(nrow = length(objlayID), ncol = 10)
+    M[, 1:9] <- do.call(rbind, obj)
+    M[, 10] <- layID
+    colnames(M) <- c("id", "x", "y", "z", "L", "W", "H", "theta", "rH", 
+                      "layid")
+    #    M <- do.call(rbind, test)
+    return(M)
+  }
+)
+
+                 
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Deposits2D2"),function(x){ 
           as(x, "matrix") })
 setAs(from = "Deposits2D", to = "matrix", def = function(from){
     sel <- which(lapply(from@layers, function(x) length(x@id)) > 0)
@@ -744,6 +812,26 @@ setAs(from = "Deposits2D", to = "matrix", def = function(from){
     M[,7] <- layID
     colnames(M) <- c("id", "x", "z", "L", "H", "rH", "layid")
     #    M <- do.call(rbind, test)
+    return(M)
+  }
+)
+                 
+                 
+#' Conversion to matrix
+#'
+#' @rdname as.matrix
+#' @export
+setMethod("as.matrix", signature(x = "Deposits2D"),function(x){ 
+          as(x, "matrix") })
+setAs(from = "Deposits2D", to = "matrix", def = function(from){
+    layID <- sapply(from@layers, function(x) x[['obj']]@id)
+    sel <- which(sapply(layID, function(x) length(x) > 0))
+    obj <- lapply(from@layers[sel], function(x) as.matrix(x[['obj']]))
+    objlayID <- rep(layID, sapply(obj, nrow))
+    M <- matrix(nrow = length(objlayID), ncol = 7)
+    M[,1:6] <- do.call(rbind, obj)
+    M[,7] <- layID
+    colnames(M) <- c("id", "x", "z", "L", "H", "rH", "layid")
     return(M)
   }
 )
@@ -2234,7 +2322,7 @@ setMethod("section", "DepositsOld", function(x, l, pref = NULL, lim = NULL){
 
 
 
-setMethod("section", "Deposits", function(x, l, pref = NULL, lim = NULL){
+setMethod("section", "Deposits2", function(x, l, pref = NULL, lim = NULL){
     pp <- section(bbox(x), l)
     xsec <- lapply(x@layers, section, l, pref = pp[[1]], lim = lim)
     xsec <- .compactList(xsec)
@@ -2256,7 +2344,34 @@ setMethod("section", "Deposits", function(x, l, pref = NULL, lim = NULL){
   }
 )
 
+setMethod("section", "Deposits", function(x, l, pref = NULL, lim = NULL){
+    pp <- section(bbox(x), l)
+    xsec <- lapply(x@layers, function(x) section(x[["obj"]], l, pref = pp[[1]],
+                                                 lim = lim))
+    lays <- x@layers[!sapply(xsec, is.null)]
+    xsec <- Filter(Negate(is.null), xsec)
+    laysNew <- lapply(seq_along(lays), .setLayers, x = lays, y = xsec)
+    dd <- .myDist(do.call(rbind, pp), last = TRUE)
+    mbbox <- list(x = c(0, dd),
+                  z = x@bbox$z)
+    if(!is.null(xsec)){
+      new("Deposits2D",
+          version = "0.1",
+          id = x@id,
+          layers = laysNew,
+          bbox = mbbox
+          )
+    }else{
+      return(NULL)
+    }
+  }
+)
 
+.setLayers <- function(i, x = lays, y = xsec){
+  x[[i]][["obj"]] <- y[[i]]
+  return(x[[i]])
+}  
+  
 setMethod("section", "Cuboid", function(x, l, pref = NULL, lim = NULL){
     crns <- .rect(x@pos[1:2], x@L, x@W, x@theta)
     lst <- list()
@@ -2280,6 +2395,7 @@ setMethod("section", "Cuboid", function(x, l, pref = NULL, lim = NULL){
 }
 
 # remove NULL from a list!!
+#' @export
 .compactList <- function(x) Filter(Negate(is.null), x) 
 
 .sectionEllipsoid <- function(x, l, pref = NULL){
