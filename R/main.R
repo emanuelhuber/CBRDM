@@ -3257,9 +3257,8 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   }else{
     stop("Wrong 'para$hpp$type'!\n")
   }
-  if(length(laynew@id) > 0){
-    return(laynew)
-  }else{
+  if(length(laynew@id) < 1){
     warning("qwertz")
   }
+  return(laynew)
 }
