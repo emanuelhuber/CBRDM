@@ -3152,6 +3152,9 @@ updateStraussN <- function(x, para, modbox ){
 
 setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   # update type = n (birth/death)
+  if(length(x@z) != length(x@layers)){
+    stop("length(x@z) != length(x@layers)")
+  }
   type <- match.arg(type, c("pos", "n"))
   n <- length(x@z)
   bd <- NULL
