@@ -4,6 +4,7 @@
 \name{as.matrix,Deposits2-method}
 \alias{as.matrix,Deposits2-method}
 \alias{as.matrix,Deposits-method}
+\alias{as.matrix,Deposits2D2-method}
 \alias{as.matrix,Deposits2D-method}
 \alias{as.matrix,Trough-method}
 \alias{as.matrix,Ellipsoid-method}
@@ -20,6 +21,8 @@
 \S4method{as.matrix}{Deposits2}(x)
 
 \S4method{as.matrix}{Deposits}(x)
+
+\S4method{as.matrix}{Deposits2D2}(x)
 
 \S4method{as.matrix}{Deposits2D}(x)
 
@@ -44,6 +47,8 @@
 \S4method{as.matrix}{Rectangle}(x)
 }
 \description{
+Conversion to matrix
+
 Conversion to matrix
 
 Conversion to matrix

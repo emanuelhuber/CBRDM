@@ -781,14 +781,14 @@ setAs(from = "Deposits", to = "matrix", def = function(from){
 setMethod("as.matrix", signature(x = "Deposits"),function(x){ 
           as(x, "matrix") })
 setAs(from = "Deposits", to = "matrix", def = function(from){
-    layID <- sapply(from@layers, function(x) x[['obj']]@id)
+    layID <- sapply(from@layers, function(x) x[['id']])
     sel <- which(sapply(layID, function(x) length(x) > 0))
     #sel <- which(lapply(from@layers, function(x) length(x[['obj']]@id)) > 0)
     obj <- lapply(from@layers[sel], function(x) as.matrix(x[['obj']]))
     objlayID <- rep(layID, sapply(obj, nrow))
     M <- matrix(nrow = length(objlayID), ncol = 10)
     M[, 1:9] <- do.call(rbind, obj)
-    M[, 10] <- layID
+    M[, 10] <- objlayID
     colnames(M) <- c("id", "x", "y", "z", "L", "W", "H", "theta", "rH", 
                       "layid")
     #    M <- do.call(rbind, test)
@@ -824,13 +824,13 @@ setAs(from = "Deposits2D", to = "matrix", def = function(from){
 setMethod("as.matrix", signature(x = "Deposits2D"),function(x){ 
           as(x, "matrix") })
 setAs(from = "Deposits2D", to = "matrix", def = function(from){
-    layID <- sapply(from@layers, function(x) x[['obj']]@id)
+    layID <- sapply(from@layers, function(x) x[['id']])
     sel <- which(sapply(layID, function(x) length(x) > 0))
     obj <- lapply(from@layers[sel], function(x) as.matrix(x[['obj']]))
     objlayID <- rep(layID, sapply(obj, nrow))
     M <- matrix(nrow = length(objlayID), ncol = 7)
     M[,1:6] <- do.call(rbind, obj)
-    M[,7] <- layID
+    M[,7] <- objlayID
     colnames(M) <- c("id", "x", "z", "L", "H", "rH", "layid")
     return(M)
   }
@@ -1329,8 +1329,7 @@ setMethod("bbox", "Trough2D", function(x){
 )
 
 setMethod("bbox", "Deposits2D", function(x){
-    xl <- x@layers
-    xlbbox <- lapply(xl, bbox)
+    xlbbox <- lapply(x@layers, function(x) x[["obj"]], bbox)
     id <- unlist(sapply(xlbbox, function(x) x@id), use.names = FALSE)
     new("Rectangle",
       version = "0.1",   # version of the class
@@ -1723,7 +1722,7 @@ setMethod("plotTopView", "DepositsOld", function(x, add = FALSE, xlab = "x",
   }
 )
 
-setMethod("plotTopView", "Deposits", function(x, add = FALSE, xlab = "x",
+setMethod("plotTopView", "Deposits2", function(x, add = FALSE, xlab = "x",
             ylab = "y", main = "", asp = NA, ...){
     dots <- list(...)
     if(!is.null(dots$xlim)){
@@ -1744,7 +1743,33 @@ setMethod("plotTopView", "Deposits", function(x, add = FALSE, xlab = "x",
                      ylab = "", main = "", ...))
   }
 )
+    
+setMethod("plotTopView", "Deposits", function(x, add = FALSE, xlab = "x",
+            ylab = "y", main = "", asp = NA, ...){
+    dots <- list(...)
+    if(!is.null(dots$xlim)){
+      xlim <- dots$xlim
+    }else{
+      xlim <- x@bbox$x
+    }
+    if(!is.null(dots$ylim)){
+      ylim <- dots$ylim
+    }else{
+      ylim <- x@bbox$y
+    }
+    if(add == FALSE){
+      plot(0, xlim = xlim, ylim = ylim, type = "n", xlab = xlab, 
+           ylab = ylab, main = main, asp = asp)
+    }
+    invisible(lapply(x@layers, .plotTopView, add = TRUE, xlab = "", 
+                     ylab = "", main = "", ...))
+  }
+)
 
+.plotTopView <- function(x, ...){
+     plotTopView(x[["obj"]], ...)
+}
+    
 # for 3D object
 # ... arguments to be passed to "base::polygon" function
 setMethod("plotTopView", "Trough", function(x, add = FALSE, xlab = "x",
@@ -2069,7 +2094,7 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
     XZ <- matrix(-1, nrow = nx, ncol = nz)
     # 1. discretise layers
     #    -> negative id
-    zElev <- x@z
+    zElev <- sapply(x@layers, function(x) x[["z"]])
     for(i in seq_along(zElev)){
       XZ[, , zElev[i] <= vz] <- as.integer(-i - 1)
     }
@@ -2078,7 +2103,7 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
     #    -> postive id -> odd  = bimodal
     #                  -> even = open-framework
     for(k in seq_along(x@layers)){
-      y <- x@layers[[k]]
+      y <- x@layers[[k]][["obj"]]
       E <- as.matrix(as(y, "TrEllipse"))
       b <- bbox(y)
       it <- 0
@@ -2510,20 +2535,20 @@ setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
     }
     if(!is.null(lay)){
       if(lay != FALSE){
-        lay$h <- x@z
+        lay$h <- sapply(x@layers, function(x) x[["z"]])
         do.call(abline, lay)
       }
     }else{
-      abline(h = x@z )
+      abline(h = sapply(x@layers, function(x) x[["z"]]) )
     }
     # plot troughs
-    invisible(lapply(x@layers, plotSection, add = TRUE, ...))
+    invisible(lapply(x@layers, .plotSectionTrough2D, add = TRUE, ...))
     #plotSection(x@troughs, add = TRUE, ...)
   }
 )
 
-.plotSectionTrough2D <- function(){
-  
+.plotSectionTrough2D <- function(x, add = TRUE, ...){
+   plotSection(x[["obj"]], add = add, ...)
 }
 
 ##-------------------------------- FILLING --------------------------##
@@ -3122,7 +3147,7 @@ poisBD <- function(n, lambda){
 setMethod("updateObj", "Deposits", function(x, type = c("pos", "n", "prop"), 
                                             para){
   type <- match.arg(type, c("pos", "n", "prop"))
-  n <- length(x@z)
+  n <- length(x@layers)
   bd <- NULL
   x@layers <- switch(type,
                      "pos" = {lapply(x@layers, updateStraussPos, para, 
@@ -3135,64 +3160,68 @@ setMethod("updateObj", "Deposits", function(x, type = c("pos", "n", "prop"),
 
 #' @export
 updateStraussPos <- function(x, para, modbox ){
-  if(is.null(x)) return(NULL)
-  n <- length(x@id)
+  y <- x[["obj"]]
+  if(is.null(y)) return(NULL)
+  n <- length(y@id)
   bd <- 0L
   d2 <- para$hpp$d * para$hpp$d
   if(n > 0){
     if(n == 1){
       i <- 1
-      x_cand <- c(unifUpdate(x@pos[i, 1], dx = para$delta$x, 
+      y_cand <- c(unifUpdate(y@pos[i, 1], dx = para$delta$x, 
                             xmin = modbox$x[1], xmax = modbox$x[2]),
-                  unifUpdate(x@pos[i, 2], dx = para$delta$y, 
+                  unifUpdate(y@pos[i, 2], dx = para$delta$y, 
                             xmin = modbox$y[1], xmax = modbox$y[2]))
-      x@pos[i, 1:2] <- x_cand
+      y@pos[i, 1:2] <- y_cand
       bd <- 1L
     }else{
       i <- sample.int(n, 1L)
-      x_cand <- c(unifUpdate(x@pos[i, 1], dx = para$delta$x, 
+      y_cand <- c(unifUpdate(y@pos[i, 1], dx = para$delta$x, 
                             xmin = modbox$x[1], xmax = modbox$x[2]),
-                  unifUpdate(x@pos[i, 2], dx = para$delta$y, 
+                  unifUpdate(y@pos[i, 2], dx = para$delta$y, 
                             xmin = modbox$y[1], xmax = modbox$y[2]))
-      phi_cand <- sum(distxtoX2(x@pos[-i, 1:2, drop = FALSE] , x_cand) <= d2)
-      phi <- sum(distxtoX2(x@pos[-i, 1:2, drop = FALSE] , x@pos[i, 1:2]) <= d2)
+      phi_cand <- sum(distxtoX2(y@pos[-i, 1:2, drop = FALSE] , y_cand) <= d2)
+      phi <- sum(distxtoX2(y@pos[-i, 1:2, drop = FALSE] , y@pos[i, 1:2]) <= d2)
       if(runif(1) <= min(1, (para$hpp$gam^(phi_cand - phi) ))){
-        x@pos[i, 1:2] <- x_cand
+        y@pos[i, 1:2] <- y_cand
         bd <- 1L
       }
     }
   }
+  x[["obj"]] <- y
   #return(list("x" = x, "bd" = bd))
   return(x)
 }
 
 #' @export
 updateStraussN <- function(x, para, modbox ){
-  if(is.null(x)) return(NULL)
-  n <- length(x@id)
+  y <- x[["obj"]]
+  if(is.null(y)) return(NULL)
+  n <- length(y@id)
   bd <- 0L
   d2 <- para$hpp$d * para$hpp$d
   areaW <- diff(modbox$x) * diff(modbox$y)
   bet <- para$hpp$bet * areaW
   # BIRTH
   if(n <= 1L || sample(c(TRUE, FALSE), 1 )){
-    x_cand <- c(runif(1, modbox$x[1], modbox$x[2]), 
+    y_cand <- c(runif(1, modbox$x[1], modbox$x[2]), 
                 runif(1, modbox$y[1], modbox$y[2]))
-    phi <- sum(distxtoX2(x@pos[, 1:2, drop = FALSE], x_cand) <= d2)
+    phi <- sum(distxtoX2(y@pos[, 1:2, drop = FALSE], y_cand) <= d2)
     if(runif(1) <= min(1, (bet * para$hpp$gam^phi) / (n + 1))){
-        x <- .addTrough(x, xy = x_cand, para)
+        y <- .addTrough(y, xy = y_cand, para)
         bd <- 1L
     }
   # DEATH
   }else{
     i <- sample.int(n, 1L)
-    phi <- sum(distxtoX2(x@pos[-i, 1:2, drop = FALSE], 
-                         x@pos[ i, 1:2])  <= d2)
+    phi <- sum(distxtoX2(y@pos[-i, 1:2, drop = FALSE], 
+                         y@pos[ i, 1:2])  <= d2)
     if(runif(1) <= min(1, (n / (bet *  para$hpp$gam^phi)))){
-      x <- .rmTrough(x, i)
+      y <- .rmTrough(y, i)
       bd <- -1L
     }
   }
+  x[["obj"]] <- y
   # return(list("x" = x, "bd" = bd))
   return(x)
 }
@@ -3245,18 +3274,20 @@ updateStraussN <- function(x, para, modbox ){
 
 #' @export
 .updateObj <- function(x, para){
-  if(is.null(x)) return(NULL)
-  L   <- unifUpdate(x@L, dx = para$delta$L, 
+  y <- x[["obj"]]
+  if(is.null(y)) return(NULL)
+  L   <- unifUpdate(y@L, dx = para$delta$L, 
                     xmin = para$L$min, xmax = para$L$max)
-  rLW <-  unifUpdate(x@L/x@W, dx = para$delta$rLW, 
+  rLW <-  unifUpdate(y@L/y@W, dx = para$delta$rLW, 
                      xmin = para$rLW$min, xmax = para$rLW$max)
-  rLH <- unifUpdate(x@L/x@H, dx = para$delta$rLH, 
+  rLH <- unifUpdate(y@L/y@H, dx = para$delta$rLH, 
                     xmin = para$rLH$min, xmax = para$rLH$max)
-  x@L <- L
-  x@W <- L/rLW
-  x@H <- L/rLH
-  x@theta <- unifUpdate(x@theta, dx = para$delta$theta, 
+  y@L <- L
+  y@W <- L/rLW
+  y@H <- L/rLH
+  y@theta <- unifUpdate(y@theta, dx = para$delta$theta, 
                         xmin = para$theta$min, xmax = para$theta$max)
+  x[["obj"]] <- y
   return(x)
 }
 
@@ -3265,8 +3296,7 @@ updateStraussN <- function(x, para, modbox ){
 
 
 ##--------------------------- update layer ---------------------------------##
-
-setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
+setMethod("updateLay", "Deposits2", function(x, type = c("pos", "n"), para){
   # update type = n (birth/death)
   if(length(x@z) != length(x@layers)){
     stop("length(x@z) != length(x@layers)")
@@ -3308,10 +3338,55 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   }
   #return(list("x" = x, "id" = id, del = bd))
   return(x)
+})   
+      
+setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
+  # update type = n (birth/death)
+  #if(length(x@z) != length(x@layers)){
+  #  stop("length(x@z) != length(x@layers)")
+  #}
+  type <- match.arg(type, c("pos", "n"))
+  bd <- NULL
+  n <- length(x@layers)
+  if(type == "pos"){
+    i <- sample.int(n, 1L)
+    layi <- x@layers[[i]]
+    layi[["z"]] <- unifUpdate(layi[["z"]], dx = para$delta$z, 
+                              xmin = x@bbox$z[1], xmax = x@bbox$z[2])
+    x@layers[[i]] <- NULL
+    x <- .insertLay(x, layi[["z"]], id = layi[["id"]], layi)
+    death <- FALSE
+  }else{
+    dz <- diff(x@bbox$z)
+    bd <- poisBD(n, dz/para$vpp$lambda)
+    id <- NULL
+    if(bd == -1){   # death
+      # remove layer
+      x@layers[[sample.int(n, 1L)]] <- NULL
+    }else if(bd == 1){    # birth
+      zi <- runif(1, min = x@bbox$z[1], max = x@bbox$z[2])
+      id <- max(sapply(x@layers, function(x) x[["id"]])) + 1L
+      laynew <- list("id" = id,
+                     "z"  = zi,
+                     "obj" = .simLay(x, zi, para))
+      x <- .insertLay(x, zi, id, laynew)
+      if(length(x@layers) != n + 1L) stop("lkj")
+    }
+  }
+  return(x)
 })            
           
           
 .insertLay <- function(x, zi, id, laynew){
+  n <- length(x@layers)
+  z <- sapply(x@layers, function(x) x[["z"]])
+  zbelow <- which(z < zi)
+  ztop <- which(z > zi)
+  x@layers <- c(x@layers[zbelow], list(laynew), x@layers[ztop])
+  return(x)
+}     
+  
+.insertLayOld <- function(x, zi, id, laynew){
 #   if(length(laynew@id) == 0){
 #   
 #   }else{
@@ -3355,6 +3430,7 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   x@layers[id] <- NULL
   return(x)
 }
+
 .simLay <- function(x, zi, para){
   L   <- .rsim(para$L,   n = 500)
   rLW <- .rsim(para$rLW, n = 500)
