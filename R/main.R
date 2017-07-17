@@ -1017,6 +1017,14 @@ setAs(from = "Rectangle", to = "matrix", def = function(from){
 
 
 ##------------------- METHODS ------------------##
+      
+#------------------------------
+#' layerz
+#'
+#' @name layerz
+#' @rdname layerz
+#' @export
+setGeneric("layerz", function(x) standardGeneric("layerz"))      
 
 #------------------------------
 #' Bbox
@@ -1153,6 +1161,21 @@ setGeneric("updateLay", function(x, type = c("pos", "n"), para)
 setGeneric("updateObj", function(x, type = c("pos", "n", "prop"), para) 
             standardGeneric("updateObj")) 
 
+
+##------------------------------ SETTTER / GETTER -----------------------##
+#'@export
+setMethod("layerz", "Deposits", function(x){
+    return(sapply(x@layers, function(x) x[["z"]]))
+  }
+)
+  
+#'@export
+setMethod("layerz", "Deposits2D", function(x){
+    return(sapply(x@layers, function(x) x[["z"]]))
+  }
+)  
+  
+  
 
 ##--------------------------- BBOX ----------------------##
 # bounding box of top view object
@@ -1991,7 +2014,10 @@ setMethod("pixelise", "Deposits", function(x, mbox){
     XYZ <- array( -1L, dim = c(nx, ny,nz))
     # 1. discretise layers
     #    -> negative id
-    zElev <- x@z
+    ###TODO
+  ##FIXME
+    #zElev <- x@z
+    zElev <- layerz(x)
     for(i in seq_along(zElev)){
       XYZ[, , zElev[i] <= vz] <- as.integer(-i - 1)
     }
@@ -2094,7 +2120,8 @@ setMethod("pixelise", "Deposits2D", function(x, mbox){
     XZ <- matrix(-1, nrow = nx, ncol = nz)
     # 1. discretise layers
     #    -> negative id
-    zElev <- sapply(x@layers, function(x) x[["z"]])
+    #zElev <- sapply(x@layers, function(x) x[["z"]])
+    zElev <- layerz(x)
     for(i in seq_along(zElev)){
       XZ[, , zElev[i] <= vz] <- as.integer(-i - 1)
     }
@@ -2535,11 +2562,11 @@ setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
     }
     if(!is.null(lay)){
       if(lay != FALSE){
-        lay$h <- sapply(x@layers, function(x) x[["z"]])
+        lay$h <- layerz(x) #sapply(x@layers, function(x) x[["z"]])
         do.call(abline, lay)
       }
     }else{
-      abline(h = sapply(x@layers, function(x) x[["z"]]) )
+      abline(h = layerz(x)) #sapply(x@layers, function(x) x[["z"]]) )
     }
     # plot troughs
     invisible(lapply(x@layers, .plotSectionTrough2D, add = TRUE, ...))
@@ -2768,11 +2795,12 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   if(hmodel == "poisson"){
     # number of objects is Poisson distributed
     lambdaArea <- para$hpp$lambda * diff(modboxXL$x) * diff(modboxXL$y)
-    lay <- lapply(zLevel, .simLayPois, para = para, modbox = modbox, 
-                  modboxXL = modboxXL, lambdaArea = lambdaArea)
+    lays <- lapply(seq_along(zLevel), .simLayPois, para = para, 
+                   modbox = modbox, modboxXL = modboxXL, 
+                   lambdaArea = lambdaArea, zl = zLevel)
   }else if(hmodel == "strauss"){
-    lays <- lapply(zLevel, .simLayStrauss, para = para, modbox = modbox, 
-                  modboxXL = modboxXL)
+    lays <- lapply(seq_along(zLevel), .simLayStrauss, para = para, 
+                   modbox = modbox, modboxXL = modboxXL, zl = zLevel)
   }
   #--- 3. CROSS-BEDS
   if(isTRUE(crossbeds)){
@@ -2787,19 +2815,17 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
     }
     trgh@fill <- xbed
   }
-  names(lays) <- paste0(seq_along(lays))
-  names(zLevel) <- names(lays)
-  new("Deposits",
-      version = "0.1",
-      id = 1L,
-      z = zLevel,
-      layers  = lays,
-      bbox = modbox
-     )
+  x <- new("Deposits",
+           version = "0.1",
+           id = 1L,
+           layers  = lays,
+           bbox = modbox
+          )
+  return(x)
 }
 
 #' @export
-.simLayStrauss <- function(zl, para, modbox, modboxXL){
+.simLayStrauss <- function(i, zl, para, modbox, modboxXL){
 #   xy <- .spatstatRStrauss(f = f, beta  = para$hpp$bet, gamma = para$hpp$gam, 
 #                      R = para$hpp$d/f, 
 #                      W = spatstat::owin(modboxXL$x/f, modboxXL$y/f))
@@ -2814,7 +2840,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   }
   xyz <- matrix(nrow = n, ncol = 3)
   xyz[,1:2] <- xy
-  xyz[,3] <- rep(zl, n)
+  xyz[,3] <- rep(zl[i], n)
   L   <- .rsim(para$L, n)
   rLW <- .rsim(para$rLW, n)
   rLH <- .rsim(para$rLH, n)
@@ -2830,11 +2856,13 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
                 rH      = rep(para$rH, n)
               )
   trgh <- extract(trgh, modbox)
-  return(trgh)
+  return(list("id"  = i,
+              "z"   = zl[i],
+              "obj" = trgh))
 }
 
 #' @export
-.simLayPois <- function(zl, para, modbox, modboxXL, lambdaArea){
+.simLayPois <- function(i, zl, para, modbox, modboxXL, lambdaArea){
   n <- rpois(1, lambdaArea)
   L   <- .rsim(para$L, n)
   rLW <- .rsim(para$rLW, n)
@@ -2842,7 +2870,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   W <- L/rLW
   xyz <- matrix(c(runif(n, min = modboxXL$x[1], max = modboxXL$x[2]),
                   runif(n, min = modboxXL$y[1], max = modboxXL$y[2]),
-                  rep(zl, n )), byrow = FALSE, ncol = 3)
+                  rep(zl[i], n )), byrow = FALSE, ncol = 3)
   trgh <- new("Trough",
               version = "0.1",
               id      = seq_len(n),
@@ -2854,7 +2882,9 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
               rH      = rep(para$rH, n)
             )
   trgh <- extract(trgh, modbox)
-  return(trgh)
+  return(list("id"  = i,
+            "z"   = zl[i],
+            "obj" = trgh))
 }
 
 #' @export
@@ -3379,7 +3409,7 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
           
 .insertLay <- function(x, zi, id, laynew){
   n <- length(x@layers)
-  z <- sapply(x@layers, function(x) x[["z"]])
+  z <- layerz(x) #sapply(x@layers, function(x) x[["z"]])
   zbelow <- which(z < zi)
   ztop <- which(z > zi)
   x@layers <- c(x@layers[zbelow], list(laynew), x@layers[ztop])

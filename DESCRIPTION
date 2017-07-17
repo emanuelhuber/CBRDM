@@ -8,6 +8,11 @@ Description: Package to simulate the deposits of coarse, braided rivers
 License: MIT
 LazyData: TRUE
 BugReports: https://github.com/emanuelhuber/CBRDM/issues
+Collate:
+    'main.R'
+    'fx.R'
+    'CBRDM.R'
+    'data.R'
 Imports:
     RConics,
     spatstat
