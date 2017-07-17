@@ -2834,9 +2834,12 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
                  fd = para$hpp$fd, count = FALSE)
   n <- nrow(xy)
   if(n < 1){
-    return( new("Trough",
+    trgh <- new("Trough",
                 version = "0.1"
-              ))
+               )
+    return( list("id"  = i,
+                 "z"   = zl[i],
+                 "obj" = trgh ) )
   }
   xyz <- matrix(nrow = n, ncol = 3)
   xyz[,1:2] <- xy
