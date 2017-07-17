@@ -761,10 +761,10 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
     AT[45] <- mean(ztbl)  # mean number object per elevation
     AT[46:51] <- summary(diff(z)) # stat aggradation rate
   }else{
-    eL <- lLBES(p = y$pdiff, obj = y$E)
+    #eL <- sum(sapply(ES, posLine, last = TRUE))
     AT[3] <- 1
     AT[4:51] <- 0
-    AT[25] <- sum(eL)
+    AT[25] <- sum(sapply(ES, posLine, last = TRUE))
   }
   return(AT)
 }
