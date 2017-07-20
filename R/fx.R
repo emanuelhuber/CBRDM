@@ -742,8 +742,13 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
     #--- erosion length
     ES0 <- erosSurf(p = y$p, obj = y$E, tol = 10^-7)
     ES0 <- .compactList(ES0)
-    eL <- sum(sapply(ES, posLine, last = TRUE))
-    eL0 <- sum(sapply(ES0, posLine, last = TRUE))
+    eLl <- lapply(ES, posLine, last = TRUE)
+    eLl <- .compactList(eLl)
+    eL <- sum(unlist(eLl), na.rm = TRUE)
+    eL0l <- lapply(ES0, posLine, last = TRUE)
+    eL0l <- .compactList(eL0l)
+    eL0 <- sum(unlist(eL0l), na.rm = TRUE)
+    #eL0 <- sum(sapply(ES0, posLine, last = TRUE))
     deL <- eL0 - eL
     tst <- (deL > 0.5)
     AT[11] <- sum(tst)/AT[1] # proportion eros. surf. eroded
