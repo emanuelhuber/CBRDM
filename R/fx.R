@@ -382,7 +382,11 @@ polygonizeSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
         # true if y$p completely covered by p_younger
         test[i] <- rgeos::gCovers(p_younger, y$p[i])  
         if(test[i] == FALSE){
-          p_diff <- rgeos::gDifference(y$p[i], p_younger)
+          p_diff <- try(rgeos::gDifference(y$p[i], p_younger), silent = TRUE)
+          if (class(p_diff) == "try-error") {
+              p_younger <- rgeos::gBuffer(p_younger, byid = TRUE, width = 0.01)
+              p_diff <- rgeos::gDifference(y$p[i], p_younger)
+          }
 #           y$p@polygons[[i]] <- p_diff@polygons[[1]]
           #if(length(p_diff) > 1) stop("length(p_diff) > 1")
           if(rgeos::gArea(p_diff) < tol2){
