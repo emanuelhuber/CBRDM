@@ -148,15 +148,23 @@ initObject <- function(i, SCOURS, l, para){
               W * para$rLW$max, W * para$rLW$min)
   L[L < para$L$min] <- para$L$min
   L[L > para$L$max] <- para$L$max
+  rLW <- L/W
+  rLW[rLW > para$rLW$max] <- para$rLW$max
+  rLW[rLW < para$rLW$min] <- para$rLW$min
+  rLH <- L/H
+  rLH[rLH > para$rLH$max] <- para$rLH$max
+  rLH[rLH < para$rLH$min] <- para$rLH$min
+  
+  
   return(list("id" = i,
               "z"  = xyz[3],
               "obj" = new("Trough",
                           version = "0.1",
                           id      = as.integer(i),
                           pos     = xyz,
-                          L       = L,
-                          W       = W, #L/mean(para$rLW$min, para$rLW$max),
-                          H       = H, #L/mean(para$rLH$min, para$rLH$max),
+                          L       = unname(L),
+                          W       = L/rLW, #L/mean(para$rLW$min, para$rLW$max),
+                          H       = L/rLH, #L/mean(para$rLH$min, para$rLH$max),
                           #theta   = .rsim(para$theta, 1L),  # depth position
                           theta   = 0,  # depth position
                           rH      = para$rH
@@ -164,7 +172,7 @@ initObject <- function(i, SCOURS, l, para){
 }
 
 #'@export
-initSim <- function(X0, SCOURS, l, para, pDMAX, probUpdates, min_it, max_it, 
+initSim <- function(X0, Y, l, para, pDMAX, probUpdates, min_it, max_it, 
                     Hmin, Hmax, rLHmax, eroBox,  tol, tol2, n, ah){
   if(max_it <= min_it) max_it <- min_it + 1L
   uptp <- integer(max_it)
@@ -175,8 +183,7 @@ initSim <- function(X0, SCOURS, l, para, pDMAX, probUpdates, min_it, max_it,
   sXf <- filterSection(x = sX, Hmin = Hmin, Lmin = Lmin, 
                           rLHmax = rLHmax, eroBox = eroBox, 
                           tol = tol, tol2 = tol2, n = n)
-  #sXf <- reorderSection(fsX$E, SCOURS)
-  pD <- pseudoDist(x = sXf, y = SCOURS, ah = ah)
+  pD <- pseudoDist(x = sXf, y = Y, ah)
   types <- paste0(seq_along(probUpdates))
   i <- 0L
   XL <- list()
@@ -197,8 +204,7 @@ initSim <- function(X0, SCOURS, l, para, pDMAX, probUpdates, min_it, max_it,
     sXfstar <- filterSection(x = sXstar, Hmin = Hmin, Lmin = Lmin, 
                         rLHmax = rLHmax, eroBox = eroBox, 
                         tol = tol, tol2 = tol2, n = n)
-    #sXfstar <- reorderSection(sXfstar, SCOURS)
-    pDstar <- pseudoDist(x = sXfstar, y = SCOURS, ah = ah)
+    pDstar <- pseudoDist(x = sXfstar, y = Y, ah)
     if(!is.infinite(pDstar) && (pDstar <= pD || pDstar < pDMAX)){
       acc[i] <- 1L
       pD <- pDstar
@@ -220,7 +226,7 @@ initSim <- function(X0, SCOURS, l, para, pDMAX, probUpdates, min_it, max_it,
     
 
 #'@export   
-simMC <- function(X0, SCOURS, l, para, pDMAX, probUpdates, nit, it_spl, 
+simMC <- function(X0, Y, l, para, pDMAX, probUpdates, nit, it_spl, 
                     Hmin, Hmax, rLHmax, eroBox,  tol, tol2, n, ah){
   #if(max_it <= min_it) max_it <- min_it + 1L
   if(nit/it_spl < 2) stop("lkjljlI")
@@ -234,11 +240,10 @@ simMC <- function(X0, SCOURS, l, para, pDMAX, probUpdates, nit, it_spl,
   sXf <- filterSection(x = sX, Hmin = Hmin, Lmin = Lmin, 
                           rLHmax = rLHmax, eroBox = eroBox, 
                           tol = tol, tol2 = tol2, n = n)
-  #sXf$E <- reorderSection(sXf$E, SCOURS)
-  pD <- pseudoDist(x = sXf, y = SCOURS, ah = ah)
+  pD <- pseudoDist(x = sXf, y = Y, ah)
   types <- paste0(seq_along(probUpdates))
   i <- 0L
-  ID <- matrix(ncol = length(SCOURS), nrow = nit/it_spl )
+  ID <- matrix(ncol = length(Y), nrow = nit/it_spl )
   XL <- list()
   sXL <- list()
   ESL <- list()
@@ -264,8 +269,7 @@ simMC <- function(X0, SCOURS, l, para, pDMAX, probUpdates, nit, it_spl,
       sXfstar <- filterSection(x = sXstar, Hmin = Hmin, Lmin = Lmin, 
                               rLHmax = rLHmax, eroBox = eroBox, 
                               tol = tol, tol2 = tol2, n = n)
-      #sXfstar$E <- reorderSection(sXfstar$E, SCOURS)
-      pDstar <- pseudoDist(x = sXfstar, y = SCOURS, ah = ah)
+      pDstar <- pseudoDist(x = sXfstar, y = Y, ah)
       if(!is.infinite(pDstar) && (pDstar <= pDMAX)){
         acc[i] <- 1L
         pD  <- pDstar
@@ -485,8 +489,8 @@ list2SpatialPolygons <- function(x){
       
 listPolygon2Polygons <- function(i,pp){
   sp::Polygons(pp[i],i)
-}
-
+}  
+      
 #'@export
 pUnion <- function(p){
   p_u <- try(rgeos::gUnaryUnion(p), silent = TRUE)
@@ -546,31 +550,62 @@ erosSurf <- function(p, obj, tol = 10^-2){
 
 
 #------- distance
-# x = matrix of ellipse parameters
-# y = SCOURS, list of matrix (coordinates n x 3 matrix)
+# x = list of coordinates
+# y = eroSurf, SpatialLines
+#'@export
+#pseudoDist <- function(x, y, ah, ...){
+#  if(is.null(x) || length(x) == 0) return(Inf)
+#  if(length(x$e) != length(y)) return(Inf)
+#  os <- reorderSection(x$E)
+#  xE <- x$E[os, ]
+#  if( sum(abs((ageHierarchy(xE) - ah)*ah) )> 0 ){
+#    return(Inf)
+#  }
+#  y <- y[os]
+#  xsp <- ListXYToListSpatialLines(x$e)
+#  res <- sapply(seq_along(y), dinf, xsp, y)
+#  return(max(res))
+  #xsp <-listXY2SpatialLines(x$e)  
+  #return(rgeos::gDistance(xsp, y, hausdorff = TRUE, densifyFrac = 0.1))
+#}
+#'@export
+dinf <- function(i, x, y, ...){
+  rgeos::gDistance(x[[i]], y[[i]], hausdorff = TRUE, densifyFrac = 0.1)
+}
+    
+## x = matrix of ellipse parameters
+## y = SCOURS, list of matrix (coordinates n x 3 matrix)    
 #'@export
 pseudoDist <- function(x, y, ah, ...){
-  xE <- reorderSection(x$E, y)
-  if(is.null(xE)) return(Inf)
-  if(length(x$e) != nrow(xE)) return(Inf)
+  if(is.null(x) || length(x) == 0) return(Inf)
+  if(length(x$e) != nrow(x$E)) return(Inf)
+  if(length(x$e) != length(y)) return(Inf)
+  os <- reorderSection(x$E)
+  xE <- x$E[os, ]
   if( sum(abs((ageHierarchy(xE) - ah)*ah) )> 0 ){
     return(Inf)
   }
   res <- getResiduals(y, xE)
-  return(sqrt(sum(res^2)/length(res)))
-  #return(max(res))
+  xmax <- sapply(x$e, function(x) max(x[,2]))
+  ymax <- sapply(y, function(x) max(x[,2]))
+  #penalty <- (xmax - ymax)^2
+  DZ <- (xmax - ymax)
+  resall <- res #+ (DZ < 0)*DZ^2
+  #return(sqrt(sum(res^2)/length(res)))
+  return(max(resall))
 }
 #'@export 
-reorderSection <- function(x, SCOURS){
-  if(is.null(x) || length(x)==0) return(NULL)
+reorderSection <- function(x){
+  # if(is.null(x) || length(x)==0) return(NULL)
   # check: 1) same number of elt; 2) age hierarchy
-  if(length(SCOURS) != nrow(x)){
-    return(NULL)
-  }
+  # if(length(SCOURS) != nrow(x)){
+  #   return(NULL)
+  # }
   order34 <- order2values(x[c(3,4),"x"])
   order56 <- order2values(x[c(5,6),"x"])
-  x <- x[c(1, 2, order34 + 2, order56 + 4, 7), ]
-  return(x)
+  return(c(1, 2, order34 + 2, order56 + 4, 7))
+  # x <- x[c(1, 2, order34 + 2, order56 + 4, 7), ]
+  # return(x)
 }
 
 order2values <- function(a){
@@ -602,9 +637,22 @@ getResiduals <- function(y,x){
   #return(max(res2))
 }
 
-
-    
-    
+.listLines <- function(i, x){
+  Lines(x[[i]], ID = as.character(i))
+}
+  
+#'@export
+listXY2SpatialLines <- function(x){
+  x <- lapply(x, Line)
+  return(SpatialLines(lapply(seq_along(x), .listLines, x)))
+}
+#'@export 
+ListXYToListSpatialLines <- function(x){
+  lapply(lapply(lapply(x, Line), Lines, ID = "1"), .SpatialLines)
+}    
+.SpatialLines <- function(x){
+  SpatialLines(list(x))
+}    
 
 # .getResiduals <- function(i, A, x){
 #   # u0 <- (A[[i]][,c(1,2)]) - x[rep(i,nrow(A[[i]])),c("xap","z"),drop=FALSE]

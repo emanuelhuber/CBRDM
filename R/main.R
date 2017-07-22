@@ -2402,7 +2402,11 @@ setMethod("section", "Deposits", function(x, l, pref = NULL, lim = NULL){
                                                  lim = lim))
     lays <- x@layers[!sapply(xsec, is.null)]
     xsec <- Filter(Negate(is.null), xsec)
-    laysNew <- lapply(seq_along(lays), .setLayers, x = lays, y = xsec)
+    # todo > use function Map()
+    laysNew <- Map(function(x, y) {
+                      x$obj <- y
+                      return(x)}, x = lays, y = xsec)
+    #laysNew <- lapply(seq_along(lays), .setLayers, x = lays, y = xsec)
     dd <- .myDist(do.call(rbind, pp), last = TRUE)
     mbbox <- list(x = c(0, dd),
                   z = x@bbox$z)
@@ -2795,12 +2799,18 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   if(hmodel == "poisson"){
     # number of objects is Poisson distributed
     lambdaArea <- para$hpp$lambda * diff(modboxXL$x) * diff(modboxXL$y)
-    lays <- lapply(seq_along(zLevel), .simLayPois, para = para, 
-                   modbox = modbox, modboxXL = modboxXL, 
-                   lambdaArea = lambdaArea, zl = zLevel)
+    lays <- Map(function(zl, id) .simLayPois(zl, id, para = para, modbox = modbox, 
+                                    modboxXL = modboxXL), zLevel, 
+                                    seq_along(zLevel))
+    # lays <- lapply(seq_along(zLevel), .simLayPois, para = para, 
+    #               modbox = modbox, modboxXL = modboxXL, 
+    #               lambdaArea = lambdaArea, zl = zLevel)
   }else if(hmodel == "strauss"){
-    lays <- lapply(seq_along(zLevel), .simLayStrauss, para = para, 
-                   modbox = modbox, modboxXL = modboxXL, zl = zLevel)
+    lays <- Map(function(zl, id) .simLayStrauss(zl, id, para = para, modbox = modbox, 
+                                    modboxXL = modboxXL), zLevel, 
+                                    seq_along(zLevel))
+    # lays <- lapply(seq_along(zLevel), .simLayStrauss, para = para, 
+    #               modbox = modbox, modboxXL = modboxXL, zl = zLevel)
   }
   #--- 3. CROSS-BEDS
   if(isTRUE(crossbeds)){
@@ -2825,10 +2835,13 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
 }
 
 #' @export
-.simLayStrauss <- function(i, zl, para, modbox, modboxXL){
+.simLayStrauss <- function(zl, id = NULL, para, modbox, modboxXL){
 #   xy <- .spatstatRStrauss(f = f, beta  = para$hpp$bet, gamma = para$hpp$gam, 
 #                      R = para$hpp$d/f, 
 #                      W = spatstat::owin(modboxXL$x/f, modboxXL$y/f))
+  if(is.null(id)){ 
+    id <- "1"
+  }
   xy <- straussMH(bet = para$hpp$bet, gam = para$hpp$gam, d = para$hpp$d, 
                  n0 = para$hpp$n0, nit = para$hpp$nit, W = modboxXL, 
                  fd = para$hpp$fd, count = FALSE)
@@ -2837,13 +2850,13 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
     trgh <- new("Trough",
                 version = "0.1"
                )
-    return( list("id"  = i,
-                 "z"   = zl[i],
+    return( list("id"  = id,
+                 "z"   = zl,
                  "obj" = trgh ) )
   }
   xyz <- matrix(nrow = n, ncol = 3)
   xyz[,1:2] <- xy
-  xyz[,3] <- rep(zl[i], n)
+  xyz[,3] <- rep(zl, n)
   L   <- .rsim(para$L, n)
   rLW <- .rsim(para$rLW, n)
   rLH <- .rsim(para$rLH, n)
@@ -2859,13 +2872,16 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
                 rH      = rep(para$rH, n)
               )
   trgh <- extract(trgh, modbox)
-  return(list("id"  = i,
-              "z"   = zl[i],
+  return(list("id"  = id,
+              "z"   = zl,
               "obj" = trgh))
 }
 
 #' @export
-.simLayPois <- function(i, zl, para, modbox, modboxXL, lambdaArea){
+.simLayPois <- function( zl, id = NULL, para, modbox, modboxXL, lambdaArea){
+  if(is.null(id)){ 
+    id <- "1"
+  }
   n <- rpois(1, lambdaArea)
   L   <- .rsim(para$L, n)
   rLW <- .rsim(para$rLW, n)
@@ -2873,7 +2889,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   W <- L/rLW
   xyz <- matrix(c(runif(n, min = modboxXL$x[1], max = modboxXL$x[2]),
                   runif(n, min = modboxXL$y[1], max = modboxXL$y[2]),
-                  rep(zl[i], n )), byrow = FALSE, ncol = 3)
+                  rep(zl, n )), byrow = FALSE, ncol = 3)
   trgh <- new("Trough",
               version = "0.1",
               id      = seq_len(n),
@@ -2885,8 +2901,8 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
               rH      = rep(para$rH, n)
             )
   trgh <- extract(trgh, modbox)
-  return(list("id"  = i,
-            "z"   = zl[i],
+  return(list("id"  = id,
+            "z"   = zl,
             "obj" = trgh))
 }
 
@@ -3151,7 +3167,7 @@ unifUpdate <- function(x, dx = 1, xmin = NULL, xmax = NULL){
     # xnew[xnew > xmax] <- xmin + (xnew[xnew > xmax] - xmax)
     xnew[xnew > xmax] <- xmax - (xnew[xnew > xmax] - xmax)
   }
-  return(xnew)
+  return(unname(xnew))
 }
 
 #'@export
@@ -3398,10 +3414,11 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
       x@layers[[sample.int(n, 1L)]] <- NULL
     }else if(bd == 1){    # birth
       zi <- runif(1, min = x@bbox$z[1], max = x@bbox$z[2])
-      id <- max(sapply(x@layers, function(x) x[["id"]])) + 1L
-      laynew <- list("id" = id,
-                     "z"  = zi,
-                     "obj" = .simLay(x, zi, para))
+      #id <- max(sapply(x@layers, function(x) x[["id"]])) + 1L
+      #laynew <- list("id" = id,
+      #               "z"  = zi,
+      #               "obj" = .simLay(x, zi, para))
+      laynew <- .simLay(x, zi, para)
       x <- .insertLay(x, zi, id, laynew)
       if(length(x@layers) != n + 1L) stop("lkj")
     }
@@ -3409,7 +3426,7 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   return(x)
 })            
           
-          
+#'@export
 .insertLay <- function(x, zi, id, laynew){
   n <- length(x@layers)
   z <- layerz(x) #sapply(x@layers, function(x) x[["z"]])
@@ -3457,13 +3474,14 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
     x@layers <- lay
     return(x)
 #   }
-}           
+}    
+#'@export
 .rmLay <- function(x, id){
   x@z <- x@z[-which(id == names(x@z))]
   x@layers[id] <- NULL
   return(x)
 }
-
+#'@export
 .simLay <- function(x, zi, para){
   L   <- .rsim(para$L,   n = 500)
   rLW <- .rsim(para$rLW, n = 500)
@@ -3475,19 +3493,18 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   modboxXL$x <- c(x@bbox$x[1]  - maxL, x@bbox$x[2]  + maxL)
   modboxXL$y <- c(x@bbox$y[1]  - maxL, x@bbox$y[2]  + maxL)
   f <- 1
+  lid <- sapply(x@layers, function(x) as.integer(x$id))
+  i <- max(lid) + 1L
   if(para$hpp$type == "poisson"){
     # number of objects is Poisson distributed
     lambdaArea <- para$hpp$lambda * diff(modboxXL$x) * diff(modboxXL$y)
-    laynew <- .simLayPois(zl = zi, para = para, modbox = x@bbox, 
+    laynew <- .simLayPois(zl = zi, id = i, para = para, modbox = x@bbox, 
                   modboxXL = modboxXL, lambdaArea = lambdaArea)
   }else if(para$hpp$type == "strauss"){
-    laynew <- .simLayStrauss(zl = zi, para = para, modbox = x@bbox, 
+    laynew <- .simLayStrauss(zl = zi, id = i, para = para, modbox = x@bbox, 
                   modboxXL = modboxXL)
   }else{
     stop("Wrong 'para$hpp$type'!\n")
-  }
-  if(length(laynew@id) < 1){
-    warning("qwertz")
   }
   return(laynew)
 }
