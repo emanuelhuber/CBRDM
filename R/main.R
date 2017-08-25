@@ -2798,7 +2798,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   modboxXL$y <- c(modbox$y[1]  - maxL, modbox$y[2]  + maxL)
   if(hmodel == "poisson"){
     # number of objects is Poisson distributed
-    lambdaArea <- para$hpp$lambda * diff(modboxXL$x) * diff(modboxXL$y)
+    #lambdaArea <- para$hpp$lambda * diff(modboxXL$x) * diff(modboxXL$y)
     lays <- Map(function(zl, id) .simLayPois(zl, id, para = para, modbox = modbox, 
                                     modboxXL = modboxXL), zLevel, 
                                     seq_along(zLevel))

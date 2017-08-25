@@ -771,6 +771,9 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
 
   ES <- erosSurf(p = y$pdiff, obj = y$E, tol = 10^-7)
   ES <- .compactList(ES)
+  if(is.null(ES)){
+    return(NULL)
+  }
   #--- number of objt
   AT[52] <- nrow(y$E) 
   AT[1] <- length(ES) 
@@ -790,6 +793,9 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
     #--- erosion length
     ES0 <- erosSurf(p = y$p, obj = y$E, tol = 10^-7)
     ES0 <- .compactList(ES0)
+    if(is.null(ES0)){
+      return(NULL)
+    }
     eLl <- lapply(ES, posLine, last = TRUE)
     eLl <- .compactList(eLl)
     eL <- sum(unlist(eLl), na.rm = TRUE)
@@ -841,6 +847,7 @@ erodedAreas <- function(p, pd){
 
 #'@export
 posLine <- function(loc,last=FALSE){
+  if(is.null(posLine)) return(NULL)
   loc <- as.matrix(loc)
   all_dist <- cumsum(c(0,sqrt(apply(diff(loc)^2,1,sum))))
   if(last){
