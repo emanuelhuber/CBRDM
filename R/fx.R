@@ -7,18 +7,18 @@
 
 
 #'@export
-plotCDF <- function(x, add = FALSE, type = 's', xaxs = "i", yaxs = "i", 
+plotCDF <- function(x, add = FALSE, type = 's', xaxs = "i", yaxs = "i",
                     ylab = "eCDF", ylim = c(0, 1), ...){
   if(add){
     lines(sort(x), seq_along(x)/length(x), type = type, ...)
   }else{
-    plot(sort(x), seq_along(x)/length(x), type = type, 
+    plot(sort(x), seq_along(x)/length(x), type = type,
      ylim = ylim, xaxs = xaxs, yaxs = yaxs, ylab = ylab, ...)
   }
 }
 
 #'@export
-plotMultiHist <- function(x, sel, breaks = breaks, xlab = "", 
+plotMultiHist <- function(x, sel, breaks = breaks, xlab = "",
                           ylab = "counts", ...){
 X <- hist(x, plot = FALSE, breaks = breaks)
 ymax <- max(X$counts)
@@ -78,30 +78,30 @@ plotSectionMat <- function(x, add = FALSE, xlab = "x",
   invisible(apply(x, 1, .plotTrEllipse2, ...))
   #plotSection(x@troughs, add = TRUE, ...)
 }
-    
+
 
 
 .plotTrEllipse2 <- function(e, ...){
-  polygon(.trEllipse(saxes = e[c("a", "b")], 
+  polygon(.trEllipse(saxes = e[c("a", "b")],
                      loc   = e[c("x", "z")],
                      theta = 0,
                      zmax  = e["zmax"],
                      alpha = c(0.5, 1)), ...)
-}  
-  
-  
+}
+
+
 
 #'@export
-equidistCurve <- function(x, y, d, withTail = TRUE, method = "linear", 
+equidistCurve <- function(x, y, d, withTail = TRUE, method = "linear",
                           extrap = TRUE, ...){
   dL <- posLine(cbind(x, y))
   dLi <- seq(0, tail(dL, 1), by = d)
   if(withTail == TRUE && tail(dLi,1) != tail(dL,1)) dLi <- c(dLi, tail(dL,1))
   XY <- matrix(nrow = length(dLi), ncol = 2)
-  XY[,1] <- signal::interp1(dL, x, xi = dLi, method = method, extrap = extrap, 
-                            ...) 
-  XY[,2] <- signal::interp1(dL, y, xi = dLi, method = method, extrap = extrap, 
-                            ...) 
+  XY[,1] <- signal::interp1(dL, x, xi = dLi, method = method, extrap = extrap,
+                            ...)
+  XY[,2] <- signal::interp1(dL, y, xi = dLi, method = method, extrap = extrap,
+                            ...)
   return(XY)
 }
 
@@ -112,7 +112,7 @@ equidistCurve <- function(x, y, d, withTail = TRUE, method = "linear",
 ###----------- initialisation
 
 #'@export
-initMod <- function(SCOURS, l, para, Hmin, Hmax, rLHmax, 
+initMod <- function(SCOURS, l, para, Hmin, Hmax, rLHmax,
                       eroBox, tol, tol2, n, ah){
   z0 <- sapply(SCOURS, function(x) max(x[,2]))
   zorder <- order(z0)
@@ -120,7 +120,7 @@ initMod <- function(SCOURS, l, para, Hmin, Hmax, rLHmax,
   names(z) <- seq_along(z)
   lays0 <- lapply(seq_along(SCOURS), initObject, SCOURS, l, para)
   lays <- lays0[zorder]
-  return(new("Deposits",  
+  return(new("Deposits",
             version = "character",   # version of the class
             id = 1L,
             #z = z,
@@ -134,17 +134,17 @@ initObject <- function(i, SCOURS, l, para){
   l0 <- c(-l[3]/l[1],0)
   #L <- runif(1,min=para$L$min,max=para$L$max)
   xyz <- matrix(nrow=1, ncol = 3)
-  xyz[1] <- sqrt( (A[which.min(A[,2]),1])^2/( 1 + 
+  xyz[1] <- sqrt( (A[which.min(A[,2]),1])^2/( 1 +
                       (-l[1]/l[2])^2)) + l0[1]
-  xyz[2] <- sqrt( ((-l[1]/l[2])^2 * (A[which.min(A[,2]),1])^2)/( 1 + 
+  xyz[2] <- sqrt( ((-l[1]/l[2])^2 * (A[which.min(A[,2]),1])^2)/( 1 +
                       (-l[1]/l[2])^2))  + l0[2]
   xyz[3] <- max(A[,2])
-  
-  W <- max(diff(range(A[,1])), 2*(A[which.min(A[,2]),1] - 
+
+  W <- max(diff(range(A[,1])), 2*(A[which.min(A[,2]),1] -
             A[which.max(A[,2]),1])) * 0.8
   H <- abs(diff(range(A[,2])))
-  L <- ifelse(W * para$rLW$max < para$L$max & 
-              W * para$rLW$max > para$L$min, 
+  L <- ifelse(W * para$rLW$max < para$L$max &
+              W * para$rLW$max > para$L$min,
               W * para$rLW$max, W * para$rLW$min)
   L[L < para$L$min] <- para$L$min
   L[L > para$L$max] <- para$L$max
@@ -154,8 +154,8 @@ initObject <- function(i, SCOURS, l, para){
   rLH <- L/H
   rLH[rLH > para$rLH$max] <- para$rLH$max
   rLH[rLH < para$rLH$min] <- para$rLH$min
-  
-  
+
+
   return(list("id" = i,
               "z"  = xyz[3],
               "obj" = new("Trough",
@@ -172,7 +172,7 @@ initObject <- function(i, SCOURS, l, para){
 }
 
 #'@export
-initSim <- function(X0, Y, l, para, pDMAX, probUpdates, min_it, max_it, 
+initSim <- function(X0, Y, l, para, pDMAX, probUpdates, min_it, max_it,
                     Hmin, Hmax, rLHmax, eroBox,  tol, tol2, n, ah){
   if(max_it <= min_it) max_it <- min_it + 1L
   uptp <- integer(max_it)
@@ -180,8 +180,8 @@ initSim <- function(X0, Y, l, para, pDMAX, probUpdates, min_it, max_it,
   pdv <- numeric(max_it)
   X <- X0
   sX <- section(X, l, lim = list(x = vSec$llim, z = modbox$z) )
-  sXf <- filterSection(x = sX, Hmin = Hmin, Lmin = Lmin, 
-                          rLHmax = rLHmax, eroBox = eroBox, 
+  sXf <- filterSection(x = sX, Hmin = Hmin, Lmin = Lmin,
+                          rLHmax = rLHmax, eroBox = eroBox,
                           tol = tol, tol2 = tol2, n = n)
   pD <- pseudoDist(x = sXf, y = Y, ah)
   types <- paste0(seq_along(probUpdates))
@@ -201,8 +201,8 @@ initSim <- function(X0, Y, l, para, pDMAX, probUpdates, min_it, max_it,
           "4" = {updateObj(X, type = "n",    para = para)},
           "5" = {updateObj(X, type = "prop", para = para)})
     sXstar <- section(Xstar, l)
-    sXfstar <- filterSection(x = sXstar, Hmin = Hmin, Lmin = Lmin, 
-                        rLHmax = rLHmax, eroBox = eroBox, 
+    sXfstar <- filterSection(x = sXstar, Hmin = Hmin, Lmin = Lmin,
+                        rLHmax = rLHmax, eroBox = eroBox,
                         tol = tol, tol2 = tol2, n = n)
     pDstar <- pseudoDist(x = sXfstar, y = Y, ah)
     if(!is.infinite(pDstar) && (pDstar <= pD || pDstar < pDMAX)){
@@ -223,10 +223,10 @@ initSim <- function(X0, Y, l, para, pDMAX, probUpdates, min_it, max_it,
   return(list(X = X, sX = sX, sXf = sXf, uptp = uptp, acc = acc, pdv = pdv,
               XL = XL, sXL = sXL, ESL = ESL))
 }
-    
 
-#'@export   
-simMC <- function(X0, Y, l, para, pDMAX, probUpdates, nit, it_spl, 
+
+#'@export
+simMC <- function(X0, Y, l, para, pDMAX, probUpdates, nit, it_spl,
                     Hmin, Hmax, rLHmax, eroBox,  tol, tol2, n, ah){
   #if(max_it <= min_it) max_it <- min_it + 1L
   if(nit/it_spl < 2) stop("lkjljlI")
@@ -237,8 +237,8 @@ simMC <- function(X0, Y, l, para, pDMAX, probUpdates, nit, it_spl,
   nch <- numeric(nit)
   X <- X0
   sX <- section(X, l, lim = list(x = vSec$llim, z = modbox$z))
-  sXf <- filterSection(x = sX, Hmin = Hmin, Lmin = Lmin, 
-                          rLHmax = rLHmax, eroBox = eroBox, 
+  sXf <- filterSection(x = sX, Hmin = Hmin, Lmin = Lmin,
+                          rLHmax = rLHmax, eroBox = eroBox,
                           tol = tol, tol2 = tol2, n = n)
   pD <- pseudoDist(x = sXf, y = Y, ah)
   types <- paste0(seq_along(probUpdates))
@@ -259,15 +259,15 @@ simMC <- function(X0, Y, l, para, pDMAX, probUpdates, nit, it_spl,
           "3" = {updateObj(X, type = "pos",  para = para)},
           "4" = {updateObj(X, type = "n",    para = para)},
           "5" = {updateObj(X, type = "prop", para = para)})
-    
+
     ##### give a limit to the section!!!!!
     sXstar <- section(Xstar, l , lim = list(x = vSec$llim, z = modbox$z) )
     if(all(type != c("2", "3", "5")) && identical(sXstar, sX)){
       acc[i] <- 1L
       nch[i] <- 1L
     }else{
-      sXfstar <- filterSection(x = sXstar, Hmin = Hmin, Lmin = Lmin, 
-                              rLHmax = rLHmax, eroBox = eroBox, 
+      sXfstar <- filterSection(x = sXstar, Hmin = Hmin, Lmin = Lmin,
+                              rLHmax = rLHmax, eroBox = eroBox,
                               tol = tol, tol2 = tol2, n = n)
       pDstar <- pseudoDist(x = sXfstar, y = Y, ah)
       if(!is.infinite(pDstar) && (pDstar <= pDMAX)){
@@ -289,12 +289,12 @@ simMC <- function(X0, Y, l, para, pDMAX, probUpdates, nit, it_spl,
   }
   return(list(uptp = uptp, acc = acc, pdv = pdv,
               XL = XL, sXL = sXL, ESL = ESL, ID = ID))
-}    
-  
+}
+
 
 ###----------- filter section
 #'@export
-filterSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25, 
+filterSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
                          eroBox, tol = 0.5, tol2 = 0.1, n = 200){
   if(is.null(x) || length(x)==0 ) return(NULL)
   A <- rmSmallObject(x, Hmin, Lmin)
@@ -312,7 +312,7 @@ filterSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
       pdiff[[1]] <- y$p
       #return(y$E)
     }else if(nPoly==2){
-      if(rgeos::gCovers(y$p[2],y$p[1]) || 
+      if(rgeos::gCovers(y$p[2],y$p[1]) ||
             rgeos::gArea(rgeos::gDifference(y$p[1],y$p[2])) < tol2){
         pdiff[[1]] <- y$p[2]
         y$E <- y$E[2,, drop = FALSE]
@@ -326,8 +326,8 @@ filterSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
       for(i in 1:(nPoly-1)){
         p_younger <- pUnion(y$p[(i+1):(nPoly)])
         # true if y$p completely covered by p_younger
-        test[i] <- rgeos::gCovers(p_younger, y$p[i])  
-        if(test[i] == FALSE){ 
+        test[i] <- rgeos::gCovers(p_younger, y$p[i])
+        if(test[i] == FALSE){
           p_diff <- try(rgeos::gDifference(y$p[i], p_younger), silent = TRUE)
           if (class(p_diff) == "try-error") {
               p_younger <- rgeos::gBuffer(p_younger, byid = TRUE, width = 0.01)
@@ -337,13 +337,13 @@ filterSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
             test[i] <- TRUE # true is the rest of y$p are very small..
           }else{
             pdiff[[i]] <- p_diff
-          }   
+          }
           #test[i] <- TRUE # true is the rest of y$p are very small..
         }
       }
       pdiff[[nPoly]] <- y$p[nPoly]
       pdiff <- pdiff[!test]
-      #test[nPoly-1] <- rgeos::gCovers(y$p[nPoly],y$p[nPoly-1])     
+      #test[nPoly-1] <- rgeos::gCovers(y$p[nPoly],y$p[nPoly-1])
       y$E <- y$E[!test, , drop = FALSE]
     }
   }
@@ -351,10 +351,10 @@ filterSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
   if(length(y$E) == 0 ) return(NULL)
   ES <- erosSurf(p = pdiff, obj = y$E, tol = 10^-7)
   return(list(E = y$E, p = pdiff, e = ES))
-} 
+}
 
 #'@export
-polygonizeSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25, 
+polygonizeSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
                          eroBox, tol = 0.5, tol2 = 0.1, n = 200){
   if(is.null(x) || length(x)==0 ) return(NULL)
   A <- rmSmallObject(x, Hmin, Lmin)
@@ -370,7 +370,7 @@ polygonizeSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
     }else if(nPoly==1){
       pdiff[[1]] <- y$p
     }else if(nPoly==2){
-      if(rgeos::gCovers(y$p[2],y$p[1]) || 
+      if(rgeos::gCovers(y$p[2],y$p[1]) ||
             rgeos::gArea(rgeos::gDifference(y$p[1],y$p[2])) < tol2){
         pdiff[[1]] <- y$p[2]
         y$E <- y$E[2,, drop = FALSE]
@@ -388,7 +388,7 @@ polygonizeSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
           p_younger <- pUnion(y$p[(i+1):(nPoly)])
         }
         # true if y$p completely covered by p_younger
-        test[i] <- rgeos::gCovers(p_younger, y$p[i])  
+        test[i] <- rgeos::gCovers(p_younger, y$p[i])
         if(test[i] == FALSE){
           p_diff <- try(rgeos::gDifference(y$p[i], p_younger), silent = TRUE)
           if (class(p_diff) == "try-error") {
@@ -401,7 +401,7 @@ polygonizeSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
             test[i] <- TRUE # true is the rest of y$p are very small..
           }else{
             pdiff[[i]] <- p_diff
-          } 
+          }
         }
       }
       pdiff[[nPoly]] <- y$p[nPoly]
@@ -414,13 +414,13 @@ polygonizeSection <- function(x, Hmin = NULL, Lmin = NULL, rLHmax = 25,
   #stop("lkjl")
   if(length(y$E) == 0 ) return(NULL)
   return(list(E = y$E, A = y$A, p = y$p, pdiff = pdiff))
-} 
+}
 
-      
+
 rmSmallObject <- function(x, Hmin, Lmin){
   A <- as.matrix(x)
-  # remove objects that are small: 
-  # (1) almost horizontal (very small depth); 
+  # remove objects that are small:
+  # (1) almost horizontal (very small depth);
   # (2) small surface (depth $\times$ width)
   if(!is.null(Hmin)){
     A <- A[A[,"H"] >= Hmin, , drop = FALSE]
@@ -430,7 +430,7 @@ rmSmallObject <- function(x, Hmin, Lmin){
   }
   return(A)
 }
-      
+
 scours2Poly <- function(A, n, eroBox, tol, tol2){
   E <- mScour2mTrEll(A)
   ocoord <- ptsTrEllipse(E, n = n)
@@ -450,10 +450,10 @@ scours2Poly <- function(A, n, eroBox, tol, tol2){
     }
     rgeos::gLength(pint)
   }
-  return(list(p = p2[which(test)], E = E[test,, drop = FALSE], 
+  return(list(p = p2[which(test)], E = E[test,, drop = FALSE],
               A = A[test,, drop = FALSE]))
 }
-      
+
 # A = as.matrix(x) with x from class Deposits2D
 # return matrix from TrEllipse
 mScour2mTrEll <- function(A){
@@ -473,7 +473,7 @@ ptsTrEllipse <- function(x, n = 30){
 
 .ptsTrEllipse <- function(i, x, n = 30){
   x <- x[i,]
-  .trEllipse(saxes = x[c("a", "b")], 
+  .trEllipse(saxes = x[c("a", "b")],
              loc   = x[c("x", "z")],
              theta = 0,
              zmax  = x["zmax"],
@@ -486,11 +486,11 @@ list2SpatialPolygons <- function(x){
   ppp <- lapply(seq_along(pp), listPolygon2Polygons, pp)
   sp::SpatialPolygons(ppp)
 }
-      
+
 listPolygon2Polygons <- function(i,pp){
   sp::Polygons(pp[i],i)
-}  
-      
+}
+
 #'@export
 pUnion <- function(p){
   p_u <- try(rgeos::gUnaryUnion(p), silent = TRUE)
@@ -502,12 +502,12 @@ pUnion <- function(p){
 }
 
 #areaSpatialPolygons <- function(x){
-#  sapply(slot(x, "polygons"), function(x) sapply(slot(x, "Polygons"), 
-#          slot, "area"))  
+#  sapply(slot(x, "polygons"), function(x) sapply(slot(x, "Polygons"),
+#          slot, "area"))
 #}
 
-#-- erosion surfaces         
-         
+#-- erosion surfaces
+
 # return bounding surfaces (list of coordinates)
 #'@export
 erosSurf <- function(p, obj, tol = 10^-2){
@@ -565,16 +565,16 @@ erosSurf <- function(p, obj, tol = 10^-2){
 #  xsp <- ListXYToListSpatialLines(x$e)
 #  res <- sapply(seq_along(y), dinf, xsp, y)
 #  return(max(res))
-  #xsp <-listXY2SpatialLines(x$e)  
+  #xsp <-listXY2SpatialLines(x$e)
   #return(rgeos::gDistance(xsp, y, hausdorff = TRUE, densifyFrac = 0.1))
 #}
 #'@export
 dinf <- function(i, x, y, ...){
   rgeos::gDistance(x[[i]], y[[i]], hausdorff = TRUE, densifyFrac = 0.1)
 }
-    
+
 ## x = matrix of ellipse parameters
-## y = SCOURS, list of matrix (coordinates n x 3 matrix)    
+## y = SCOURS, list of matrix (coordinates n x 3 matrix)
 #'@export
 pseudoDist <- function(x, y, ah, ...){
   if(is.null(x) || length(x) == 0) return(Inf)
@@ -594,7 +594,7 @@ pseudoDist <- function(x, y, ah, ...){
   #return(sqrt(sum(res^2)/length(res)))
   return(max(resall))
 }
-#'@export 
+#'@export
 reorderSection <- function(x){
   # if(is.null(x) || length(x)==0) return(NULL)
   # check: 1) same number of elt; 2) age hierarchy
@@ -611,7 +611,7 @@ reorderSection <- function(x){
 order2values <- function(a){
         ifelse(rep(a[1]> a[2],2) ,c(2,1),c(1,2))
 }
-  
+
 #'@export
 ageHierarchy <- function(A){
   H  <- matrix(0L, nrow = nrow(A), ncol = nrow(A))
@@ -620,14 +620,14 @@ ageHierarchy <- function(A){
           H[i, (i+1L):nzz][A[i,"zmax"] < A[(i+1L):nzz, "zmax"]] <- 1L
   }
   return(H)
-} 
+}
 #'@export
 getResiduals <- function(y,x){
         return(sapply(seq_along(y), .getResiduals, y, x))
 }
-  
+
 .getResiduals <- function(i, y, x){
-  CC <- ellipseToConicMatrix(saxes = x[i,c("a","b")], loc = x[i,c("x","z")], 
+  CC <- ellipseToConicMatrix(saxes = x[i,c("a","b")], loc = x[i,c("x","z")],
                              theta = 0)
   XY0 <- matrix(1, nrow = nrow(y[[i]]), ncol = 3)
   XY0[,1:2] <- y[[i]]
@@ -640,19 +640,19 @@ getResiduals <- function(y,x){
 .listLines <- function(i, x){
   Lines(x[[i]], ID = as.character(i))
 }
-  
+
 #'@export
 listXY2SpatialLines <- function(x){
   x <- lapply(x, Line)
   return(SpatialLines(lapply(seq_along(x), .listLines, x)))
 }
-#'@export 
+#'@export
 ListXYToListSpatialLines <- function(x){
   lapply(lapply(lapply(x, Line), Lines, ID = "1"), .SpatialLines)
-}    
+}
 .SpatialLines <- function(x){
   SpatialLines(list(x))
-}    
+}
 
 # .getResiduals <- function(i, A, x){
 #   # u0 <- (A[[i]][,c(1,2)]) - x[rep(i,nrow(A[[i]])),c("xap","z"),drop=FALSE]
@@ -681,24 +681,24 @@ ListXYToListSpatialLines <- function(x){
 #   zmaxPenalty[x[,"zmax"] > zmax] <- (zmax - x[,"zmax"])[x[,"zmax"] > zmax]
 #   zminPenalty[x[,"zmax"] < zmin] <- (zmin - x[,"zmax"])[x[,"zmax"] < zmin]
 #   res <- getResiduals(SCOURS, x)
-#   return(sqrt(sum( (res * (1 + zminPenalty)^2 * (1 + zmaxPenalty)^2)^2) / 
+#   return(sqrt(sum( (res * (1 + zminPenalty)^2 * (1 + zmaxPenalty)^2)^2) /
 #           length(res)))
 # }
-  
 
-#     | a1   0  | 
+
+#     | a1   0  |
 #e1 = |         |
 #     |  0   b1 |
 # geoDist <- function(ab1, ab2){
 #   L_A <- 1/sqrt(ab1)
 #   L_B <- 1/sqrt(ab2)
 #   D <- L_A[,1] * L_A[,2]
-#   dgeo <- sqrt(log((L_A[,2] * L_B[,1]) / D)^2 + 
+#   dgeo <- sqrt(log((L_A[,2] * L_B[,1]) / D)^2 +
 #                log((L_A[,1] * L_B[,2]) / D)^2 )
 #   return(dgeo)
-# 
+#
 # }
-  
+
 # # need to check if the z-penalty are not in conflict with REF
 # pseudoDist2 <- function(x, REF, zmax, zmin, ah){
 #   if(is.null(x)) return(Inf)
@@ -711,14 +711,14 @@ ListXYToListSpatialLines <- function(x){
 #   zminPenalty[x[,"zmax"] < zmin] <- (zmin - x[,"zmax"])[x[,"zmax"] < zmin]
 #   res <- geoDist(x[,c("a","b")], REF[,c("a","b")])
 #   res2 <- sqrt(rowSums((x[, c("x", "zmax")] - REF[, c("x", "zmax")])^2))
-#   R1 <- sqrt(sum( (res)^2) / 
+#   R1 <- sqrt(sum( (res)^2) /
 #           length(res))
-#   R2 <- sqrt(sum((res2 * (1 + zminPenalty^2) * (1 + zmaxPenalty^2))^2) / 
+#   R2 <- sqrt(sum((res2 * (1 + zminPenalty^2) * (1 + zmaxPenalty^2))^2) /
 #               length(res2))
 #   return(R1*10 + R2 )
 # }
-    
- 
+
+
 
 
 ####----------------------- MC-EXPLORATION -----------------------------####
@@ -734,13 +734,13 @@ setPara <- function(hyperP, rnd){
   pp <- rfacP(hyperP$theta, rnd[7])
   para$theta <- list(type = "runif", min = -pp[1], max = pp[1])
   para$rH <- 2
-  para$vpp  <-  list(type = "poisson", 
+  para$vpp  <-  list(type = "poisson",
                      lambda = rfac(hyperP$lambda, rnd[9]))
-  para$hpp <- list(type = "strauss", 
-                             bet = rfac(hyperP$bet, rnd[10]), 
-                             gam = rfac(hyperP$gam, rnd[11]), 
-                             d = rfac(hyperP$d, rnd[12]), 
-                             fd = c(rfac(hyperP$fd, rnd[13]), 1), 
+  para$hpp <- list(type = "strauss",
+                             bet = rfac(hyperP$bet, rnd[10]),
+                             gam = rfac(hyperP$gam, rnd[11]),
+                             d = rfac(hyperP$d, rnd[12]),
+                             fd = c(rfac(hyperP$fd, rnd[13]), 1),
                              nit = 5000, n0 = 3)
   return(para)
 }
@@ -750,23 +750,23 @@ rfacP <- function(hp, r){
   pmax <- rfac(hp, r[2])
   return(sort(c(pmin, pmax)))
 }
-  
+
 rfac <- function(x, r){
   return( r * (x$max - x$min) + x$min)
 }
 
-         
-         
+
+
 
 #'@export
-getAtt <- function(x, Hmin, Lmin, rLHmax, 
-                   eroBox, tol, tol2, 
+getAtt <- function(x, Hmin, Lmin, rLHmax,
+                   eroBox, tol, tol2,
                    n){
-  y <- polygonizeSection(x = x, Hmin = Hmin, Lmin = Lmin, rLHmax = rLHmax, 
-                      eroBox = eroBox, tol = tol, tol2 = tol2, 
+  y <- polygonizeSection(x = x, Hmin = Hmin, Lmin = Lmin, rLHmax = rLHmax,
+                      eroBox = eroBox, tol = tol, tol2 = tol2,
                       n = n)
   if(is.null(y)) return(NULL)
-  
+
   AT <- rep(NA, 52)
 
   ES <- erosSurf(p = y$pdiff, obj = y$E, tol = 10^-7)
@@ -775,10 +775,10 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
     return(NULL)
   }
   #--- number of objt
-  AT[52] <- nrow(y$E) 
-  AT[1] <- length(ES) 
+  AT[52] <- nrow(y$E)
+  AT[1] <- length(ES)
   #--- total area
-  AT[2] <- rgeos::gArea(pUnion(y$p)) 
+  AT[2] <- rgeos::gArea(pUnion(y$p))
   if(AT[1] > 1){
     #--- eroded areas
     eA <- erodedAreas(p = y$p, pd = y$pdiff)
@@ -831,12 +831,16 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
     #eL <- sum(sapply(ES, posLine, last = TRUE))
     AT[3] <- 1
     AT[4:51] <- 0
-    AT[25] <- sum(sapply(ES, posLine, last = TRUE))
+    if(typeof(ES) == "list"){
+      AT[25] <- sum(sapply(ES, posLine, last = TRUE))
+    }else{
+      AT[25] <- posLine(ES, last = TRUE)
+    }
   }
   return(AT)
 }
 
-         
+
 erodedAreas <- function(p, pd){
   return(sapply(seq_along(p), .erodedArea, p, pd))
 }
@@ -858,33 +862,33 @@ posLine <- function(loc,last=FALSE){
 }
 
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
