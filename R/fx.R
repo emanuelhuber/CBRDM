@@ -831,11 +831,11 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
     #eL <- sum(sapply(ES, posLine, last = TRUE))
     AT[3] <- 1
     AT[4:51] <- 0
-    if(typeof(ES) == "list"){
-      AT[25] <- sum(sapply(ES, posLine, last = TRUE))
-    }else{
-      AT[25] <- posLine(ES, last = TRUE)
-    }
+    #if(typeof(ES) == "list" && length(ES) > 1){
+    #  AT[25] <- sum(sapply(ES, posLine, last = TRUE))
+    #}else{
+    #  AT[25] <- posLine(ES, last = TRUE)
+    #}
   }
   return(AT)
 }
