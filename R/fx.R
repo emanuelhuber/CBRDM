@@ -82,7 +82,7 @@ plotSectionMat <- function(x, add = FALSE, xlab = "x",
 
 
 .plotTrEllipse2 <- function(e, ...){
-  polygon(.trEllipse(saxes = e[c("a", "b")],
+  sp::polygon(.trEllipse(saxes = e[c("a", "b")],
                      loc   = e[c("x", "z")],
                      theta = 0,
                      zmax  = e["zmax"],
