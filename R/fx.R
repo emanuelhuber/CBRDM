@@ -511,13 +511,18 @@ pUnion <- function(p){
 # return bounding surfaces (list of coordinates)
 #'@export
 erosSurf <- function(p, obj, tol = 10^-2){
+  if(is.null(p)){
+    return(NULL)
+  }
   L <- lapply(seq_along(p), .eSurf, p, obj, tol)
   return(unlist(L, recursive = FALSE))
 }
 
 
 .eSurf <- function(i, p, obj, tol){
-   if(typeof(p) == "list"){
+  if(is.null(p)){
+    return(NULL)
+  }else if(typeof(p) == "list"){
     pp <- p[[i]]
   }else{
     pp <- p[i]
@@ -782,19 +787,21 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
   if(AT[1] > 1){
     #--- eroded areas
     eA <- erodedAreas(p = y$p, pd = y$pdiff)
-    tst <- eA < 1
-    AT[3] <- sum(tst)/AT[1] # proportion scours not eroded
-    if(sum(!tst) > 2){
-      AT[4:9] <- summary(eA[!tst]) # stat scours eroded
-    }else{
-      AT[4:9] <- 0
+    if(!is.null(eA)){
+      tst <- eA < 1
+      AT[3] <- sum(tst)/AT[1] # proportion scours not eroded
+      if(sum(!tst) > 2){
+        AT[4:9] <- summary(eA[!tst]) # stat scours eroded
+      }else{
+        AT[4:9] <- 0
+      }
+      AT[10] <- sum(eA) # sum(area scours eroded)
     }
-    AT[10] <- sum(eA) # sum(area scours eroded)
     #--- erosion length
     ES0 <- erosSurf(p = y$p, obj = y$E, tol = 10^-7)
     ES0 <- .compactList(ES0)
     if(is.null(ES0)){
-      return(NULL)
+      return(rep(NA, 52))
     }
     eLl <- lapply(ES, posLine, last = TRUE)
     eLl <- .compactList(eLl)
@@ -842,11 +849,17 @@ getAtt <- function(x, Hmin, Lmin, rLHmax,
 
 
 erodedAreas <- function(p, pd){
+  if(is.null(pd)){
+    return(NULL)
+  }
   return(sapply(seq_along(p), .erodedArea, p, pd))
 }
 
 .erodedArea <- function(i, p, pd){
-  rgeos::gArea(p[i]) - rgeos::gArea(pd[[i]])
+  if(is.null(p) || is.null(pd)){
+    return(NULL)
+  }
+  return(rgeos::gArea(p[i]) - rgeos::gArea(pd[[i]]))
 }
 
 #'@export
