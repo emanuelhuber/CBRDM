@@ -15,5 +15,6 @@ Collate:
     'data.R'
 Imports:
     RConics,
-    spatstat
+    spatstat,
+    sp
 RoxygenNote: 6.0.1
