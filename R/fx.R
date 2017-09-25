@@ -643,20 +643,20 @@ getResiduals <- function(y,x){
 }
 
 .listLines <- function(i, x){
-  Lines(x[[i]], ID = as.character(i))
+  sp::Lines(x[[i]], ID = as.character(i))
 }
 
 #'@export
 listXY2SpatialLines <- function(x){
-  x <- lapply(x, Line)
-  return(SpatialLines(lapply(seq_along(x), .listLines, x)))
+  x <- lapply(x, sp::Line)
+  return(sp::SpatialLines(lapply(seq_along(x), .listLines, x)))
 }
 #'@export
 ListXYToListSpatialLines <- function(x){
-  lapply(lapply(lapply(x, Line), Lines, ID = "1"), .SpatialLines)
+  lapply(lapply(lapply(x,  sp::Line), sp::Lines, ID = "1"), .SpatialLines)
 }
 .SpatialLines <- function(x){
-  SpatialLines(list(x))
+  sp::SpatialLines(list(x))
 }
 
 # .getResiduals <- function(i, A, x){

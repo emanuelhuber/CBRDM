@@ -3156,16 +3156,20 @@ measureDistance <- function(last=TRUE){
 resample <- function(x, ...) x[sample.int(length(x), ...)]
 
 # reflection, not round around
+#'
+#' relfection at the bounds
 #'@export
 unifUpdate <- function(x, dx = 1, xmin = NULL, xmax = NULL){
   xnew <- x + runif(length(x), -dx, dx)
-  if(any(xnew < xmin)){
-    # xnew[xnew < xmin] <- xmax - (xmin - xnew[xnew < xmin])
-    xnew[xnew < xmin] <- xmin + (xmin - xnew[xnew < xmin])
+  test <- xnew < xmin
+  if(any(test)){
+    # xnew[test] <- xmax - (xmin - xnew[test])
+    xnew[test] <- xmin + (xmin - xnew[test])
   }
-  if(any(xnew > xmax)){
-    # xnew[xnew > xmax] <- xmin + (xnew[xnew > xmax] - xmax)
-    xnew[xnew > xmax] <- xmax - (xnew[xnew > xmax] - xmax)
+  test <- xnew > xmax
+  if(any(test)){
+    # xnew[test] <- xmin + (xnew[test] - xmax)
+    xnew[test] <- xmax - (xnew[test] - xmax)
   }
   return(unname(xnew))
 }
@@ -3175,6 +3179,24 @@ poisUpdate <- function(n, lambda = 1){
   return(n + poisBD(n, lambda = lambda))
 }
 
+#' Poisson move
+#'
+#' Same as uniform update but with folding instead of relfecting
+#'@export
+poisMove <- function(x, dx = 1, xmin = NULL, xmax = NULL){
+  xnew <- x + runif(length(x), -dx, dx)
+  test <- xnew < xmin
+  if(any(test)){
+    xnew[test] <- xmax - (xmin - xnew[test])
+    #xnew[test] <- xmin + (xmin - xnew[test])
+  }
+  test <- xnew > xmax
+  if(any(test)){
+    xnew[test] <- xmin + (xnew[test] - xmax)
+    #xnew[test] <- xmax - (xnew[test] - xmax)
+  }
+  return(unname(xnew))
+}
 
 #' Poisson birth death
 #'@export
