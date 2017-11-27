@@ -2837,18 +2837,18 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   }
   #crossBedding", "Deposits", function(x, para = NULL
   #--- 3. CROSS-BEDS
-  if(isTRUE(crossbeds)){
-    n <- length(trgh@id)
-    nF <- round(trgh@W / .rsim(para$nF, n)) +1
-    rpos <- .rsim(para$rpos, n)
-    phi  <- .rsim(para$phi, n)
-    xbed <- list()
-    for( i in seq_len(n)){
-      xbed[[trgh@id[i]]] <- .regCrossBedding(trgh[i], nF = nF[i],
-                                             rpos = rpos[i], phi = phi[i])
-    }
-    trgh@fill <- xbed
-  }
+  # if(isTRUE(crossbeds)){
+  #   n <- length(trgh@id)
+  #   nF <- round(trgh@W / .rsim(para$nF, n)) +1
+  #   rpos <- .rsim(para$rpos, n)
+  #   phi  <- .rsim(para$phi, n)
+  #   xbed <- list()
+  #   for( i in seq_len(n)){
+  #     xbed[[trgh@id[i]]] <- .regCrossBedding(trgh[i], nF = nF[i],
+  #                                            rpos = rpos[i], phi = phi[i])
+  #   }
+  #   trgh@fill <- xbed
+  # }
 
   return(x)
 }
