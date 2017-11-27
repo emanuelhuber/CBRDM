@@ -126,7 +126,7 @@ And run the simulation:
 mod <- sim(modbox, hmodel = "strauss", para)  # takes some times...
 ```
 
-Top view (the layers are "transparent") and show the vertical section lines:
+**NOT YET WORKING**: Top view (the layers are "transparent") and show the vertical section lines:
 ```r
 plotTopView(mod, border = "red", col = "grey", asp = 1)
 lv <- c(1, 0, -50)
@@ -136,7 +136,7 @@ RConics::addLine(lh, col = "black", lwd = 4)
 
 ```
 
-Vertical section along the line `lv`:
+**NOT YET WORKING**: Vertical section along the line `lv`:
 ```r
 smod <- section(mod, lv)
 plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
@@ -144,7 +144,7 @@ plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
 title("Vertical section along 'lv'")
 ```
 
-Discretisation/pixelisation 3D
+**MAYBE NOT WORKING CORRECTLY**: Discretisation/pixelisation 3D
 ```r
 mbox <- list(x = modbox$x, y = modbox$y, z = modbox$z, 
             dx = 1, 
@@ -153,7 +153,7 @@ mbox <- list(x = modbox$x, y = modbox$y, z = modbox$z,
 FAC <- pixelise(mod, mbox)
 ```
 
-Set hydraulic properties and plot section (pixels)
+**MAYBE NOT WORKING CORRECTLY**:Set hydraulic properties and plot section (pixels)
 ```r
 library(plot3D)
 
@@ -188,7 +188,7 @@ plot3D::image2D(PORO[30,,])
 ```
 
 
-Plot a cube of hydraulic conductivity:
+**MAYBE NOT WORKING CORRECTLY**:Plot a cube of hydraulic conductivity:
 ```r
 nxyz <- dim(FAC$XYZ)
 vy <- FAC$y
