@@ -2590,12 +2590,15 @@ setMethod("crossBedding", "DepositsOld", function(x, para = NULL){
 )
 
 setMethod("crossBedding", "Deposits", function(x, para = NULL){
-    x@layers <- lapply(crossBedding, x@layers, para)
+    x@layers <- lapply(x@layers, .crossBeddingDep, para)
     return(x)
   }
 )
 
 .crossBeddingDep <- function(x, para = NULL){
+  if(length(x$obj@id) == 0){
+    return(NULL)
+  }
   crossBedding(x$obj, para)
   #lapply(crossBedding, x@layers, para)
 }
@@ -2929,7 +2932,10 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   return(do.call(x$type, arg))
 }
 
-
+rint <- function(n, min, max){
+  sample(as.integer(min):as.integer(max), n, replace = TRUE)
+  
+}
 
 
 

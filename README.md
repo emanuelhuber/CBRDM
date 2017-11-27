@@ -107,7 +107,7 @@ para <- list("L"      = list(type = "runif", min = 40, max = 70),
                              d = 100,
                              fd = c(5, 1),
                              nit = 100, n0 = 3),
-             "nF"     = list(type = "runif", min = 2, max = 5),
+             "nF"     = list(type = "rint", min = 2, max = 5),
              "rpos"   = list(type = "runif", min = 0.65, max = 1), 
              "phi"    = list(type = "runif", min = -1.5, max = 1.5)
              )
