@@ -2026,7 +2026,8 @@ setMethod("pixelise", "Deposits", function(x, mbox){
     #    -> postive id -> odd  = bimodal
     #                  -> even = open-framework
     for(k in seq_along(x@layers)){
-      y <- x@layers[[k]]
+      y <- x@layers[[k]]$ob
+      if(length(y@id) == 0) next
       E <- as.matrix(y)
       cstO2E <- E[,"rH"]/(2*sqrt(2*E[,"rH"] -1))
       n <- nrow(E)
