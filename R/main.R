@@ -2590,10 +2590,15 @@ setMethod("crossBedding", "DepositsOld", function(x, para = NULL){
 )
 
 setMethod("crossBedding", "Deposits", function(x, para = NULL){
-    x@layers <- lapply(crossBedding, x@troughs, para)
+    x@layers <- lapply(crossBedding, x@layers, para)
     return(x)
   }
 )
+
+.crossBeddingDep <- function(x, para = NULL){
+  crossBedding(x$obj, para)
+  #lapply(crossBedding, x@layers, para)
+}
 
 # setMethod("crossBedding","Trough",function(x,nF=6, phi=1.05, rpos=1){
 setMethod("crossBedding", "Trough", function(x, para){
@@ -2606,14 +2611,20 @@ setMethod("crossBedding", "Trough", function(x, para){
       nF <- para$nF         #round(x@W / .rsim(para$nF, n)) +1
       if(length(nF) == 1){
         nF <- rep(nF, n)
+      }else{
+        nF <- .rsim(para$nF, n)
       }
       rpos <- para$rpos     #.rsim(para$rpos, n)
       if(length(rpos) == 1){
         rpos <- rep(rpos, n)
+      }else{
+        rpos <- .rsim(para$rpos, n)
       }
       phi  <- para$phi      #.rsim(para$phi, n)
       if(length(phi) == 1){
         phi <- rep(phi, n)
+      }else{
+        phi <- .rsim(para$phi, n)
       }
     }
     xbed <- list()
@@ -2812,6 +2823,16 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
     # lays <- lapply(seq_along(zLevel), .simLayStrauss, para = para, 
     #               modbox = modbox, modboxXL = modboxXL, zl = zLevel)
   }
+  x <- new("Deposits",
+           version = "0.1",
+           id = 1L,
+           layers  = lays,
+           bbox = modbox
+  )
+  if(isTRUE(crossbeds)){
+    x <- crossBedding(x, para)
+  }
+  #crossBedding", "Deposits", function(x, para = NULL
   #--- 3. CROSS-BEDS
   if(isTRUE(crossbeds)){
     n <- length(trgh@id)
@@ -2825,12 +2846,7 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
     }
     trgh@fill <- xbed
   }
-  x <- new("Deposits",
-           version = "0.1",
-           id = 1L,
-           layers  = lays,
-           bbox = modbox
-          )
+
   return(x)
 }
 

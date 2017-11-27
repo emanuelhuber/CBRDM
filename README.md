@@ -60,7 +60,7 @@ plotTopView(TF, border = "blue", col = "grey", asp = 1)
 
 To plot one specific trough fill:
 ```r
-plotTopView(TF[[2]], border = "blue", col = "green", asp = 1, add = TRUE)
+plotTopView(TF[2], border = "blue", col = "green", asp = 1, add = TRUE)
 ```
 
 Add cross-bedding:
@@ -99,10 +99,14 @@ para <- list("L"      = list(type = "runif", min = 40, max = 70),
              "theta"  = list(type = "runif", min = -20 * pi / 180, 
                                             max = 20 * pi / 180),
              "rH"     = 2,
-             "ag"     = 0.1,
-             "bet"    = 1e-4,
-             "gam"    = 0.2,
-             "d"      = 100,
+             "vpp"    = list(type = "poisson",
+                             lambda = 0.1),
+             "hpp"    = list(type = "strauss",
+                             bet = 1e-4,
+                             gam = 0.2,
+                             d = 100,
+                             fd = c(5, 1),
+                             nit = 100, n0 = 3),
              "nF"     = list(type = "runif", min = 2, max = 5),
              "rpos"   = list(type = "runif", min = 0.65, max = 1), 
              "phi"    = list(type = "runif", min = -1.5, max = 1.5)
