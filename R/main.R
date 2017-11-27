@@ -2597,9 +2597,10 @@ setMethod("crossBedding", "Deposits", function(x, para = NULL){
 
 .crossBeddingDep <- function(x, para = NULL){
   if(length(x$obj@id) == 0){
-    return(NULL)
+    return(x)
   }
-  crossBedding(x$obj, para)
+  x$obj <- crossBedding(x$obj, para)
+  return(x)
   #lapply(crossBedding, x@layers, para)
 }
 
