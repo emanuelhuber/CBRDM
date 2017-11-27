@@ -3151,6 +3151,8 @@ joinLine <- function(pts){
 
 #----------- PROJECTION MATRIX -----------#
 # Orthogonal Projection matrix on a Line
+#FIXME Problem when l = c(1, 0, -50)
+#                   v = c(1, -Inf)
 .matOP <- function(l){
   v <- c(1, -l[1]/l[2])
   return(matrix(c(v[1]^2, v[1]*v[2], v[1]*v[2], v[2]^2),
