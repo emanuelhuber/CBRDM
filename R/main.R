@@ -2281,7 +2281,11 @@ setMethod("doIntersect", "Sphere", function(x, y, ...){
     # orthogonal projection matrix
     OPmat <- .matOP(l)
     # point (x,y) on the line l
-    pl <- c(-l[3]/l[1],0)
+    if(l[1] == 0){
+      pl <- c(-l[3], 0)
+    }else{
+      pl <- c(-l[3]/l[1],0)
+    }
     test <- apply(as.matrix(x), 1, .intersectSphere, OPmat = OPmat, pl = pl)
     return(test)
   }
@@ -2399,7 +2403,7 @@ setMethod("section", "Deposits2", function(x, l, pref = NULL, lim = NULL){
 
 setMethod("section", "Deposits", function(x, l, pref = NULL, lim = NULL){
     pp <- section(bbox(x), l)
-    xsec <- lapply(x@layers, function(x) section(x[["obj"]], l, pref = pp[[1]],
+    xsec <- lapply(x@layers, function(x) section(x$obj, l, pref = pp[[1]],
                                                  lim = lim))
     lays <- x@layers[!sapply(xsec, is.null)]
     xsec <- Filter(Negate(is.null), xsec)
@@ -2815,16 +2819,18 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   if(hmodel == "poisson"){
     # number of objects is Poisson distributed
     #lambdaArea <- para$hpp$lambda * diff(modboxXL$x) * diff(modboxXL$y)
-    lays <- Map(function(zl, id) .simLayPois(zl, id, para = para, modbox = modbox, 
-                                    modboxXL = modboxXL), zLevel, 
-                                    seq_along(zLevel))
+    lays <- Map(function(zl, id){
+                  .simLayPois(zl, id, para = para, modbox = modbox, 
+                              modboxXL = modboxXL)
+                }, zLevel, seq_along(zLevel))
     # lays <- lapply(seq_along(zLevel), .simLayPois, para = para, 
     #               modbox = modbox, modboxXL = modboxXL, 
     #               lambdaArea = lambdaArea, zl = zLevel)
   }else if(hmodel == "strauss"){
-    lays <- Map(function(zl, id) .simLayStrauss(zl, id, para = para, modbox = modbox, 
-                                    modboxXL = modboxXL), zLevel, 
-                                    seq_along(zLevel))
+    lays <- Map(function(zl, id){
+                  .simLayStrauss(zl, id, para = para, modbox = modbox, 
+                                 modboxXL = modboxXL)
+                }, zLevel, seq_along(zLevel))
     # lays <- lapply(seq_along(zLevel), .simLayStrauss, para = para, 
     #               modbox = modbox, modboxXL = modboxXL, zl = zLevel)
   }
@@ -3155,7 +3161,11 @@ joinLine <- function(pts){
 #FIXME Problem when l = c(1, 0, -50)
 #                   v = c(1, -Inf)
 .matOP <- function(l){
-  v <- c(1, -l[1]/l[2])
+  if(l[2] == 0){ # if ax + by + c = 0 with b = 0
+    v <- c(0, 1)
+  }else{
+    v <- c(1, -l[1]/l[2])
+  }
   return(matrix(c(v[1]^2, v[1]*v[2], v[1]*v[2], v[2]^2),
           nrow=2,ncol=2)/(v[1]^2+v[2]^2))
 }
