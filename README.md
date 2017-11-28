@@ -11,7 +11,7 @@ Huber E., Huggenberger P., Caers J. (2016) Presentation: A 3D object-based model
 ## How to install/load
 
 ```r
-library(devtools)
+if(!require("devtools")) install.packages("devtools")
 devtools::install_github("emanuelhuber/CBRDM")
 library(CBRDM)
 ```
@@ -126,79 +126,148 @@ And run the simulation:
 mod <- sim(modbox, hmodel = "strauss", para)  # takes some times...
 ```
 
-**NOT YET WORKING**: Top view (the layers are "transparent") and show the vertical section lines:
+Top view (the layers are "transparent") and show the vertical section lines:
 ```r
 plotTopView(mod, border = "red", col = "grey", asp = 1)
-lv <- c(1, 0, -50)
-lh <- c(0, 1, -50)
-RConics::addLine(lv, col = "blue", lwd = 3)
+lv <- c(1, 0,  -50)
+lh <- c(0, 1,  -50)
+l  <- c(1, 2, -250)
+RConics::addLine(lv, col = "blue",  lwd = 3)
 RConics::addLine(lh, col = "black", lwd = 4)
-
+RConics::addLine(l,  col = "green", lwd = 4)
 ```
 
-**NOT YET WORKING**: Vertical section along the line `lv`:
-```r
-smod <- section(mod, lv)
-plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
-            xlim = c(0,100), ylab = "z (m)", xlab = "x (m)")
-title("Vertical section along 'lv'")
+#### Vertical sections
+
+* Vertical section along the line `lv`:
+
+    ```r
+    smod <- section(mod, lv)
+    plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
+                xlim = c(0,100), ylab = "z (m)", xlab = "x (m)")
+    title("Vertical section along 'lv' (blue line)")
+    ```
+
+* Vertical section along the line `lh`:
+
+    ```r
+    smod <- section(mod, lh)
+    plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
+                xlim = c(-50, 150), ylab = "z (m)", xlab = "y (m)")
+    title("Vertical section along 'lh' (black line)")
+    ```
+
+* Vertical section along the line `l`:
+
+    ```r
+    smod <- section(mod, lhv)
+    plotSection(smod, border = "red", col = "grey", asp = 5, ylim = c(0, 10),
+                xlim = c(-20, 170), ylab = "z (m)", xlab = "x' (m)")
+    title("Vertical section along 'l' (green line)")
+    ```
+
+#### Discretisation/pixelisation 3D
+
+1. Define the pixelisation box (`x`, `y`, `z`) as well as the pixel resolution 
+(`dx`, `dy`, `dz`).
+
+    ```r
+    mbox <- list(x = modbox$x, y = modbox$y, z = modbox$z, 
+                dx = 1, 
+                dy = 1, 
+                dz = 0.1)
+    ```
+
+2. Pixelise
+
+    ```r
+    PIX <- pixelise(mod, mbox)
+    ```
+    
+    The function `pixelise()` maps the object on the grid and attributes unique
+    identifier (integer) to the pixels belonging to the same object. The layers 
+    have negative values while the throughs have positive values.
+    
+    ```r
+    library(plot3D)
+    # horizontal section
+    plot3D::image2D(PIX$XYZ[,, 50], x = PIX$x, y = PIX$y)
+    
+    # vertical section at x = 50.5
+    plot3D::image2D(PIX$XYZ[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    ```
+    
+#### Set hydraulic properties and plot section (pixels)
+
+1. Set the facies identifier to the pixels:
+    - 0 = layers
+    - 1 = bimodal gravel (trough)
+    - 2 = open-framework gravel
+    
+    ```r
+    FAC <- setProp(PIX$XYZ, type = c("facies"))
+    
+    # horizontal section
+    plot3D::image2D(FAC[,, 50], x = PIX$x, y = PIX$y)
+    
+    # vertical section at x = 50.5
+    plot3D::image2D(FAC[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    ```
+    
+    The hydraulic properties of the facies are given by the data `faciesProp`:
+    ```r
+    data(faciesProp)
+    faciesProp # the facies hydraulic properties
+    ```
+    
+2. set hydraulic conductivity    
+    
+    ```r
+    HK <- setProp(PIX$XYZ, type = c("K"), fprop = faciesProp)
+    
+    # horizontal section
+    plot3D::image2D(HK[,, 50], x = PIX$x, y = PIX$y)
+    
+    # vertical section at x = 50.5
+    plot3D::image2D(HK[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    ```
+
+3. vertical anisotropy of the hydraulic conductivity
+
+    ```r
+    VANI <- setProp(PIX$XYZ, type = c("Kvani"), fprop = faciesProp)
+    
+    # horizontal section
+    plot3D::image2D(VANI[,, 50], x = PIX$x, y = PIX$y)
+    
+    # vertical section at x = 50.5
+    plot3D::image2D(VANI[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    ```
+    
+4.  porosity
+    ```r
+    PORO <- setProp(PIX$XYZ, type = c("p"), fprop = faciesProp)
+    
+    # horizontal section
+    plot3D::image2D(PORO[,, 50], x = PIX$x, y = PIX$y)
+    
+    # vertical section at x = 50.5
+    plot3D::image2D(PORO[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    ```
+
+
+#### Plot a cube of hydraulic conductivity:
+
 ```
-
-**MAYBE NOT WORKING CORRECTLY**: Discretisation/pixelisation 3D
-```r
-mbox <- list(x = modbox$x, y = modbox$y, z = modbox$z, 
-            dx = 1, 
-            dy = 1, 
-            dz = 0.1)
-FAC <- pixelise(mod, mbox)
-```
-
-**MAYBE NOT WORKING CORRECTLY**:Set hydraulic properties and plot section (pixels)
-```r
-library(plot3D)
-
-# set the facies:
-#       0 = layers
-#       1 = bimodal gravel
-#       2 = open-framework gravel
-A <- setProp(FAC$XYZ, type = c("facies"))
-plot3D::image2D(A[,,30])
-plot3D::image2D(A[,30,])
-
-# set hydraulic conductivity
-data(faciesProp)
-faciesProp # the facies hydraulic properties
-
-# hydraulic conductivity
-HK <- setProp(FAC$XYZ, type = c("K"), fprop = faciesProp)
-plot3D::image2D(HK[,,1])
-plot3D::image2D(HK[30,,])
-plot3D::image2D(HK[,30,])
-
-# vertical anisotropy of the hydraulic conductivity
-VANI <- setProp(FAC$XYZ, type = c("Kvani"), fprop = faciesProp)
-plot3D::image2D(VANI[,,30])
-plot3D::image2D(VANI[30,,])
-plot3D::image2D(VANI[,30,])
-
-# porosity
-PORO <- setProp(FAC$XYZ, type = c("p"), fprop = faciesProp)
-plot3D::image2D(PORO[,,30])
-plot3D::image2D(PORO[30,,])
-```
-
-
-**MAYBE NOT WORKING CORRECTLY**:Plot a cube of hydraulic conductivity:
-```r
-nxyz <- dim(FAC$XYZ)
-vy <- FAC$y
-vx <- rep(max(FAC$x), length(FAC$x))
-vz <- matrix(rep(FAC$z, each = length(vy)), ncol = length(vy), 
+rnxyz <- dim(PIX$XYZ)
+vy <- PIX$y
+vx <- rep(max(PIX$x), length(PIX$x))
+vz <- matrix(rep(PIX$z, each = length(vy)), ncol = length(vy), 
              nrow = length(vx), byrow = TRUE)
-M1 <- mesh(vx, vy)
+M1 <- plot3D::mesh(vx, vy)
 
-surf3D(M1$x, M1$y, vz, colvar = t(HK[,nxyz[2],]), 
-        col = jet2.col(201),
+plot3D::surf3D(M1$x, M1$y, vz, colvar = t(HK[,nxyz[2],]), 
+        col = plot3D::jet2.col(201),
         bty = "f", cex = 0.01, pch = 20,  clim = range(HK),
         clab = "hydraulic conductivity (m/s)", ticktype = "detailed",
         theta = 40 , expand = 5, scale = FALSE, resfac = 0, clog = TRUE,
@@ -210,26 +279,26 @@ surf3D(M1$x, M1$y, vz, colvar = t(HK[,nxyz[2],]),
         col.axis = "black", col.panel = "white", col.grid = "grey",
         lwd.panel = 1, lwd.grid = 2, box = TRUE)
         
-vy <- (FAC$x)
-vx <- rep(0, length(FAC$x))
-vz <- matrix(rep(FAC$z, each = length(vx)), ncol = length(vx), 
+vy <- (PIX$x)
+vx <- rep(0, length(PIX$x))
+vz <- matrix(rep(PIX$z, each = length(vx)), ncol = length(vx), 
              nrow = length(vy), byrow = TRUE)
-M1 <- mesh(vx, vy)
+M1 <- plot3D::mesh(vx, vy)
 
-surf3D(M1$y, M1$x, vz, colvar = t(HK[1,,]), 
-        col = jet2.col(201), add = TRUE, expand = 5, scale = FALSE, 
+plot3D::surf3D(M1$y, M1$x, vz, colvar = t(HK[1,,]), 
+        col = plot3D::jet2.col(201), add = TRUE, expand = 5, scale = FALSE, 
         resfac = 0, clog = TRUE,  clim = range(HK),
         colkey = list(plot = FALSE))
 
 
-vx <- rev(FAC$x)
-vy <- FAC$y
-vz <- matrix(rep(rep(max(FAC$z), length(FAC$z)), each = length(vy)), 
+vx <- rev(PIX$x)
+vy <- PIX$y
+vz <- matrix(rep(rep(max(PIX$z), length(PIX$z)), each = length(vy)), 
               ncol = length(vy), nrow = length(vx), byrow = TRUE)
-M1 <- mesh(vx, vy)
+M1 <- plot3D::mesh(vx, vy)
 
-surf3D(M1$x, M1$y, vz, colvar = (HK[,,nxyz[3]]), 
-        col = jet2.col(201), add = TRUE, expand = 5, scale = FALSE, 
+plot3D::surf3D(M1$x, M1$y, vz, colvar = (HK[,,nxyz[3]]), 
+        col = plot3D::jet2.col(201), add = TRUE, expand = 5, scale = FALSE, 
         resfac = 0, clog = TRUE,  clim = range(HK), 
         colkey = list(plot = FALSE))
 ```

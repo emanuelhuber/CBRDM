@@ -2014,8 +2014,6 @@ setMethod("pixelise", "Deposits", function(x, mbox){
     XYZ <- array( -1L, dim = c(nx, ny,nz))
     # 1. discretise layers
     #    -> negative id
-    ###TODO
-  ##FIXME
     #zElev <- x@z
     zElev <- layerz(x)
     for(i in seq_along(zElev)){
@@ -2282,7 +2280,7 @@ setMethod("doIntersect", "Sphere", function(x, y, ...){
     OPmat <- .matOP(l)
     # point (x,y) on the line l
     if(l[1] == 0){
-      pl <- c(-l[3], 0)
+      pl <- c(0, -l[3])
     }else{
       pl <- c(-l[3]/l[1],0)
     }
@@ -3158,8 +3156,6 @@ joinLine <- function(pts){
 
 #----------- PROJECTION MATRIX -----------#
 # Orthogonal Projection matrix on a Line
-#FIXME Problem when l = c(1, 0, -50)
-#                   v = c(1, -Inf)
 .matOP <- function(l){
   if(l[2] == 0){ # if ax + by + c = 0 with b = 0
     v <- c(0, 1)
