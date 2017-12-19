@@ -2688,109 +2688,6 @@ setMethod("crossBedding", "Trough", function(x, para){
 
 ##----------------------------- SIMULATION --------------------------##
 
-#' Simulate
-#'
-#' Simulate coarse, braided river deposits
-#' @export
-simOld <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para, 
-                crossbeds = TRUE){
-  hmodel <- match.arg(tolower(hmodel), c("poisson", "strauss"))
-  #--- 1. vertical distribution layers: Poisson process
-  dz <- diff(modbox$z)
-  lambdaz <- dz/para$vpp$lambda
-  nZ <- rpois(1, lambdaz)
-  zLevel <- sort(modbox$z[1] + dz*runif(nZ))
-  #--- 2. horizontal distribution scour fill: Poisson|Strauss model
-  if(hmodel == "poisson"){
-    # number of objects is Poisson distributed
-    meanNObjects <- para$hpp$lambda * diff(modbox$x) * diff(modbox$y)
-    nTrghs <- rpois(nZ, meanNObjects)
-    # total number of object
-    n <-  sum(nTrghs)
-    # length
-    L   <- .rsim(para$L, n)
-    rLW <- .rsim(para$rLW, n)
-    rLH <- .rsim(para$rLH, n)
-    W <- L/rLW
-    # position
-    maxL <- max(L, W)
-    xyz <- matrix(c(runif(n, min = modbox$x[1] - maxL, 
-                             max = modbox$x[2] + maxL),
-                    runif(n, min = modbox$y[1] - maxL, 
-                             max = modbox$y[2] + maxL),
-                    rep(zLevel, nTrghs )), byrow = FALSE, ncol = 3)
-  }else if(hmodel == "strauss"){
-    L   <- .rsim(para$L,   n = 500)
-    rLW <- .rsim(para$rLW, n = 500)
-    rLH <- .rsim(para$rLH, n = 500)
-    W <- L/rLW
-    # position
-    maxL <- ceiling(max(L, W) * 1.5)
-    modbox2 <- list(x = c(modbox$x[1] - maxL,
-                          modbox$x[2] + maxL),
-                    y = c(modbox$y[1] - maxL,
-                          modbox$y[2] + maxL))
-#     modbox2 <- list(x = c(modbox$x[1] - 2 * para$d - maxL,
-#                           modbox$x[2] + 2 * para$d + maxL),
-#                     y = c(modbox$y[1] - 2 * para$d - maxL,
-#                           modbox$y[2] + 2 * para$d + maxL))
-    f <- 1
-    XL <- replicate(nZ, .rStrauss(f = f,
-                                  beta  = para$hpp$bet, 
-                                  gamma = para$hpp$gam, 
-                                  R     = para$hpp$d/f, 
-                                  W     = spatstat::owin(modbox2$x/f, 
-                                                         modbox2$y/f)))
-    Xmat <- do.call(rbind, XL)
-    nTrghs <- sapply(XL, nrow)
-    n <- nrow(Xmat)
-    xyz <- matrix(nrow = n, ncol = 3)
-    xyz[,1:2] <- Xmat
-    xyz[,3] <- rep(zLevel, nTrghs )
-    L   <- .rsim(para$L, n)
-    rLW <- .rsim(para$rLW, n)
-    rLH <- .rsim(para$rLH, n)
-    W   <- L/rLW
-  }
-  trgh <- new("Trough",
-              version = "0.1",
-              id      = seq_len(n),
-              pos     = xyz,
-              L       = L,
-              W       = W,
-              H       = L/rLH,
-              theta   = .rsim(para$theta, n),  # depth position
-              rH      = rep(para$rH, n)
-            )
-  if(hmodel == "strauss"){
-    #sel <- .extractTrough(trgh, modbox)
-    #trgh <- trgh[sel]
-    #layerID <- rep(seq_along(zLevel), nTrghs)
-    #return(x[sel])
-    trgh <- extract(trgh, modbox)
-    #trgh@id <- seq_along(trgh@id)
-    #zLevel <- unique(trgh@xyz[,3])
-  }
-  #--- 3. CROSS-BEDS
-  if(isTRUE(crossbeds)){
-    n <- length(trgh@id)
-    nF <- round(trgh@W / .rsim(para$nF, n)) +1
-    rpos <- .rsim(para$rpos, n)
-    phi  <- .rsim(para$phi, n)
-    xbed <- list()
-    for( i in seq_len(n)){
-      xbed[[trgh@id[i]]] <- .regCrossBedding(trgh[i], nF = nF[i],
-                                             rpos = rpos[i], phi = phi[i])
-    }
-    trgh@fill <- xbed
-  }
-  new("DepositsOld",
-      version = "0.1",
-      troughs = trgh,
-      layers  = zLevel,
-      bbox = modbox
-     )
-}
 
 #' Simulate
 #'
@@ -2816,21 +2713,15 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   modboxXL$y <- c(modbox$y[1]  - maxL, modbox$y[2]  + maxL)
   if(hmodel == "poisson"){
     # number of objects is Poisson distributed
-    #lambdaArea <- para$hpp$lambda * diff(modboxXL$x) * diff(modboxXL$y)
     lays <- Map(function(zl, id){
                   .simLayPois(zl, id, para = para, modbox = modbox, 
                               modboxXL = modboxXL)
                 }, zLevel, seq_along(zLevel))
-    # lays <- lapply(seq_along(zLevel), .simLayPois, para = para, 
-    #               modbox = modbox, modboxXL = modboxXL, 
-    #               lambdaArea = lambdaArea, zl = zLevel)
   }else if(hmodel == "strauss"){
     lays <- Map(function(zl, id){
                   .simLayStrauss(zl, id, para = para, modbox = modbox, 
                                  modboxXL = modboxXL)
                 }, zLevel, seq_along(zLevel))
-    # lays <- lapply(seq_along(zLevel), .simLayStrauss, para = para, 
-    #               modbox = modbox, modboxXL = modboxXL, zl = zLevel)
   }
   x <- new("Deposits",
            version = "0.1",
@@ -2841,23 +2732,47 @@ sim <- function(modbox, hmodel = c("poisson", "strauss", "straussMH"), para,
   if(isTRUE(crossbeds)){
     x <- crossBedding(x, para)
   }
-  #crossBedding", "Deposits", function(x, para = NULL
-  #--- 3. CROSS-BEDS
-  # if(isTRUE(crossbeds)){
-  #   n <- length(trgh@id)
-  #   nF <- round(trgh@W / .rsim(para$nF, n)) +1
-  #   rpos <- .rsim(para$rpos, n)
-  #   phi  <- .rsim(para$phi, n)
-  #   xbed <- list()
-  #   for( i in seq_len(n)){
-  #     xbed[[trgh@id[i]]] <- .regCrossBedding(trgh[i], nF = nF[i],
-  #                                            rpos = rpos[i], phi = phi[i])
-  #   }
-  #   trgh@fill <- xbed
-  # }
-
   return(x)
 }
+
+#' function to simulate the object elevation
+#' @export
+simLayElevation <- function(modbox, para){
+  dz <- diff(modbox$z)
+  lambdaz <- dz/para$vpp$lambda
+  nZ <- rpois(1, lambdaz)
+  zLevel <- sort(modbox$z[1] + dz*runif(nZ))
+  return(zLevel)
+}
+
+#' function to simulate a single layer (Strauss process)
+#' @export
+simLay <- function(modbox, para, crossbeds = TRUE){
+  #--- 2. horizontal distribution scour fill: Poisson|Strauss model
+  L   <- .rsim(para$L,   n = 500)
+  rLW <- .rsim(para$rLW, n = 500)
+  rLH <- .rsim(para$rLH, n = 500)
+  W <- L/rLW
+  # position
+  maxL <- max(L, W) * 1.5
+  modboxXL <- modbox
+  modboxXL$x <- c(modbox$x[1]  - maxL, modbox$x[2]  + maxL)
+  modboxXL$y <- c(modbox$y[1]  - maxL, modbox$y[2]  + maxL)
+  lays <- list(.simLayStrauss(zl = 0, id = 1L, para = para, modbox = modbox, 
+                     modboxXL = modboxXL))
+  x <- new("Deposits",
+           version = "0.1",
+           id = 1L,
+           layers  = lays,
+           bbox = modbox
+  )
+  if(isTRUE(crossbeds)){
+    x <- crossBedding(x, para)
+  }
+  return(x)
+}
+
+
 
 #' @export
 .simLayStrauss <- function(zl, id = NULL, para, modbox, modboxXL){
