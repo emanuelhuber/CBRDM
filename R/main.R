@@ -84,47 +84,6 @@ setClass(
   )
 )
 
-#' An S4 class to represent coarse braided deposits.
-#'
-#' An instance of the class \code{DepositsOld} contains an instance of the class
-#' \code{Trough} as well as the elevations of horizontal layers.
-#' @slot version A character vector indicating the version of CBRDM
-#' @slot troughs An instance of the class \code{Trough}
-#' @slot layers A numeric vector corresponding to the layer elevations. This
-#'              independent of the throughs (e.g., if you take a section, it 
-#'              can happen that on some layers there are no objects).
-#' @slot bbox A length-three list defining the model boundary
-#' @seealso  \code{\link{Trough-class}}
-setClass(
-  Class="DepositsOld",  
-  slots=c(
-    id = "integer",
-    version = "character",   # version of the class
-    troughs = "Trough",
-    layers = "numeric",
-    bbox = "list"
-  )
-)
-
-#' An S4 class to represent coarse braided deposits NEW.
-#'
-#' An instance of the class \code{Deposits} contains an instance of the class
-#' \code{Trough} as well as the elevations of horizontal layers.
-#' @slot version A character vector indicating the version of CBRDM
-#' @slot layers A list of instances of the class \code{Trough}
-#' @slot z A numeric vector corresponding to the layer elevations.
-#' @slot bbox A length-three list defining the model boundary
-#' @seealso  \code{\link{Trough-class}}
-setClass(
-  Class="Deposits2",  
-  slots=c(
-    version = "character",   # version of the class
-    id = "integer",
-    z = "numeric",
-    layers = "list",
-    bbox = "list"
-  )
-)
 
 #' An S4 class to represent coarse braided deposits NEW.
 #'
@@ -275,36 +234,6 @@ setClass(
   )
 )
 
-#' An S4 class to represent Deposits2D
-#'
-#' @slot version A length-n character vector indicating the version of RGPR
-#' @slot id A length-n numeric vector
-#' @slot pos A nx3 numeric matrix corresponding to object center position.
-setClass(
-  Class="Deposits2DOld",  
-  slots=c(
-    version = "character",   # version of the class
-    troughs = "Trough2D",
-    layers = "numeric",
-    bbox = "list"
-  )
-)
-
-    #' An S4 class to represent Deposits2DNEW
-#'
-#' @slot version A length-n character vector indicating the version of RGPR
-#' @slot id A length-n numeric vector
-#' @slot pos A nx3 numeric matrix corresponding to object center position.
-setClass(
-  Class="Deposits2D2",  
-  slots=c(
-    version = "character",   # version of the class
-    id = "integer",
-    z = "numeric",
-    layers = "list",
-    bbox = "list"
-  )
-)
 
 #' An S4 class to represent Deposits2DNEW
 #'
@@ -754,25 +683,6 @@ setAs(from = "Trough2D", to = "TrEllipse", def = function(from){
 )
 
 
-#' Conversion to matrix
-#'
-#' @rdname as.matrix
-#' @export
-setMethod("as.matrix", signature(x = "Deposits2"),function(x){ 
-          as(x, "matrix") })
-setAs(from = "Deposits", to = "matrix", def = function(from){
-    sel <- which(lapply(from@layers, function(x) length(x@id)) > 0)
-    test <- lapply(from@layers[sel], as.matrix)
-    layID <- rep(as.integer(names(test)), lapply(test, nrow))
-    M <- matrix(nrow = length(layID), ncol = 10)
-    M[, 1:9] <- do.call(rbind, test)
-    M[, 10] <- layID
-    colnames(M) <- c("id", "x", "y", "z", "L", "W", "H", "theta", "rH", 
-                     "layid")
-    #    M <- do.call(rbind, test)
-    return(M)
-  }
-)
 
 #' Conversion to matrix
 #'
@@ -797,24 +707,7 @@ setAs(from = "Deposits", to = "matrix", def = function(from){
 )
 
                  
-#' Conversion to matrix
-#'
-#' @rdname as.matrix
-#' @export
-setMethod("as.matrix", signature(x = "Deposits2D2"),function(x){ 
-          as(x, "matrix") })
-setAs(from = "Deposits2D", to = "matrix", def = function(from){
-    sel <- which(lapply(from@layers, function(x) length(x@id)) > 0)
-    test <- lapply(from@layers[sel], as.matrix)
-    layID <- rep(as.integer(names(test)), lapply(test, nrow))
-    M <- matrix(nrow = length(layID), ncol = 7)
-    M[,1:6] <- do.call(rbind, test)
-    M[,7] <- layID
-    colnames(M) <- c("id", "x", "z", "L", "H", "rH", "layid")
-    #    M <- do.call(rbind, test)
-    return(M)
-  }
-)
+
                  
                  
 #' Conversion to matrix
@@ -1175,7 +1068,9 @@ setMethod("layerz", "Deposits2D", function(x){
   }
 )  
   
-  
+numberTroughsPerLayer <- function(x){
+  sapply(mod@layers, function(x) length(x$obj@id))  
+}
 
 ##--------------------------- BBOX ----------------------##
 # bounding box of top view object
@@ -1205,20 +1100,7 @@ setMethod("bbox", "Trough", function(x){
   }
 )
 
-setMethod("bbox", "DepositsOld", function(x){
-    LWH <- unname(sapply(x@bbox, function(x) diff(x)))
-    pos <- sapply(x@bbox, function(x) diff(x)/2 + x[1])
-    new("Cuboid",
-      version = "0.1",   # version of the class
-      id = unname(x@id),
-      pos = matrix(unname(pos), nrow = 1),     # position
-      L = LWH[1],
-      W = LWH[2],
-      H = LWH[3],
-      theta = 0
-    )
-  }
-)
+
 
 setMethod("bbox", "Deposits", function(x){
     LWH <- unname(sapply(x@bbox, function(x) diff(x)))
@@ -1428,11 +1310,6 @@ setMethod("bbox", "Rectangle", function(x){
 
 
 ##---------------------------- EXTRACT ----------------------##
-setMethod("extract", "DepositsOld", function(x, modbox){
-    x@troughs <- extract(x@troughs, modbox)
-    return(x)
-  }
-)
 
 setMethod("extract", "Deposits", function(x, modbox){
     lays <- lapply(x@layers, extract, modbox)
@@ -1725,47 +1602,6 @@ setMethod("plotObj", "Trough2D", function(x, add = FALSE, xlab = "x",
 }
 
 ##--------------------------- TOPVIEW ----------------------##
-# for 3D object
-# ... arguments to be passed to "base::polygon" function
-setMethod("plotTopView", "DepositsOld", function(x, add = FALSE, xlab = "x",
-            ylab = "y", main = "", asp = NA, ...){
-    dots <- list(...)
-    if(!is.null(dots$xlim)){
-      xlim <- dots$xlim
-    }else{
-      xlim <- x@bbox$x
-    }
-    if(!is.null(dots$ylim)){
-      ylim <- dots$ylim
-    }else{
-      ylim <- x@bbox$y
-    }
-    plotTopView(x@troughs, add = add, xlab = xlab, ylab = ylab, main = main, 
-                asp = asp, xlim = xlim, ylim = ylim, ...)
-  }
-)
-
-setMethod("plotTopView", "Deposits2", function(x, add = FALSE, xlab = "x",
-            ylab = "y", main = "", asp = NA, ...){
-    dots <- list(...)
-    if(!is.null(dots$xlim)){
-      xlim <- dots$xlim
-    }else{
-      xlim <- x@bbox$x
-    }
-    if(!is.null(dots$ylim)){
-      ylim <- dots$ylim
-    }else{
-      ylim <- x@bbox$y
-    }
-    if(add == FALSE){
-      plot(0, xlim = xlim, ylim = ylim, type = "n", xlab = xlab, 
-           ylab = ylab, main = main, asp = asp)
-    }
-    invisible(lapply(x@layers, plotTopView, add = TRUE, xlab = "", 
-                     ylab = "", main = "", ...))
-  }
-)
     
 setMethod("plotTopView", "Deposits", function(x, add = FALSE, xlab = "x",
             ylab = "y", main = "", asp = NA, ...){
@@ -1945,61 +1781,6 @@ setMethod("pixelise", "Trough", function(x, mbox){
 
 
 
-setMethod("pixelise", "DepositsOld", function(x, mbox){
-    # 0. mbox
-    nx <- (mbox$x[2] - mbox$x[1])/mbox$dx
-    ny <- (mbox$y[2] - mbox$y[1])/mbox$dy
-    nz <- (mbox$z[2] - mbox$z[1])/mbox$dz
-    vx <- seq(mbox$x[1] + mbox$dx/2, to = mbox$x[2] - mbox$dx/2, 
-              length.out = nx)
-    vy <- seq(mbox$y[1] + mbox$dy/2, to = mbox$y[2] - mbox$dy/2, 
-              length.out = ny)
-    vz <- seq(mbox$z[1] + mbox$dz/2, to = mbox$z[2] - mbox$dz/2, 
-              length.out = nz)
-    XYZ <- array( -1L, dim = c(nx, ny,nz))
-    # 1. discretise layers
-    #    -> negative id
-    lay <- x@layers
-    for(i in seq_along(lay)){
-      XYZ[, , lay[i] <= vz] <- as.integer(-i - 1)
-    }
-    # Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz)
-    # 2. discretise trough
-    #    -> postive id -> odd  = bimodal
-    #                  -> even = open-framework
-    E <- as.matrix(x@troughs)
-    cstO2E <- x@troughs@rH/(2*sqrt(2*x@troughs@rH -1))
-    n <- nrow(E)
-    vol <- numeric(n)
-    b <- bbox(x@troughs)
-    it <- 0
-    for(i in seq_len(n)){
-      it <- it + 1
-      if((it %% 2) == 0) it <- it + 1
-      A <- .pixeliseTrough(e = E[i, ], it, L = b@L[i], W = b@W[i],
-                                vx = vx, vy = vy, vz = vz,  
-                                mbox = mbox, XYZ = XYZ, cstO2Ei = cstO2E[i])
-      vol[i] <- A$vol
-      XYZ <- A$XYZ
-      idfill <- x@troughs@id[i]
-      if(!is.null(x@troughs@fill[[ idfill ]]) && 
-          length(x@troughs@fill[[ idfill ]]) > 0){
-        Ei <- as.matrix(x@troughs@fill[[ idfill ]])
-        for(k in 1:nrow(Ei)){
-          it <- it + 1
-          A <- .pixeliseTrough(e = Ei[k, ], it, L = b@L[i], W = b@W[i],
-                                vx = vx, vy = vy, vz = vz, 
-                                mbox = mbox, XYZ = XYZ, cstO2Ei = cstO2E[i])
-          vol[i] <- A$vol
-          XYZ <- A$XYZ
-        }
-      }
-    }
-    Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz, "vol" = vol)
-    return(list("XYZ" = XYZ, x = vx, y = vy, z = vz, "vol" = vol))
-  }
-)
-
 setMethod("pixelise", "Deposits", function(x, mbox){
     # 0. mbox
     nx <- (mbox$x[2] - mbox$x[1])/mbox$dx
@@ -2060,103 +1841,7 @@ setMethod("pixelise", "Deposits", function(x, mbox){
   }
 )
 
-# i < 0 = layer
-# i odd (1, 3, 5) = BM
-# i even (2, 4, 6)= OW
-setMethod("pixelise", "Deposits2DOld", function(x, mbox){
-    nx <- (mbox$x[2] - mbox$x[1])/mbox$dx
-    nz <- (mbox$z[2] - mbox$z[1])/mbox$dz
-    vx <- seq(mbox$x[1] + mbox$dx/2, to = mbox$x[2] - mbox$dx/2, 
-              length.out = nx)
-    vz <- seq(mbox$z[1] + mbox$dz/2, to = mbox$z[2] - mbox$dz/2, 
-              length.out = nz)
-    XZ <- matrix(-1, nrow = nx, ncol = nz)
-    # 1. discretise layers
-    #    -> negative id
-    lay <- x@layers
-    for(i in seq_along(lay)){
-      XZ[, lay[i] <= vz] <- -(i + 1)
-    }
-    # Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz)
-    # 2. discretise trough
-    #    -> postive id -> odd  = bimodal
-    #                  -> even = open-framework
-    b <- bbox(x@troughs)
-    E <- as.matrix(as(x@troughs, "TrEllipse"))
-    it <- 0
-    for(i in 1:nrow(E)){
-      it <- it + 1
-      # if even
-      if((it %% 2) == 0) it <- it + 1
-      e <- E[i,]  # ellispoid e
-      L <- b@L[i]
-      H <- b@H[i]
-      XZ <- .pixeliseTrEllipse(e = E[i,], i = it, L = b@L[i], H = b@H[i], 
-                         vx, vz, XZ)
-      idfill <- x@troughs@id[i]
-      if(!is.null(x@troughs@fill[[ idfill ]]) && 
-         length(x@troughs@fill[[ idfill ]]) > 0){
-        Ei <- as.matrix(as(x@troughs@fill[[ idfill ]], "TrEllipse"))
-        for(k in 1:nrow(Ei)){
-          it <- it + 1
-          XZ <- .pixeliseTrEllipse(e = Ei[k, ], i = it, L = b@L[i], H = b@H[i],
-                                vx = vx, vz = vz, XZ)
-        }
-      }
-    }
-    return(list(z = XZ, x = vx, y = vz))
-  }
-)# i < 0 = layer
-# i odd (1, 3, 5) = BM
-# i even (2, 4, 6)= OW
-setMethod("pixelise", "Deposits2D", function(x, mbox){
-    nx <- (mbox$x[2] - mbox$x[1])/mbox$dx
-    nz <- (mbox$z[2] - mbox$z[1])/mbox$dz
-    vx <- seq(mbox$x[1] + mbox$dx/2, to = mbox$x[2] - mbox$dx/2, 
-              length.out = nx)
-    vz <- seq(mbox$z[1] + mbox$dz/2, to = mbox$z[2] - mbox$dz/2, 
-              length.out = nz)
-    XZ <- matrix(-1, nrow = nx, ncol = nz)
-    # 1. discretise layers
-    #    -> negative id
-    #zElev <- sapply(x@layers, function(x) x[["z"]])
-    zElev <- layerz(x)
-    for(i in seq_along(zElev)){
-      XZ[, , zElev[i] <= vz] <- as.integer(-i - 1)
-    }
-    # Pix <- list("XYZ" = XYZ, x = vx, y = vy, z = vz)
-    # 2. discretise trough
-    #    -> postive id -> odd  = bimodal
-    #                  -> even = open-framework
-    for(k in seq_along(x@layers)){
-      y <- x@layers[[k]][["obj"]]
-      E <- as.matrix(as(y, "TrEllipse"))
-      b <- bbox(y)
-      it <- 0
-      for(i in 1:nrow(E)){
-        it <- it + 1
-        # if even
-        if((it %% 2) == 0) it <- it + 1
-        e <- E[i,]  # ellispoid e
-        L <- b@L[i]
-        H <- b@H[i]
-        XZ <- .pixeliseTrEllipse(e = E[i,], i = it, L = b@L[i], H = b@H[i],
-                                 vx, vz, XZ)
-        idfill <- y@id[i]
-        if(!is.null(y@fill[[ idfill ]]) && 
-           length(y@fill[[ idfill ]]) > 0){
-          Ei <- as.matrix(as(y@fill[[ idfill ]], "TrEllipse"))
-          for(k in 1:nrow(Ei)){
-            it <- it + 1
-            XZ <- .pixeliseTrEllipse(e = Ei[k, ], i = it, L = b@L[i], 
-                                     H = b@H[i], vx = vx, vz = vz, XZ)
-          }
-        }
-      }
-    }
-    return(list(z = XZ, x = vx, y = vz))
-  }
-)
+
 
 
 .pixeliseTrEllipse <- function(e, i, L, H, vx, vz, XZ){
@@ -2360,51 +2045,17 @@ setMethod("section", "Trough", function(x, l, pref = NULL, lim = NULL){
   }
 )
 
-setMethod("section", "DepositsOld", function(x, l, pref = NULL, lim = NULL){
-    pp <- section(bbox(x), l)
-    xsec <- section(x@troughs, l, pref = pp[[1]], lim = lim)
-    if(!is.null(xsec)){
-      new("Deposits2DOld",
-          version = "0.1",
-          troughs = xsec,
-          layers = x@layers
-          )
-    }else{
-      return(NULL)
-    }
-  }
-)
 
 
 
-setMethod("section", "Deposits2", function(x, l, pref = NULL, lim = NULL){
-    pp <- section(bbox(x), l)
-    xsec <- lapply(x@layers, section, l, pref = pp[[1]], lim = lim)
-    xsec <- .compactList(xsec)
-    dd <- .myDist(do.call(rbind, pp), last = TRUE)
-    mbbox <- list(x = c(0, dd),
-                  z = x@bbox$z)
-    if(!is.null(xsec)){
-      new("Deposits2D",
-          version = "0.1",
-          id = x@id,
-          # z = x@z[!is.null(xsec)],
-          z = x@z,
-          layers = xsec, #.compactList(x@layers)
-          bbox = mbbox
-          )
-    }else{
-      return(NULL)
-    }
-  }
-)
 
 setMethod("section", "Deposits", function(x, l, pref = NULL, lim = NULL){
     pp <- section(bbox(x), l)
     xsec <- lapply(x@layers, function(x) section(x$obj, l, pref = pp[[1]],
                                                  lim = lim))
-    lays <- x@layers[!sapply(xsec, is.null)]
-    xsec <- Filter(Negate(is.null), xsec)
+    lays <- x@layers
+    #lays <- x@layers[!sapply(xsec, is.null)]
+    #xsec <- Filter(Negate(is.null), xsec)
     # todo > use function Map()
     laysNew <- Map(function(x, y) {
                       x$obj <- y
@@ -2586,11 +2237,6 @@ setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
 }
 
 ##-------------------------------- FILLING --------------------------##
-setMethod("crossBedding", "DepositsOld", function(x, para = NULL){
-    x@troughs <- crossBedding(x@troughs, para)
-    return(x)
-  }
-)
 
 setMethod("crossBedding", "Deposits", function(x, para = NULL){
     x@layers <- lapply(x@layers, .crossBeddingDep, para)
@@ -2773,18 +2419,30 @@ simLay <- function(modbox, para, crossbeds = TRUE){
 }
 
 
+setStrausPara <- function(FUN, zl){
+  if(class(FUN) == "function"){
+    return(FUN(zl))
+  }else{
+    return(FUN)
+  }
+}
 
 #' @export
 .simLayStrauss <- function(zl, id = NULL, para, modbox, modboxXL){
-#   xy <- .spatstatRStrauss(f = f, beta  = para$hpp$bet, gamma = para$hpp$gam, 
-#                      R = para$hpp$d/f, 
-#                      W = spatstat::owin(modboxXL$x/f, modboxXL$y/f))
+  # xy <- .spatstatRStrauss(f = f, beta  = para$hpp$bet, gamma = para$hpp$gam,
+  #                         R = para$hpp$d/f, 
+#                          W = spatstat::owin(modboxXL$x/f, modboxXL$y/f))
   if(is.null(id)){ 
     id <- "1"
   }
-  xy <- straussMH(bet = para$hpp$bet, gam = para$hpp$gam, d = para$hpp$d, 
-                 n0 = para$hpp$n0, nit = para$hpp$nit, W = modboxXL, 
-                 fd = para$hpp$fd, count = FALSE)
+  xy <- straussMH(bet = setStrausPara(para$hpp$bet, zl), 
+                  gam = setStrausPara(para$hpp$gam, zl), 
+                  d   = setStrausPara(para$hpp$d, zl), 
+                  n0  = setStrausPara(para$hpp$n0, zl), 
+                  nit = setStrausPara(para$hpp$nit, zl), 
+                  W   = modboxXL, 
+                  fd  = setStrausPara(para$hpp$fd, zl), 
+                  count = FALSE)
   n <- nrow(xy)
   if(n < 1){
     trgh <- new("Trough",
@@ -2945,7 +2603,12 @@ straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
   while(i < nit || n < 1){
     i <- i + 1L
     # BIRTH
-    if(n <= 1L || sample(c(TRUE, FALSE), 1 )){
+    if(n == 0L){
+      x_cand <- c(runif(1, 0, xmax), runif(1, 0, ymax))
+      n <- n + 1L
+      X <- matrix(x_cand, ncol = 2, nrow = 1)
+    # BIRTH
+    }else if(sample(c(TRUE, FALSE), 1 )){
       x_cand <- c(runif(1, 0, xmax), runif(1, 0, ymax))
       phi <- sum(distxtoX2(X, x_cand) <= d2)
       if(runif(1) <= min(1, (bet1 * gam^phi) / (n + 1))){
@@ -2957,12 +2620,17 @@ straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
     }else{
       #x_cand_pos <- sample(seq_along(X[,1, drop = FALSE]),1)
       if(nrow(X) != n) stop("ewlkrj")
-      x_cand_pos <- sample.int(n, 1)
-      phi <- sum(distxtoX2(X[-x_cand_pos, , drop = FALSE], 
-                           X[ x_cand_pos, ])  <= d2)
-      if(runif(1) <= min(1, (n / (bet1 * gam^phi)))){
-          X <- X[-x_cand_pos,, drop = FALSE]
-          n <- n - 1L
+      if(n == 1L){
+        X <- X[-x_cand_pos,, drop = FALSE]
+        n <- n - 1L
+      }else{
+        x_cand_pos <- sample.int(n, 1)
+        phi <- sum(distxtoX2(X[-x_cand_pos, , drop = FALSE], 
+                            X[ x_cand_pos, ])  <= d2)
+        if(runif(1) <= min(1, (n / (bet1 * gam^phi)))){
+            X <- X[-x_cand_pos,, drop = FALSE]
+            n <- n - 1L
+        }
       }
     }
     nv[i + 1L] <- n
@@ -3018,7 +2686,12 @@ straussMHGibbs <- function(alpha = 10, bet = 0.5, d = 0.1, n0 = NULL,
     i <- i + 1L
     nv[i] <- n
     # BIRTH
-    if(n <= 1L || sample(c(TRUE, FALSE), 1 )){
+    if(n == 0L){
+      x_cand <- c(runif(1, 0, xmax), runif(1, 0, ymax))
+      n <- n + 1L
+      X <- matrix(x_cand, ncol = 2, nrow = 1)
+    # BIRTH
+    }else if(sample(c(TRUE, FALSE), 1 )){
       x_cand <- c(runif(1, 0, xmax), runif(1, 0, ymax))
       phi <- sum(distxtoX2(X, x_cand) <= d2)
       if(runif(1) <= min(1, exp(-alpha - bet1 * phi) / (n + 1))){
@@ -3314,49 +2987,6 @@ updateStraussN <- function(x, para, modbox ){
 
 
 ##--------------------------- update layer ---------------------------------##
-setMethod("updateLay", "Deposits2", function(x, type = c("pos", "n"), para){
-  # update type = n (birth/death)
-  if(length(x@z) != length(x@layers)){
-    stop("length(x@z) != length(x@layers)")
-  }
-  type <- match.arg(type, c("pos", "n"))
-  n <- length(x@z)
-  bd <- NULL
-  if(type == "pos"){
-    i <- sample.int(n, 1L)
-    #zi <- runif(1, min = x@bbox$z[1], max = x@bbox$z[2])
-    zi <- unifUpdate(x@z[i], dx = para$delta$z, 
-                     xmin = x@bbox$z[1], xmax = x@bbox$z[2])
-    id <- names(x@z[i])
-    layi <- x@layers[[id]]
-    layi@pos[,3] <- zi
-    x <- .rmLay(x, id = id)
-    x <- .insertLay(x, zi, id, layi)
-    death <- FALSE
-  }else{
-    dz <- diff(x@bbox$z)
-    bd <- poisBD(n, dz/para$vpp$lambda)
-    id <- NULL
-    if(bd == -1){   # death
-      # remove layer
-      i <- sample.int(n, 1L)
-      id <- names(x@z[i])
-      x <- .rmLay(x, id = id)
-      if(length(x@z) != n - 1L) stop("length(x@z) != n - 1L")
-    }else if(bd == 1){    # birth
-      zi <- runif(1, min = x@bbox$z[1], max = x@bbox$z[2])
-      id <- max(as.integer(names(x@z))) + 1L
-      laynew <- .simLay(x, zi, para)
-      x <- .insertLay(x, zi, id, laynew)
-      if(length(x@z) != n + 1L) stop("lkj")
-    }
-  }
-  if(any(as.integer(table(names(x@z))) > 1)){
-    stop("any(as.integer(table(names(x@z))) > 1)")
-  }
-  #return(list("x" = x, "id" = id, del = bd))
-  return(x)
-})   
       
 setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   # update type = n (birth/death)
@@ -3383,10 +3013,6 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
       x@layers[[sample.int(n, 1L)]] <- NULL
     }else if(bd == 1){    # birth
       zi <- runif(1, min = x@bbox$z[1], max = x@bbox$z[2])
-      #id <- max(sapply(x@layers, function(x) x[["id"]])) + 1L
-      #laynew <- list("id" = id,
-      #               "z"  = zi,
-      #               "obj" = .simLay(x, zi, para))
       laynew <- .simLay(x, zi, para)
       x <- .insertLay(x, zi, id, laynew)
       if(length(x@layers) != n + 1L) stop("lkj")
@@ -3405,51 +3031,14 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   return(x)
 }     
   
-.insertLayOld <- function(x, zi, id, laynew){
-#   if(length(laynew@id) == 0){
-#   
-#   }else{
-    n <- length(x@z)
-    zbelow <- which(x@z < zi)
-    znew <- numeric(n + 1L)
-    lay <- list()
-    if(length(zbelow) == 0){
-      znew[2:(n + 1L)] <- x@z
-      znew[1] <- zi
-      names(znew)[2:(n+1L)] <- names(x@z)
-      names(znew)[1] <- paste0(id)
-      lay[[paste0(id)]] <- laynew
-      lay[names(x@z)] <- x@layers[names(x@z)]
-    }else if(max(zbelow) == n){
-      znew[1:n] <- x@z
-      znew[n + 1L] <- zi
-      names(znew)[1:n] <- names(x@z)
-      names(znew)[n + 1L] <- paste0(id)
-      lay[names(x@z)] <- x@layers[names(x@z)]
-      lay[[paste0(id)]] <- laynew
-    }else{
-      ztop <- (2L + max(zbelow)):(n + 1L)
-      v <- c(zbelow, ztop)
-      iv <- max(zbelow) + 1L
-      znew[v] <- x@z
-      names(znew)[v] <- names(x@z)
-      znew[iv] <- zi
-      names(znew)[iv] <- paste0(id)
-      lay[names(znew)[zbelow]] <- x@layers[names(znew)[zbelow]]
-      lay[[paste0(id)]] <- laynew
-      lay[names(znew)[ztop]] <- x@layers[(1L + max(zbelow)):n]
-    }
-    x@z <- znew
-    x@layers <- lay
-    return(x)
-#   }
-}    
+
 #'@export
 .rmLay <- function(x, id){
   x@z <- x@z[-which(id == names(x@z))]
   x@layers[id] <- NULL
   return(x)
 }
+
 #'@export
 .simLay <- function(x, zi, para){
   L   <- .rsim(para$L,   n = 500)

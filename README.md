@@ -3,6 +3,12 @@ Coarse Braided River Deposit Model
 
 There is a critical need in hydrogeological modeling for geologically more realistic representation of the subsurface. Indeed, widely-used representations of the subsurface heterogeneity based on smooth basis functions such as cokriging or the pilot-point approach fail at reproducing the connectivity of high permeable geological structures that control subsurface solute transport. To realistically model the connectivity of high permeable structures of coarse, braided river deposits, multiple-point statistics and object-based models are promising alternatives. We therefore propose a new object-based model that, according to a sedimentological model, mimics the dominant processes of floodplain dynamics. Contrarily to existing models, this object-based model possesses the following properties: (1) it is consistent with field observations (outcrops, ground-penetrating radar data, etc.), (2) it allows different sedimentological dynamics to be modeled that result in different subsurface heterogeneity patterns, (3) it is light in memory and computationally fast, and (4) it can be conditioned to geophysical data. In this model, the main sedimentological elements (scour fills with open-framework–bimodal gravel cross-beds, gravel sheet deposits, open-framework and sand lenses) and their internal structures are described by geometrical objects. Several spatial distributions are proposed that allow to simulate the horizontal position of the objects on the floodplain as well as the net rate of sediment deposition. The model is grid-independent and any vertical section can be computed algebraically. Furthermore, model realizations can serve as training images for multiple-point statistics.
 
+See also: [PDF presentation: A 3D object-based model to simulate highly-heterogeneous,
+coarse, braided river deposits](https://emanuelhuber.github.io/publications/2016_huber-et-al_AGU_3D-object-based-model-braided-deposits.pdf)
+
+
+![CBRDM: vertical sections](06_highAg_section_light.png)
+
 ## How to cite
 
 Huber E., Huggenberger P., Caers J. (2016) Presentation: A 3D object-based model to simulate highly-heterogeneous, coarse, braided river deposits. AGU 2016 Fall Meeting, San Francisco, California, USA, 12–16 December 2016. DOI: [10.13140/RG.2.2.29333.32489](http://dx.doi.org/10.13140/RG.2.2.29333.32489)
@@ -25,9 +31,11 @@ Thank you!
 
 ## Related publications
 
-- E. Huber, P. Huggenberger (2016) Subsurface flow mixing in coarse, braided river deposits. Hydrology and Earth System Sciences, 20:2035–2046. DOI: [10.5194/hess-20-2035-2016](http://dx.doi.org/10.5194/hess-20-2035-2016)
+- E. Huber, P. Huggenberger (2016) Subsurface flow mixing in coarse, braided river deposits. Hydrology and Earth System Sciences, 20:2035–2046. DOI: [10.5194/hess-20-2035-2016](http://dx.doi.org/10.5194/hess-20-2035-2016)<br/>
+[PDF file](https://emanuelhuber.github.io/publications/2016_huber-and-huggenberger_subsurface-flow-mixing.pdf)
 
-- Huber E. and Huggenberger P. (2015) Morphological perspective on the sedimentary characteristics of a coarse, braided reach: Tagliamento River (NE Italy) . Geomorphology, 248: 111–124. DOI: [10.1016/j.geomorph.2015.07.015](http://dx.doi.org/10.1016/j.geomorph.2015.07.015)
+- Huber E. and Huggenberger P. (2015) Morphological perspective on the sedimentary characteristics of a coarse, braided reach: Tagliamento River (NE Italy) . Geomorphology, 248: 111–124. DOI: [10.1016/j.geomorph.2015.07.015](http://dx.doi.org/10.1016/j.geomorph.2015.07.015)<br/>
+[PDF file](https://emanuelhuber.github.io/publications/2015_huber-and-huggenberger_morphological-perspective-sedimentology.pdf)
 
 - Huggenberger, P., Regli, C., 2006. A sedimentological model to characterize braided river deposits for hydrogeological applications. In: Sambrook Smith, G.H., Best, J.L., Bristow, C.S., Petts, G.E. (Eds.), Braided Rivers: Process, Deposits, Ecology and Management. Blackwell Publishing Ltd, Oxford, UK, pp. 51–74. DOI: [10.1002/9781444304374.ch3](http://dx.doi.org/10.1002/9781444304374.ch3).
 
