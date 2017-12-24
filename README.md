@@ -266,7 +266,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
 
 #### Plot a cube of hydraulic conductivity:
 
-```
+```r
 rnxyz <- dim(PIX$XYZ)
 vy <- PIX$y
 vx <- rep(max(PIX$x), length(PIX$x))
