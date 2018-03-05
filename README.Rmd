@@ -1,10 +1,17 @@
-# CBRDM
-Emanuel Huber  
-`r format(Sys.time(), '%B %d, %Y')`  
+---
+title: CBRDM
+author: "Emanuel Huber"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    keep_md: true
+---
 
 
 
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 # CBRDM
 Coarse Braided River Deposit Model
@@ -24,8 +31,7 @@ Huber E., Huggenberger P., Caers J. (2016) Presentation: A 3D object-based model
 
 ## How to install/load
 
-
-```r
+```{r install, message=FALSE, results='hold'}
 if(!require("devtools")) install.packages("devtools")
 devtools::install_github("emanuelhuber/CBRDM")
 library(CBRDM)
@@ -60,8 +66,7 @@ This model simulates trough fills with cross-bedding and horizontal layers. The 
 We create an instance of the class `Trough` using the constructor function `trough()`. The objects properties and positions are drawn from random distribution:
 
 
-
-```r
+```{r TF}
 # Trough Fills
 TF <- trough(pos   = matrix(runif(9, 10,90), nrow=3, ncol=3),
              size  = cbind(rnorm(3, 40, 5), rnorm(3, 20,2), 
@@ -72,26 +77,19 @@ TF <- trough(pos   = matrix(runif(9, 10,90), nrow=3, ncol=3),
 
 To visualise this trough fills, use the function `plotTopView()`:
 
-
-```r
+```{r TF_plot1}
 plotTopView(TF, border = "blue", col = "grey", asp = 1)
 ```
 
-![](README_files/figure-html/TF_plot1-1.png)<!-- -->
-
 To plot one specific trough fill:
-
-```r
+```{r TF_plot2}
 plotTopView(TF, border = "blue", col = "grey", asp = 1)
 plotTopView(TF[2], border = "blue", col = "green", asp = 1, add = TRUE)
 ```
 
-![](README_files/figure-html/TF_plot2-1.png)<!-- -->
-
 Add cross-bedding:
 
-
-```r
+```{r TF_xb}
 para <- list(nF   = 10,      # nF cross-beds
              rpos = 0.75,    # 0 <= rpos <=1
              phi  = 2.2)     # orientation angle
@@ -99,19 +97,14 @@ TF <- crossBedding(TF, para)
 plotTopView(TF, border = "blue", col = "grey", asp = 1)
 ```
 
-![](README_files/figure-html/TF_xb-1.png)<!-- -->
-
 Different cross-bedding for each trough fills:
-
-```r
+```{r TF_xb_plot}
 para <- list(nF   = c(10, 3, 30),      # nF cross-beds
              rpos = c(0, 0.75, 1),     # 0 <= rpos <=1
              phi  = c(0, -1, 2.2))     # orientation angle
 TF <- crossBedding(TF, para)
 plotTopView(TF, border = "blue", col = "grey", asp = 1)
 ```
-
-![](README_files/figure-html/TF_xb_plot-1.png)<!-- -->
 
 ### Braided river deposit simulation
 The object properties (`L` = length, `rLW`= length-width ratio, `rLH` = length-height ratio, `theta` = orientation angle, `rH` = truncation ratio ) are defined by probability distributions (here the uniform probability distribution). 
@@ -123,8 +116,7 @@ The horizontal distribution of trough fills on each layers is defined by a Strau
 The cross-bedding parameters are also defined according probability distribution. Note that here `nF` defines the cross-bed thickness (I will change that next time).
 
 
-
-```r
+```{r para}
 para <- list("L"      = list(type = "runif", min = 40, max = 70),
              "rLW"    = list(type = "runif", min = 3, max = 4),
              "rLH"    = list(type = "runif", min = 45, max = 66),
@@ -146,8 +138,7 @@ para <- list("L"      = list(type = "runif", min = 40, max = 70),
 ```
 
 Now we define the simulation box:
-
-```r
+```{r modbox}
 modbox <- list("x" = c(0,100),
                "y" = c(0,200),
                "z" = c(0,10)
@@ -155,14 +146,12 @@ modbox <- list("x" = c(0,100),
 ```
 
 And run the simulation:
-
-```r
+```{r sim}
 mod <- sim(modbox, hmodel = "strauss", para)  # takes some times...
 ```
 
 Top view (the layers are "transparent") and show the vertical section lines:
-
-```r
+```{r sim_topview}
 plotTopView(mod, border = "red", col = "grey", asp = 1)
 lv <- c(1, 0,  -50)
 lh <- c(0, 1,  -50)
@@ -172,53 +161,41 @@ RConics::addLine(lh, col = "black", lwd = 4)
 RConics::addLine(l,  col = "green", lwd = 4)
 ```
 
-![](README_files/figure-html/sim_topview-1.png)<!-- -->
-
 #### Vertical sections
 
 * Vertical section along the line `lv`:
 
-    
-    ```r
+    ```{r vsec}
     smod <- section(mod, lv)
     plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
                 xlim = c(0,100), ylab = "z (m)", xlab = "x (m)")
     title("Vertical section along 'lv' (blue line)")
     ```
-    
-    ![](README_files/figure-html/vsec-1.png)<!-- -->
 
 * Vertical section along the line `lh`:
 
-    
-    ```r
+    ```{r vsec_lh}
     smod <- section(mod, lh)
     plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
                 xlim = c(-50, 150), ylab = "z (m)", xlab = "y (m)")
     title("Vertical section along 'lh' (black line)")
     ```
-    
-    ![](README_files/figure-html/vsec_lh-1.png)<!-- -->
 
 * Vertical section along the line `l`:
 
-    
-    ```r
+    ```{r vsec_l}
     smod <- section(mod, l)
     plotSection(smod, border = "red", col = "grey", asp = 5, ylim = c(0, 10),
                 xlim = c(-20, 170), ylab = "z (m)", xlab = "x' (m)")
     title("Vertical section along 'l' (green line)")
     ```
-    
-    ![](README_files/figure-html/vsec_l-1.png)<!-- -->
 
 #### Discretisation/pixelisation 3D
 
 1. Define the pixelisation box (`x`, `y`, `z`) as well as the pixel resolution 
 (`dx`, `dy`, `dz`).
 
-    
-    ```r
+    ```{r mbox}
     mbox <- list(x = modbox$x, y = modbox$y, z = modbox$z, 
                 dx = 1, 
                 dy = 1, 
@@ -227,8 +204,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
 
 2. Pixelise
 
-    
-    ```r
+    ```{r pix}
     PIX <- pixelise(mod, mbox)
     ```
     
@@ -236,21 +212,14 @@ RConics::addLine(l,  col = "green", lwd = 4)
     identifier (integer) to the pixels belonging to the same object. The layers 
     have negative values while the throughs have positive values.
     
-    
-    ```r
+    ```{r plot3D, results='hold'}
     library(plot3D)
     # horizontal section
     plot3D::image2D(PIX$XYZ[,, 50], x = PIX$x, y = PIX$y)
-    ```
     
-    ![](README_files/figure-html/plot3D-1.png)<!-- -->
-    
-    ```r
     # vertical section at x = 50.5
     plot3D::image2D(PIX$XYZ[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
     ```
-    
-    ![](README_files/figure-html/plot3D-2.png)<!-- -->
     
 #### Set hydraulic properties and plot section (pixels)
 
@@ -259,105 +228,61 @@ RConics::addLine(l,  col = "green", lwd = 4)
     - 1 = bimodal gravel (trough)
     - 2 = open-framework gravel
     
-    
-    ```r
+    ```{r FAC, results='hold'}
     FAC <- setProp(PIX$XYZ, type = c("facies"))
     
     # horizontal section
     plot3D::image2D(FAC[,, 50], x = PIX$x, y = PIX$y)
-    ```
     
-    ![](README_files/figure-html/FAC-1.png)<!-- -->
-    
-    ```r
     # vertical section at x = 50.5
     plot3D::image2D(FAC[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
     ```
     
-    ![](README_files/figure-html/FAC-2.png)<!-- -->
-    
     The hydraulic properties of the facies are given by the data `faciesProp`:
-    
-    ```r
+    ```{r faciesprop}
     data(faciesProp)
     faciesProp # the facies hydraulic properties
     ```
     
-    ```
-    ## $gp
-    ##       p   Kmean  Klogsd   Kvani      de 
-    ##  0.2010  0.0015  0.5000  6.0000 12.1000 
-    ## 
-    ## $bm
-    ##      p  Kmean Klogsd  Kvani     de 
-    ## 0.2500 0.0015 0.1000 1.0000 9.2000 
-    ## 
-    ## $ow
-    ##      p  Kmean Klogsd  Kvani     de 
-    ##   0.35   0.10   0.10   1.00  26.90
-    ```
-    
 2. set hydraulic conductivity    
     
-    
-    ```r
+    ```{r HK, results='hold'}
     HK <- setProp(PIX$XYZ, type = c("K"), fprop = faciesProp)
     
     # horizontal section
     plot3D::image2D(HK[,, 50], x = PIX$x, y = PIX$y)
-    ```
     
-    ![](README_files/figure-html/HK-1.png)<!-- -->
-    
-    ```r
     # vertical section at x = 50.5
     plot3D::image2D(HK[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
     ```
-    
-    ![](README_files/figure-html/HK-2.png)<!-- -->
 
 3. vertical anisotropy of the hydraulic conductivity
 
-    
-    ```r
+    ```{r VANI, results='hold'}
     VANI <- setProp(PIX$XYZ, type = c("Kvani"), fprop = faciesProp)
     
     # horizontal section
     plot3D::image2D(VANI[,, 50], x = PIX$x, y = PIX$y)
-    ```
     
-    ![](README_files/figure-html/VANI-1.png)<!-- -->
-    
-    ```r
     # vertical section at x = 50.5
     plot3D::image2D(VANI[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
     ```
     
-    ![](README_files/figure-html/VANI-2.png)<!-- -->
-    
 4.  porosity
-    
-    ```r
+    ```{r PORO, results='hold'}
     PORO <- setProp(PIX$XYZ, type = c("p"), fprop = faciesProp)
     
     # horizontal section
     plot3D::image2D(PORO[,, 50], x = PIX$x, y = PIX$y)
-    ```
     
-    ![](README_files/figure-html/PORO-1.png)<!-- -->
-    
-    ```r
     # vertical section at x = 50.5
     plot3D::image2D(PORO[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
     ```
-    
-    ![](README_files/figure-html/PORO-2.png)<!-- -->
 
 
 #### Plot a cube of hydraulic conductivity:
 
-
-```r
+```{r HK_cube, results='hold'}
 rnxyz <- dim(PIX$XYZ)
 vy <- PIX$y
 vx <- rep(max(PIX$x), length(PIX$x))
@@ -401,5 +326,3 @@ plot3D::surf3D(M1$x, M1$y, vz, colvar = (HK[,,rnxyz[3]]),
         resfac = 0, clog = TRUE,  clim = range(HK), 
         colkey = list(plot = FALSE))
 ```
-
-![](README_files/figure-html/HK_cube-1.png)<!-- -->
