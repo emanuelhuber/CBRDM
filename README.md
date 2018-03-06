@@ -1,6 +1,6 @@
 # CBRDM - Coarse Braided River Deposit Model
 Emanuel Huber  
-`r format(Sys.time(), '%Y-%m-%d')`  
+2018-03-06  
 
 
 
@@ -239,14 +239,15 @@ RConics::addLine(l,  col = "green", lwd = 4)
     ```r
     library(plot3D)
     # horizontal section
-    plot3D::image2D(PIX$XYZ[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(PIX$XYZ[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     ```
     
     ![](README_files/figure-html/plot3D-1.png)<!-- -->
     
     ```r
     # vertical section at x = 50.5
-    plot3D::image2D(PIX$XYZ[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(PIX$XYZ[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z,
+                    asp = 1)
     ```
     
     ![](README_files/figure-html/plot3D-2.png)<!-- -->
@@ -263,14 +264,15 @@ RConics::addLine(l,  col = "green", lwd = 4)
     FAC <- setProp(PIX$XYZ, type = c("facies"))
     
     # horizontal section
-    plot3D::image2D(FAC[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(FAC[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     ```
     
     ![](README_files/figure-html/FAC-1.png)<!-- -->
     
     ```r
     # vertical section at x = 50.5
-    plot3D::image2D(FAC[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(FAC[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
+                    asp = 1)
     ```
     
     ![](README_files/figure-html/FAC-2.png)<!-- -->
@@ -303,14 +305,15 @@ RConics::addLine(l,  col = "green", lwd = 4)
     HK <- setProp(PIX$XYZ, type = c("K"), fprop = faciesProp)
     
     # horizontal section
-    plot3D::image2D(HK[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(HK[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     ```
     
     ![](README_files/figure-html/HK-1.png)<!-- -->
     
     ```r
     # vertical section at x = 50.5
-    plot3D::image2D(HK[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(HK[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z,
+                    asp = 1)
     ```
     
     ![](README_files/figure-html/HK-2.png)<!-- -->
@@ -322,14 +325,15 @@ RConics::addLine(l,  col = "green", lwd = 4)
     VANI <- setProp(PIX$XYZ, type = c("Kvani"), fprop = faciesProp)
     
     # horizontal section
-    plot3D::image2D(VANI[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(VANI[,, 50], x = PIX$x, y = PIX$y, asp = 2)
     ```
     
     ![](README_files/figure-html/VANI-1.png)<!-- -->
     
     ```r
     # vertical section at x = 50.5
-    plot3D::image2D(VANI[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(VANI[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
+                    asp = 1)
     ```
     
     ![](README_files/figure-html/VANI-2.png)<!-- -->
@@ -340,14 +344,15 @@ RConics::addLine(l,  col = "green", lwd = 4)
     PORO <- setProp(PIX$XYZ, type = c("p"), fprop = faciesProp)
     
     # horizontal section
-    plot3D::image2D(PORO[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(PORO[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     ```
     
     ![](README_files/figure-html/PORO-1.png)<!-- -->
     
     ```r
     # vertical section at x = 50.5
-    plot3D::image2D(PORO[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(PORO[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
+                    asp = 1)
     ```
     
     ![](README_files/figure-html/PORO-2.png)<!-- -->

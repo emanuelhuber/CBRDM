@@ -1,7 +1,7 @@
 ---
 title: CBRDM - Coarse Braided River Deposit Model
 author: "Emanuel Huber"
-date: "`r format(Sys.time(), '%Y-%m-%d')`"
+date: "2018-03-06"
 output:
   html_document:
     keep_md: true
@@ -138,8 +138,8 @@ para <- list("L"      = list(type = "runif", min = 40, max = 70),
 
 Now we define the simulation box:
 ```{r modbox}
-modbox <- list("x" = c(0,100),
-               "y" = c(0,200),
+modbox <- list("x" = c(0,200),
+               "y" = c(0,100),
                "z" = c(0,10)
              )
 ```
@@ -184,7 +184,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
 
     ```{r vsec_l}
     smod <- section(mod, l)
-    plotSection(smod, border = "red", col = "grey", asp = 5, ylim = c(0, 10),
+    plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
                 xlim = c(-20, 170), ylab = "z (m)", xlab = "x' (m)")
     title("Vertical section along 'l' (green line)")
     ```
@@ -214,10 +214,11 @@ RConics::addLine(l,  col = "green", lwd = 4)
     ```{r plot3D, results='hold'}
     library(plot3D)
     # horizontal section
-    plot3D::image2D(PIX$XYZ[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(PIX$XYZ[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     
     # vertical section at x = 50.5
-    plot3D::image2D(PIX$XYZ[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(PIX$XYZ[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z,
+                    asp = 2)
     ```
     
 #### Set hydraulic properties and plot section (pixels)
@@ -231,10 +232,11 @@ RConics::addLine(l,  col = "green", lwd = 4)
     FAC <- setProp(PIX$XYZ, type = c("facies"))
     
     # horizontal section
-    plot3D::image2D(FAC[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(FAC[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     
     # vertical section at x = 50.5
-    plot3D::image2D(FAC[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(FAC[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
+                    asp = 2)
     ```
     
     The hydraulic properties of the facies are given by the data `faciesProp`:
@@ -249,10 +251,11 @@ RConics::addLine(l,  col = "green", lwd = 4)
     HK <- setProp(PIX$XYZ, type = c("K"), fprop = faciesProp)
     
     # horizontal section
-    plot3D::image2D(HK[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(HK[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     
     # vertical section at x = 50.5
-    plot3D::image2D(HK[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(HK[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z,
+                    asp = 2)
     ```
 
 3. vertical anisotropy of the hydraulic conductivity
@@ -261,10 +264,11 @@ RConics::addLine(l,  col = "green", lwd = 4)
     VANI <- setProp(PIX$XYZ, type = c("Kvani"), fprop = faciesProp)
     
     # horizontal section
-    plot3D::image2D(VANI[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(VANI[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     
     # vertical section at x = 50.5
-    plot3D::image2D(VANI[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(VANI[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
+                    asp = 2)
     ```
     
 4.  porosity
@@ -272,10 +276,11 @@ RConics::addLine(l,  col = "green", lwd = 4)
     PORO <- setProp(PIX$XYZ, type = c("p"), fprop = faciesProp)
     
     # horizontal section
-    plot3D::image2D(PORO[,, 50], x = PIX$x, y = PIX$y)
+    plot3D::image2D(PORO[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     
     # vertical section at x = 50.5
-    plot3D::image2D(PORO[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z)
+    plot3D::image2D(PORO[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
+                    asp = 2)
     ```
 
 
