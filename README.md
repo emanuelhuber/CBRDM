@@ -147,8 +147,8 @@ para <- list("L"      = list(type = "runif", min = 40, max = 70),
 Now we define the simulation box:
 
 ```r
-modbox <- list("x" = c(0,100),
-               "y" = c(0,200),
+modbox <- list("x" = c(0,200),
+               "y" = c(0,100),
                "z" = c(0,10)
              )
 ```
@@ -204,7 +204,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
     
     ```r
     smod <- section(mod, l)
-    plotSection(smod, border = "red", col = "grey", asp = 5, ylim = c(0, 10),
+    plotSection(smod, border = "red", col = "grey", asp = 2, ylim = c(0, 10),
                 xlim = c(-20, 170), ylab = "z (m)", xlab = "x' (m)")
     title("Vertical section along 'l' (green line)")
     ```
@@ -247,7 +247,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
     ```r
     # vertical section at x = 50.5
     plot3D::image2D(PIX$XYZ[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z,
-                    asp = 1)
+                    asp = 2)
     ```
     
     ![](README_files/figure-html/plot3D-2.png)<!-- -->
@@ -272,7 +272,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
     ```r
     # vertical section at x = 50.5
     plot3D::image2D(FAC[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
-                    asp = 1)
+                    asp = 2)
     ```
     
     ![](README_files/figure-html/FAC-2.png)<!-- -->
@@ -313,7 +313,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
     ```r
     # vertical section at x = 50.5
     plot3D::image2D(HK[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z,
-                    asp = 1)
+                    asp = 2)
     ```
     
     ![](README_files/figure-html/HK-2.png)<!-- -->
@@ -325,7 +325,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
     VANI <- setProp(PIX$XYZ, type = c("Kvani"), fprop = faciesProp)
     
     # horizontal section
-    plot3D::image2D(VANI[,, 50], x = PIX$x, y = PIX$y, asp = 2)
+    plot3D::image2D(VANI[,, 50], x = PIX$x, y = PIX$y, asp = 1)
     ```
     
     ![](README_files/figure-html/VANI-1.png)<!-- -->
@@ -333,7 +333,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
     ```r
     # vertical section at x = 50.5
     plot3D::image2D(VANI[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
-                    asp = 1)
+                    asp = 2)
     ```
     
     ![](README_files/figure-html/VANI-2.png)<!-- -->
@@ -352,7 +352,7 @@ RConics::addLine(l,  col = "green", lwd = 4)
     ```r
     # vertical section at x = 50.5
     plot3D::image2D(PORO[which(PIX$x == 50.5),,], x = PIX$y, y = PIX$z, 
-                    asp = 1)
+                    asp = 2)
     ```
     
     ![](README_files/figure-html/PORO-2.png)<!-- -->
@@ -363,44 +363,53 @@ RConics::addLine(l,  col = "green", lwd = 4)
 
 ```r
 rnxyz <- dim(PIX$XYZ)
+nx <- rnxyz[1]
+ny <- rnxyz[2]
+nz <- rnxyz[3]
+
+# x-side: x x z (200 x 100) at y = 0
+
+vx <- (PIX$x)
+vy <- rep(0, nz)
+vz <- matrix(rep(PIX$z, each = nx), ncol = nz, 
+             nrow = nx, byrow = FALSE)
+M1 <- plot3D::mesh(vx, vy)
+
+plot3D::surf3D(M1$x, M1$y, vz, colvar = (HK[,1,]), 
+              col = plot3D::jet2.col(201),
+              bty = "f", cex = 0.01, pch = 20,  clim = range(HK),
+              clab = "hydraulic conductivity (m/s)", ticktype = "detailed",
+              theta = 40 , expand = 5, scale = FALSE, resfac = 0, clog = TRUE,
+              xlim = modbox$x, ylim = modbox$y, 
+              zlim = modbox$z, #extent3D(gwMod)[5:6],
+              xlab = "x", ylab = "y", shade = TRUE, ltheta = -125, lphi = 45,
+              colkey = list(plot = TRUE, width = 0.5, length = 0.5,
+              cex.axis = 0.8, side = 1),
+              col.axis = "black", col.panel = "white", col.grid = "grey",
+              lwd.panel = 1, lwd.grid = 2, box = TRUE)
+
+
+# y-side: y x z (100 x 100) at x = 
+vx <- rep(max(PIX$x), ny)
 vy <- PIX$y
-vx <- rep(max(PIX$x), length(PIX$x))
-vz <- matrix(rep(PIX$z, each = length(vy)), ncol = length(vy), 
-             nrow = length(vx), byrow = TRUE)
-M1 <- plot3D::mesh(vx, vy)
+vz <- matrix(rep(PIX$z, ny), ncol = nz, 
+             nrow = ny, byrow = TRUE)
+M1 <- plot3D::mesh(vy, vx)
 
-plot3D::surf3D(M1$x, M1$y, vz, colvar = t(HK[,rnxyz[2],]), 
-        col = plot3D::jet2.col(201),
-        bty = "f", cex = 0.01, pch = 20,  clim = range(HK),
-        clab = "hydraulic conductivity (m/s)", ticktype = "detailed",
-        theta = 40 , expand = 5, scale = FALSE, resfac = 0, clog = TRUE,
-        xlim = modbox$x, ylim = modbox$y, 
-        zlim = modbox$z, #extent3D(gwMod)[5:6],
-        xlab = "x", ylab = "y", shade = TRUE, ltheta = -125, lphi = 45,
-        colkey = list(plot = TRUE, width = 0.5, length = 0.5,
-        cex.axis = 0.8, side = 1),
-        col.axis = "black", col.panel = "white", col.grid = "grey",
-        lwd.panel = 1, lwd.grid = 2, box = TRUE)
-        
-vy <- (PIX$x)
-vx <- rep(0, length(PIX$x))
-vz <- matrix(rep(PIX$z, each = length(vx)), ncol = length(vx), 
-             nrow = length(vy), byrow = TRUE)
-M1 <- plot3D::mesh(vx, vy)
+plot3D::surf3D(M1$y, M1$x, vz, colvar = HK[nx,,], 
+               col = plot3D::jet2.col(201), add = TRUE, expand = 5, scale = FALSE, 
+                     resfac = 0, clog = TRUE,  clim = range(HK),
+              colkey = list(plot = FALSE))
+      
 
-plot3D::surf3D(M1$y, M1$x, vz, colvar = t(HK[1,,]), 
-        col = plot3D::jet2.col(201), add = TRUE, expand = 5, scale = FALSE, 
-        resfac = 0, clog = TRUE,  clim = range(HK),
-        colkey = list(plot = FALSE))
-
-
+# z-side: x x y (200 x 100) at z = 10
 vx <- rev(PIX$x)
 vy <- PIX$y
-vz <- matrix(rep(rep(max(PIX$z), length(PIX$z)), each = length(vy)), 
-              ncol = length(vy), nrow = length(vx), byrow = TRUE)
+vz <- matrix(rep(rep(max(PIX$z), nz), each = ny), 
+              ncol = ny, nrow = nx, byrow = TRUE)
 M1 <- plot3D::mesh(vx, vy)
 
-plot3D::surf3D(M1$x, M1$y, vz, colvar = (HK[,,rnxyz[3]]), 
+plot3D::surf3D(M1$x, M1$y, vz, colvar = (HK[,,nz]), 
         col = plot3D::jet2.col(201), add = TRUE, expand = 5, scale = FALSE, 
         resfac = 0, clog = TRUE,  clim = range(HK), 
         colkey = list(plot = FALSE))
