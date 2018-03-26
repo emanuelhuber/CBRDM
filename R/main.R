@@ -1527,7 +1527,7 @@ setMethod("plotObj", "Trough2D", function(x, add = FALSE, xlab = "x",
         idfill <- x@id[i]
         if(length(x@fill) != 0){
           if(!is.null(x@fill[[ idfill ]])){
-            plotObj(as(x@fill[[ idfill ]], "TrEllipse"), add = TRUE, ...)
+            plotObj(x@fill[[ idfill ]], add = TRUE, ...)
           }
         }
       }
@@ -2239,19 +2239,19 @@ setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
 ##-------------------------------- FILLING --------------------------##
 
 setMethod("crossBedding", "Deposits", function(x, para = NULL){
-    n <- length(x@id)
-    para$nF <- .rsim(para$nF, n)
-    para$rpos <- .rsim(para$rpos, n)
-    para$phi <- .rsim(para$phi, n)
     x@layers <- lapply(x@layers, .crossBeddingDep, para)
     return(x)
   }
 )
 
 .crossBeddingDep <- function(x, para = NULL){
-  if(length(x$obj@id) == 0){
+  n <- length(x$obj@id)
+  if( n == 0 ){
     return(x)
   }
+  para$phi <- .rsim(para$phi, n)
+  para$nF <- .rsim(para$nF, n)
+  para$rpos <- .rsim(para$rpos, n)
   x$obj <- crossBedding(x$obj, para)
   return(x)
   #lapply(crossBedding, x@layers, para)
