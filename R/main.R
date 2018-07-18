@@ -717,8 +717,9 @@ setAs(from = "Deposits", to = "matrix", def = function(from){
 setMethod("as.matrix", signature(x = "Deposits2D"),function(x){
           as(x, "matrix") })
 setAs(from = "Deposits2D", to = "matrix", def = function(from){
-    layID <- sapply(from@layers, function(x) x[['id']])
-    sel <- which(sapply(layID, function(x) length(x) > 0))
+    # layID <- sapply(from@layers, function(x) x[['id']])
+    # sel <- which(sapply(layID, function(x) length(x) > 0))
+    sel <- sapply(from@layers, function(x) !is.null(x[['obj']]))
     obj <- lapply(from@layers[sel], function(x) as.matrix(x[['obj']]))
     objlayID <- rep(layID, sapply(obj, nrow))
     M <- matrix(nrow = length(objlayID), ncol = 7)
