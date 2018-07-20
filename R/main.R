@@ -3019,6 +3019,7 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
     layi <- x@layers[[i]]
     layi[["z"]] <- unifUpdate(layi[["z"]], dx = para$delta$z,
                               xmin = x@bbox$z[1], xmax = x@bbox$z[2])
+    layi[['obj']]@pos[,3] <- layi[["z"]] 
     x@layers[[i]] <- NULL
     x <- .insertLay(x, layi[["z"]], id = layi[["id"]], layi)
     death <- FALSE
