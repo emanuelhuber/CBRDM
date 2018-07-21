@@ -2912,15 +2912,20 @@ updateStraussN <- function(x, para, modbox ){
   areaW <- diff(modbox$x) * diff(modbox$y)
   bet <- para$hpp$bet * areaW
   # BIRTH
-  if(n <= 1L || sample(c(TRUE, FALSE), 1 )){
+  if(n == 0){
+    y_cand <- c(runif(1, modbox$x[1], modbox$x[2]),
+                runif(1, modbox$y[1], modbox$y[2]))
+    y <- .addTrough(y, xy = y_cand, para, z = x$z)
+    bd <- 1L
+  }else if(n == 1L || sample(c(TRUE, FALSE), 1 )){
     y_cand <- c(runif(1, modbox$x[1], modbox$x[2]),
                 runif(1, modbox$y[1], modbox$y[2]))
     phi <- sum(distxtoX2(y@pos[, 1:2, drop = FALSE], y_cand) <= d2)
     if(runif(1) <= min(1, (bet * para$hpp$gam^phi) / (n + 1))){
-        y <- .addTrough(y, xy = y_cand, para)
-        bd <- 1L
+      y <- .addTrough(y, xy = y_cand, para)
+      bd <- 1L
     }
-  # DEATH
+    # DEATH
   }else{
     i <- sample.int(n, 1L)
     phi <- sum(distxtoX2(y@pos[-i, 1:2, drop = FALSE],
@@ -2934,27 +2939,37 @@ updateStraussN <- function(x, para, modbox ){
   # return(list("x" = x, "bd" = bd))
   return(x)
 }
-.addTrough <- function(x, xy = NULL, para){
+  
+  
+.addTrough <- function(x, xy = NULL, para, z){
   L   <- .rsim(para$L, 1)
   rLW <- .rsim(para$rLW, 1)
   rLH <- .rsim(para$rLH, 1)
   W   <- L/rLW
   n <- length(x@id)
   xyz <- matrix(ncol = 3, nrow = n + 1)
-  if(n > 0)  xyz[1:n, ] <- x@pos
-  xyz[n+1,] <- c(xy, x@pos[1,3])
+  if(n > 0){
+    xyz[1:n, ] <- x@pos
+  }
+  xyz[n+1,] <- c(xy, z)
+  if(length(x@id) == 0){
+    x_id <- 1L
+  }else{
+    x_id <- c(x@id, max(x@id) + 1L)
+  }
   return(new("Trough",
-              version = "0.1",
-              id      = c(x@id, max(x@id) + 1L),
-              pos     = xyz,
-              L       = c(x@L, L),
-              W       = c(x@W, W),
-              H       = c(x@H, L/rLH),
-              theta   = c(x@theta, .rsim(para$theta, 1)),
-              rH      = c(x@rH, para$rH)
-            ))
+             version = "0.1",
+             id      = x_id,
+             pos     = xyz,
+             L       = c(x@L, L),
+             W       = c(x@W, W),
+             H       = c(x@H, L/rLH),
+             theta   = c(x@theta, .rsim(para$theta, 1)),
+             rH      = c(x@rH, para$rH)
+  ))
 }
-
+  
+  
 .rmTrough <- function(x, i){
   x@id <- x@id[-i]
   x@pos <- x@pos[-i, , drop = FALSE]
