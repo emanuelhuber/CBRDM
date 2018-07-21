@@ -2922,7 +2922,7 @@ updateStraussN <- function(x, para, modbox ){
                 runif(1, modbox$y[1], modbox$y[2]))
     phi <- sum(distxtoX2(y@pos[, 1:2, drop = FALSE], y_cand) <= d2)
     if(runif(1) <= min(1, (bet * para$hpp$gam^phi) / (n + 1))){
-      y <- .addTrough(y, xy = y_cand, para, z = x$z
+      y <- .addTrough(y, xy = y_cand, para, z = x$z)
       bd <- 1L
     }
     # DEATH
