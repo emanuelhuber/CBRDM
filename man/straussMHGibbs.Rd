@@ -4,8 +4,9 @@
 \alias{straussMHGibbs}
 \title{Strauss process (as Gibbs process) simulation (MCMC)}
 \usage{
-straussMHGibbs(alpha = 10, bet = 0.5, d = 0.1, n0 = NULL, nit = 5000,
-  W = list(x = c(0, 1), y = c(0, 1)), fd = NULL, count = FALSE)
+straussMHGibbs(alpha = 10, bet = 0.5, d = 0.1, n0 = NULL,
+  nit = 5000, W = list(x = c(0, 1), y = c(0, 1)), fd = NULL,
+  count = FALSE)
 }
 \arguments{
 \item{count}{boolean TRUE: return the number of points for each iteration}

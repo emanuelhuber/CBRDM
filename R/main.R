@@ -957,7 +957,7 @@ setGeneric("section", function(x, l, pref = NULL, lim = NULL)
 #' @rdname plotSection
 #' @export
 setGeneric("plotSection", function(x, add = FALSE, xlab = "x",
-            ylab = "y", main = "", asp = NA, ...)
+            ylab = "y", main = "", asp = NA, ablineArg = NULL, ...)
             standardGeneric("plotSection"))
 
 #' plotObj
@@ -1058,13 +1058,13 @@ setGeneric("updateObj", function(x, type = c("pos", "n", "prop"), para)
 
 
 ##------------------------------ SETTTER / GETTER -----------------------##
-#'@export
+#' @export
 setMethod("layerz", "Deposits", function(x){
     return(sapply(x@layers, function(x) x[["z"]]))
   }
 )
 
-#'@export
+#' @export
 setMethod("layerz", "Deposits2D", function(x){
     return(sapply(x@layers, function(x) x[["z"]]))
   }
@@ -1080,7 +1080,7 @@ numberTroughsPerLayer <- function(x){
 # axis-aligned-bounding-box-of-an-ellipse
 # see also
 # http://www.iquilezles.org/www/articles/ellipses/ellipses.htm
-#'@export
+#' @export
 setMethod("bbox", "Trough", function(x){
     pos <- x@pos
     pos[,3] <- x@pos[,3] - x@H/2
@@ -2146,7 +2146,7 @@ setMethod("section", "Cuboid", function(x, l, pref = NULL, lim = NULL){
       pp2 <- RConics::intersectConicLine(C2 , l2)
       # points(t(pp2[1:2,]),pch=20,col="green")
       # ellipse parameters corresponding to the intersection between the
-      # ellipsoïd and the plan define by the the line l and the z-direction
+      # ellipsoid and the plan define by the the line l and the z-direction
       b_new = as.numeric(abs(pp2[2,1]))
     }
     if((ob["z"] - b_new) >= ob["zmax"]){
@@ -2178,20 +2178,20 @@ setMethod("section", "Cuboid", function(x, l, pref = NULL, lim = NULL){
 
 ##--------------------------- PLOT SECTION ----------------------##
 setMethod("plotSection", "NULL", function(x, add = FALSE, xlab = "x",
-            ylab = "y", main = "", asp = NA, ...){
+            ylab = "y", main = "", asp = NA, ablineArg = NULL, ...){
     warnings("NULL")
   }
 )
 
 setMethod("plotSection", "TrEllipse", function(x, add = FALSE, xlab = "x",
-            ylab = "y", main = "", asp = NA, ...){
+            ylab = "y", main = "", asp = NA, ablineArg = NULL, ...){
       plotObj(x, add = add, xlab = xlab,
                 ylab = ylab, main = main, asp = asp, ...)
   }
 )
 
 setMethod("plotSection", "Trough2D", function(x, add = FALSE, xlab = "x",
-            ylab = "y", main = "", asp = NA, ...){
+            ylab = "y", main = "", asp = NA, ablineArg = NULL, ...){
       plotObj(x, add = add, xlab = xlab,
                 ylab = ylab, main = main, asp = asp, ...)
   }
@@ -2200,7 +2200,7 @@ setMethod("plotSection", "Trough2D", function(x, add = FALSE, xlab = "x",
 # lay = list of args for abline
 setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
             ylab = "y", main = "", asp = NA, lay = NULL, xaxs = "i",
-            yaxs = "i", ...){
+            yaxs = "i", ablineArg = NULL, ...){
     if(add == FALSE){
       #b <- boundary(x)
       dots <- list(...)
@@ -2226,7 +2226,12 @@ setMethod("plotSection", "Deposits2D", function(x, add = FALSE, xlab = "x",
         do.call(abline, lay)
       }
     }else{
-      abline(h = layerz(x)) #sapply(x@layers, function(x) x[["z"]]) )
+      if(!isFALSE(ablineArg)){
+        if(is.null(ablineArg)) ablineArg <- list()
+        ablineArg[["h"]] <- layerz(x)
+        do.call(abline, ablineArg)
+        # abline(h = layerz(x)) #sapply(x@layers, function(x) x[["z"]]) )
+      }
     }
     # plot troughs
     invisible(lapply(x@layers, .plotSectionTrough2D, add = TRUE, ...))
@@ -2555,7 +2560,7 @@ rint <- function(n, min, max){
 
 # # like in "Statistical Analysis and Modelling of Spatial Point Patterns"
 # # J. Illian, A. Penttinen, H. Stoyan and D. Stoyan
-# # © 2008 John Wiley & Sons, Ltd. ISBN: 978-0-470-01491-2
+# # (c) 2008 John Wiley & Sons, Ltd. ISBN: 978-0-470-01491-2
 # # chapter 3, p. 152
 # bet <- exp(8)
 # gam <- exp(-exp(0.3))
@@ -2566,6 +2571,7 @@ rint <- function(n, min, max){
 # 100 iterations -> 120 pts
 # 5000 iterations -> 166
 # 10000 iterations -> 166 (coincidence)
+
 #' Strauss process simulation (MCMC)
 #'
 #' strauss process: \eqn{bet^(n(y)) * gam^(s(y))}
@@ -2573,6 +2579,7 @@ rint <- function(n, min, max){
 #' if gam = 1, Strauss process = Poisson process
 #' if gam = 0, Strauss process = Hard core process
 #' @param count boolean TRUE: return the number of points for each iteration
+#' @name straussMH
 #' @export
 straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
                       W = list(x = c(0, 1), y = c(0, 1)), fd = NULL,
@@ -2679,6 +2686,7 @@ straussMH <- function(bet = 10, gam = 0.5, d = 0.1, n0 = NULL, nit = 5000,
 #' if beta = 0, Strauss process = Poisson process
 #' if beta = +infinity, Strauss process = Hard core process
 #' @param count boolean TRUE: return the number of points for each iteration
+#' @name straussMHGibbs
 #' @export
 straussMHGibbs <- function(alpha = 10, bet = 0.5, d = 0.1, n0 = NULL,
                            nit = 5000, W = list(x = c(0, 1), y = c(0, 1)),
@@ -2790,13 +2798,14 @@ measureDistance <- function(last=TRUE){
 }
 
 ##-------------------- update simple distribution ----------------------------##
-#'@export
+#' @export
 resample <- function(x, ...) x[sample.int(length(x), ...)]
 
 # reflection, not round around
 #'
 #' relfection at the bounds
-#'@export
+#' @name unifUpdate
+#' @export
 unifUpdate <- function(x, dx = 1, xmin = NULL, xmax = NULL){
   xnew <- x + runif(length(x), -dx, dx)
   test <- xnew < xmin
@@ -2812,7 +2821,7 @@ unifUpdate <- function(x, dx = 1, xmin = NULL, xmax = NULL){
   return(unname(xnew))
 }
 
-#'@export
+#' @export
 poisUpdate <- function(n, lambda = 1){
   return(n + poisBD(n, lambda = lambda))
 }
@@ -2820,7 +2829,8 @@ poisUpdate <- function(n, lambda = 1){
 #' Poisson move
 #'
 #' Same as uniform update but with folding instead of relfecting
-#'@export
+#' @name poisMove
+#' @export
 poisMove <- function(x, dx = 1, xmin = NULL, xmax = NULL){
   xnew <- x + runif(length(x), -dx, dx)
   test <- xnew < xmin
@@ -2837,7 +2847,8 @@ poisMove <- function(x, dx = 1, xmin = NULL, xmax = NULL){
 }
 
 #' Poisson birth death
-#'@export
+#' @name poisBD
+#' @export
 poisBD <- function(n, lambda){
   pm <- 0.5*min(1, n/lambda)
   pp <- 0.5*min(1, lambda/(n + 1L))
@@ -2939,8 +2950,8 @@ updateStraussN <- function(x, para, modbox ){
   # return(list("x" = x, "bd" = bd))
   return(x)
 }
-  
-  
+
+
 .addTrough <- function(x, xy = NULL, para, z){
   L   <- .rsim(para$L, 1)
   rLW <- .rsim(para$rLW, 1)
@@ -2968,8 +2979,8 @@ updateStraussN <- function(x, para, modbox ){
              rH      = c(x@rH, para$rH)
   ))
 }
-  
-  
+
+
 .rmTrough <- function(x, i){
   x@id <- x@id[-i]
   x@pos <- x@pos[-i, , drop = FALSE]
@@ -3034,7 +3045,7 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
     layi <- x@layers[[i]]
     layi[["z"]] <- unifUpdate(layi[["z"]], dx = para$delta$z,
                               xmin = x@bbox$z[1], xmax = x@bbox$z[2])
-    layi[['obj']]@pos[,3] <- layi[["z"]] 
+    layi[['obj']]@pos[,3] <- layi[["z"]]
     x@layers[[i]] <- NULL
     x <- .insertLay(x, layi[["z"]], id = layi[["id"]], layi)
     death <- FALSE
@@ -3055,7 +3066,7 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
   return(x)
 })
 
-#'@export
+#' @export
 .insertLay <- function(x, zi, id, laynew){
   n <- length(x@layers)
   z <- layerz(x) #sapply(x@layers, function(x) x[["z"]])
@@ -3066,14 +3077,14 @@ setMethod("updateLay", "Deposits", function(x, type = c("pos", "n"), para){
 }
 
 
-#'@export
+#' @export
 .rmLay <- function(x, id){
   x@z <- x@z[-which(id == names(x@z))]
   x@layers[id] <- NULL
   return(x)
 }
 
-#'@export
+#' @export
 .simLay <- function(x, zi, para){
   L   <- .rsim(para$L,   n = 500)
   rLW <- .rsim(para$rLW, n = 500)

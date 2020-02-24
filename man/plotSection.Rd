@@ -5,7 +5,7 @@
 \title{plotSection}
 \usage{
 plotSection(x, add = FALSE, xlab = "x", ylab = "y", main = "",
-  asp = NA, ...)
+  asp = NA, ablineArg = NULL, ...)
 }
 \description{
 plotSection

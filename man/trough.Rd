@@ -9,7 +9,7 @@ trough(id = NULL, pos, size, theta, rH, fill = list())
 \arguments{
 \item{id}{A length-\eqn{n} numeric vector specifying a unique id}
 
-\item{pos}{A \eqn{n \times 3} numeric matrix defining the object position 
+\item{pos}{A \eqn{n \times 3} numeric matrix defining the object position
 coordinates.}
 }
 \description{
@@ -18,10 +18,10 @@ Create an instance of the \code{Trough} class containing \eqn{n} trough fill.
 \section{Slots}{
 
 \describe{
-\item{\code{size}}{A \eqn{n \times 3} numeric matrix specifying the object size 
+\item{\code{size}}{A \eqn{n \times 3} numeric matrix specifying the object size
 (length, width, height)}
 
-\item{\code{theta}}{A length-\eqn{n} numeric vector specifying the object 
+\item{\code{theta}}{A length-\eqn{n} numeric vector specifying the object
 orientation (horizontal angle in radian).}
 
 \item{\code{rH}}{A length-\eqn{n} numeric vector specifying the truncation ratio.}

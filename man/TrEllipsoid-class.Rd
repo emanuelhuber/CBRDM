@@ -16,7 +16,7 @@ truncated ellipsoids (with \eqn{ 0 \leq n}.
 \item{\code{id}}{A length-\eqn{n} integer vector specifying a unique id for each
 troughs.}
 
-\item{\code{pos}}{A \eqn{n \times 3} numeric matrix defining the object position 
+\item{\code{pos}}{A \eqn{n \times 3} numeric matrix defining the object position
 coordinates.}
 
 \item{\code{a}}{The semi-axis length a}
@@ -25,10 +25,10 @@ coordinates.}
 
 \item{\code{c}}{The semi-axis length c}
 
-\item{\code{theta}}{A length-\eqn{n} numeric vector specifying the object 
+\item{\code{theta}}{A length-\eqn{n} numeric vector specifying the object
 orientation (horizontal angle in radian).}
 
-\item{\code{zmax}}{A length-\eqn{n} numeric vector specifying the maximum elevation 
+\item{\code{zmax}}{A length-\eqn{n} numeric vector specifying the maximum elevation
 of the truncated ellipsoids}
 }}
 

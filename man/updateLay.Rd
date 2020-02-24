@@ -9,9 +9,9 @@ updateLay(x, type = c("pos", "n"), para)
 \arguments{
 \item{x}{A \code{Deposits} object.}
 
-\item{type}{TA length-one character vector defining the type of update to 
-apply. Types of update: \code{"pos"} to update the position of 
-\emph{one} single layer or \code{n} to update the number of 
+\item{type}{TA length-one character vector defining the type of update to
+apply. Types of update: \code{"pos"} to update the position of
+\emph{one} single layer or \code{n} to update the number of
 layers}
 
 \item{para}{list of parameters}
@@ -19,7 +19,7 @@ layers}
 \value{
 Return the updated object \code{x}.
          (A list with three elements. The first element \code{x} is the
-        updated object \code{x}, the second element \code{bd} is the id of 
+        updated object \code{x}, the second element \code{bd} is the id of
         the updated layer (a negative value indicates that the layer was
         removed), the third element \code{bd} if negative indicates a death,
         if positive a birth, if \code{NULL} nothing).

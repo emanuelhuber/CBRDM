@@ -9,11 +9,11 @@ updateObj(x, type = c("pos", "n", "prop"), para)
 \arguments{
 \item{x}{A object of the class \code{Deposits}.}
 
-\item{type}{A length-one character vector defining the type of update to 
-apply. Types of update: \code{"pos"} to update in each layer the 
-position of \emph{one} single object, \code{"n"} to update in 
-each layer the number of objects, and \code{"prop"} to update 
-in each layer the size, proportion and orientation of \emph{all} 
+\item{type}{A length-one character vector defining the type of update to
+apply. Types of update: \code{"pos"} to update in each layer the
+position of \emph{one} single object, \code{"n"} to update in
+each layer the number of objects, and \code{"prop"} to update
+in each layer the size, proportion and orientation of \emph{all}
 the objects.}
 
 \item{para}{A list of parameters (see details).}

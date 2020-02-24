@@ -9,7 +9,7 @@ An instance of the class \code{Trough} contains \eqn{n} trough fills (with
 \eqn{ 0 \leq n}. The trough are defined as truncated ellipsoids.
 }
 \details{
-Note that the third object position coordinate (z) corresponds to the 
+Note that the third object position coordinate (z) corresponds to the
 object top elevation.
 The truncation ratio \code{rH} is defined as rH x H = c.
 The fills of the trough are defined by several trough of smaller size.
@@ -22,7 +22,7 @@ The fills of the trough are defined by several trough of smaller size.
 \item{\code{id}}{A length-\eqn{n} integer vector specifying a unique id for each
 troughs.}
 
-\item{\code{pos}}{A \eqn{n \times 3} numeric matrix defining the object position 
+\item{\code{pos}}{A \eqn{n \times 3} numeric matrix defining the object position
 coordinates.}
 
 \item{\code{L}}{A length-\eqn{n} numeric vector specifying the object lengths.}
@@ -31,7 +31,7 @@ coordinates.}
 
 \item{\code{H}}{A length-\eqn{n} numeric vector specifying the object heights.}
 
-\item{\code{theta}}{A length-\eqn{n} numeric vector specifying the object 
+\item{\code{theta}}{A length-\eqn{n} numeric vector specifying the object
 orientation (horizontal angle in radian).}
 
 \item{\code{rH}}{A length-\eqn{n} numeric vector specifying the truncation ratio.}

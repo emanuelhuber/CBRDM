@@ -2,7 +2,7 @@
 #'
 #' The CBRDM package provides some S4 classes to represent the subsurface
 #' heterogeneity of coarse, braided river deposits.
-#' 
+#'
 #' @section 3D classes:
 #' \itemize{
 #'   \item \code{Trough}

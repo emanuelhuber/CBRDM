@@ -2,18 +2,6 @@
 % Please edit documentation in R/main.R
 \name{as}
 \alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
-\alias{as}
 \title{As("Ellipsoid", "TrEllipsoid")}
 \description{
 As("Ellipsoid", "TrEllipsoid")
@@ -42,3 +30,8 @@ As("TrEllipse", "Trough2D")
 
 As("Trough2D", "TrEllipse")
 }
+\concept{Ellipsoid}
+\concept{TrEllipse}
+\concept{TrEllipsoid}
+\concept{Trough}
+\concept{Trough2D}
